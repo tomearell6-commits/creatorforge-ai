@@ -34,9 +34,13 @@ export default async function BillingPage() {
     credits = profile?.credits ?? 0;
   }
 
+  // Paddle stays hidden until card verification is approved — flip
+  // NEXT_PUBLIC_ENABLE_PADDLE=true to turn it on. Crypto (NOWPayments) is always available.
+  const paddleEnabled = process.env.NEXT_PUBLIC_ENABLE_PADDLE === "true";
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <PaddleScript />
+      {paddleEnabled && <PaddleScript />}
       <div>
         <h1 className="text-2xl font-bold">Billing</h1>
         <p className="mt-1 text-muted-foreground">Manage your plan and credits.</p>
@@ -53,17 +57,8 @@ export default async function BillingPage() {
         </div>
       </Card>
 
-      {/* Payment methods (placeholder — Phase 2) */}
+      {/* Payment methods */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-brand-600" />
-            <CardTitle>Card / Paddle</CardTitle>
-          </div>
-          <CardDescription className="mt-2">
-            Subscribe by card via Paddle — pick a plan below and check out securely.
-          </CardDescription>
-        </Card>
         <Card>
           <div className="flex items-center gap-2">
             <Bitcoin className="h-5 w-5 text-brand-600" />
@@ -71,6 +66,17 @@ export default async function BillingPage() {
           </div>
           <CardDescription className="mt-2">
             Pay with crypto via NOWPayments — use the crypto option on any plan below.
+          </CardDescription>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>Card / Paddle</CardTitle>
+          </div>
+          <CardDescription className="mt-2">
+            {paddleEnabled
+              ? "Subscribe by card via Paddle — pick a plan below and check out securely."
+              : "Card payments are coming soon (pending Paddle verification). Crypto is available now."}
           </CardDescription>
         </Card>
       </div>
@@ -109,14 +115,16 @@ export default async function BillingPage() {
                   </Button>
                 ) : (
                   <>
-                    <UpgradeButton
-                      priceId={PRICE_IDS[plan.id]}
-                      planId={plan.id}
-                      label={`Upgrade to ${plan.name}`}
-                      userId={user?.id ?? ""}
-                      email={user?.email ?? ""}
-                    />
-                    <CryptoButton planId={plan.id} />
+                    {paddleEnabled && (
+                      <UpgradeButton
+                        priceId={PRICE_IDS[plan.id]}
+                        planId={plan.id}
+                        label={`Upgrade to ${plan.name}`}
+                        userId={user?.id ?? ""}
+                        email={user?.email ?? ""}
+                      />
+                    )}
+                    <CryptoButton planId={plan.id} label={`Subscribe — $${plan.price}/mo in crypto`} />
                   </>
                 )}
               </Card>
