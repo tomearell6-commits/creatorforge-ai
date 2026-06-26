@@ -40,14 +40,23 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = await provider.synthesize({
-    text,
-    voiceId,
-    language,
-    accent,
-    speed: Number(speed) || 1,
-    pitch: Number(pitch) || 1,
-  });
+  let result;
+  try {
+    result = await provider.synthesize({
+      text,
+      voiceId,
+      language,
+      accent,
+      speed: Number(speed) || 1,
+      pitch: Number(pitch) || 1,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Voice generation failed";
+    return NextResponse.json(
+      { error: `Voice provider error: ${message}`, code: "provider_error" },
+      { status: 502 }
+    );
+  }
 
   // Upload the audio to Storage, then store the durable URL.
   let upload;
