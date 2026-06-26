@@ -36,7 +36,7 @@ export default async function RenderPage({
         <p className="mt-1 text-muted-foreground">Queue and monitor render jobs for your project.</p>
       </div>
       <ProjectPicker projects={projects} selectedId={selectedId} />
-      <RenderQueue projectId={selectedId} jobs={jobs ?? []} />
+      <RenderQueue projectId={selectedId} jobs={jobs ?? []} live={!!process.env.SHOTSTACK_API_KEY} />
     </div>
   );
 }

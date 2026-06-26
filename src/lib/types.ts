@@ -124,6 +124,7 @@ export type RenderJob = {
   logs: string;
   error: string | null;
   output_url: string | null;
+  provider_job_id: string | null;
   created_at: string;
   updated_at: string;
 };

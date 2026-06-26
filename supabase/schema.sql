@@ -355,6 +355,7 @@ create table if not exists public.render_jobs (
   logs              text not null default '',
   error             text,
   output_url        text,
+  provider_job_id   text,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );

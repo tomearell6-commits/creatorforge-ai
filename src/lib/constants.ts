@@ -78,6 +78,7 @@ export const CREDIT_COSTS = {
   voiceover: 2,
   image: 3,
   thumbnail: 3,
+  render: 5,
 } as const;
 
 /** Monthly credit allowance for a plan id (used when granting on payment). */

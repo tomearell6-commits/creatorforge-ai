@@ -53,6 +53,24 @@ stays on the free placeholders otherwise.
 Both real providers cost money per generation — meter usage with the credit system before
 a paid launch.
 
+### Final video render (Shotstack — Phase 4)
+
+Rendering an MP4 is too heavy for a Vercel request, so it's offloaded to **Shotstack**
+(`src/lib/media/render/shotstack.ts`):
+
+- `buildTimeline()` maps the project's ordered **scenes** (image clips with a zoom effect +
+  per-scene narration as **burned-in subtitle captions**) and the latest **voiceover** (audio
+  track) into a Shotstack timeline (1280×720 mp4).
+- `POST /api/render` submits the render (deducts `CREDIT_COSTS.render` = 5) and stores the
+  Shotstack render id on `render_jobs.provider_job_id`.
+- `PATCH /api/render {action:"advance"}` (driven by the Render Queue's poll) checks the real
+  Shotstack status; on completion it **downloads the MP4, re-uploads it to Supabase Storage**
+  (durable URL), adds it to the Asset Library as a `video` asset, and sets `output_url`.
+- Without `SHOTSTACK_API_KEY`, the queue falls back to the **placeholder** (simulated progress).
+
+Activate: set `SHOTSTACK_API_KEY` (+ `SHOTSTACK_ENV=stage` sandbox or `v1` production) and run
+`supabase/migrations/0005_phase4_render.sql`. Needs scenes with images and/or a voiceover.
+
 ### Placeholder behavior
 
 - **Voice** — synthesizes a short sine-tone WAV ([`src/lib/media/audio.ts`](../src/lib/media/audio.ts));
