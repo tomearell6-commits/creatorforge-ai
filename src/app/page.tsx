@@ -7,9 +7,22 @@ import { Card } from "@/components/ui/Card";
 import { NicheExplorer } from "@/components/marketing/NicheExplorer";
 import { CATEGORIES } from "@/lib/constants";
 
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "CreatorForge AI",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Web",
+  url: "https://www.creatorsforge.io",
+  description:
+    "AI platform to generate scripts, voiceovers, captions, and faceless videos — then publish them to social platforms and WordPress.",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
+
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
       <Navbar />
 
       <main className="flex-1">

@@ -9,6 +9,7 @@ import type { PublishJob, ScheduledPost } from "@/lib/types";
 import { getPublishProvider } from "./providers";
 import { emitNotification } from "@/lib/notifications";
 import { logEvent } from "@/lib/analytics";
+import { decryptSecret } from "@/lib/security/secrets";
 
 /** Account shape used for publishing — includes WordPress credentials. */
 type PublishAccount = {
@@ -48,7 +49,7 @@ export async function executePost(
         account: {
           externalId: account.external_id,
           accountName: account.account_name,
-          accessToken: account.access_token ?? null,
+          accessToken: decryptSecret(account.access_token ?? null),
           siteUrl: (account.metadata?.site_url as string) ?? null,
           username: account.account_handle ?? null,
         },

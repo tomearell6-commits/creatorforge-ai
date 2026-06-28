@@ -1,0 +1,25 @@
+# CreatorForge AI — local/prod container orchestration (Phase 8 — Module 8).
+# The web app is stateless; Supabase (Postgres/Auth/Storage), Shotstack rendering,
+# and provider APIs are managed services configured via environment variables.
+services:
+  web:
+    build: .
+    image: creatorforge-ai:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Background worker scaffold for future queue draining (scheduled publishing,
+  # render polling). Runs the same image with a worker entrypoint when added.
+  # worker:
+  #   build: .
+  #   command: ["node", "worker.js"]
+  #   env_file: [.env.local]
+  #   restart: unless-stopped

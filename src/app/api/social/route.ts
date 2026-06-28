@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatformConfigured } from "@/lib/publishing/providers";
 import { verifyWordPress, normalizeSite } from "@/lib/publishing/providers/wordpress";
+import { encryptSecret } from "@/lib/security/secrets";
+import { limitRequest } from "@/lib/security/ratelimit";
 import { PLATFORMS } from "@/lib/constants";
 import type { SocialPlatform } from "@/lib/types";
 
@@ -30,6 +32,9 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const rl = limitRequest(request, "social-connect", 20, 60_000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many attempts. Try again shortly." }, { status: 429 });
+
   const payload = (await request.json()) as {
     platform: SocialPlatform; siteUrl?: string; username?: string; appPassword?: string;
   };
@@ -56,7 +61,7 @@ export async function POST(request: Request) {
           account_name: verified.siteName,
           account_handle: username,
           external_id: site,
-          access_token: appPassword, // NOTE: encrypt at rest before launch
+          access_token: encryptSecret(appPassword), // encrypted at rest (AES-256-GCM)
           scope: "posts:write",
           status: "connected",
           last_synced_at: new Date().toISOString(),
