@@ -77,40 +77,50 @@ const openAIImageProvider: ImageProvider = {
  */
 const geminiImageProvider: ImageProvider = {
   id: "gemini",
-  name: "Google Imagen 4 (Gemini API)",
+  name: "Google Gemini / Imagen image generation",
   async generate(input: ImageGenInput) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
-    const model = process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
+    // Default to the free-tier-friendly Gemini 2.5 Flash Image ("Nano Banana").
+    // Override with GEMINI_IMAGE_MODEL=imagen-4.0-generate-001 (needs billing) for
+    // dedicated 16:9 Imagen output.
+    const model = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
+    const base = "https://generativelanguage.googleapis.com/v1beta/models";
 
     const w = input.width ?? 1280;
     const h = input.height ?? 720;
     const aspectRatio = w > h ? "16:9" : w < h ? "9:16" : "1:1";
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`,
-      {
+    // Imagen models use the :predict endpoint (aspectRatio param).
+    if (model.startsWith("imagen")) {
+      const res = await fetch(`${base}/${model}:predict?key=${apiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          instances: [{ prompt: input.prompt }],
-          parameters: { sampleCount: 1, aspectRatio },
-        }),
-      }
-    );
+        body: JSON.stringify({ instances: [{ prompt: input.prompt }], parameters: { sampleCount: 1, aspectRatio } }),
+      });
+      if (!res.ok) throw new Error(`Gemini (Imagen) error ${res.status}: ${await res.text()}`);
+      const json = (await res.json()) as { predictions?: { bytesBase64Encoded?: string; mimeType?: string }[] };
+      const pred = json.predictions?.[0];
+      if (!pred?.bytesBase64Encoded) throw new Error("Imagen response had no image data");
+      return { data: new Uint8Array(Buffer.from(pred.bytesBase64Encoded, "base64")), contentType: pred.mimeType || "image/png", width: w, height: h, provider: "gemini" };
+    }
+
+    // Gemini image models use :generateContent (image returned as inlineData).
+    const res = await fetch(`${base}/${model}:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${input.prompt}\n\nGenerate a ${aspectRatio} widescreen, high-quality, photorealistic image.` }] }],
+        generationConfig: { responseModalities: ["IMAGE"] },
+      }),
+    });
     if (!res.ok) throw new Error(`Gemini image error ${res.status}: ${await res.text()}`);
-
-    const json = (await res.json()) as { predictions?: { bytesBase64Encoded?: string; mimeType?: string }[] };
-    const pred = json.predictions?.[0];
-    if (!pred?.bytesBase64Encoded) throw new Error("Gemini image response had no image data");
-
-    return {
-      data: new Uint8Array(Buffer.from(pred.bytesBase64Encoded, "base64")),
-      contentType: pred.mimeType || "image/png",
-      width: w,
-      height: h,
-      provider: "gemini",
+    const json = (await res.json()) as {
+      candidates?: { content?: { parts?: { inlineData?: { data?: string; mimeType?: string } }[] } }[];
     };
+    const part = json.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
+    if (!part?.inlineData?.data) throw new Error("Gemini image response had no image data");
+    return { data: new Uint8Array(Buffer.from(part.inlineData.data, "base64")), contentType: part.inlineData.mimeType || "image/png", width: w, height: h, provider: "gemini" };
   },
 };
 
