@@ -12,6 +12,11 @@
 import type { PublishProvider, PublishInput, PublishResult } from "../types";
 import { CATEGORIES } from "@/lib/constants";
 
+// Some managed hosts (LiteSpeed/WAF) block REST requests without a browser-like
+// User-Agent. Send one on every WordPress call for compatibility.
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
 export function normalizeSite(url: string): string {
   let u = url.trim().replace(/\/+$/, "");
   if (!/^https?:\/\//i.test(u)) u = `https://${u}`;
@@ -38,14 +43,14 @@ export async function verifyWordPress(input: { siteUrl: string; username: string
   const site = normalizeSite(input.siteUrl);
   try {
     const me = await fetch(`${site}/wp-json/wp/v2/users/me?context=edit`, {
-      headers: { Authorization: basicAuth(input.username, input.appPassword) },
+      headers: { Authorization: basicAuth(input.username, input.appPassword), "User-Agent": UA },
     });
-    if (me.status === 401 || me.status === 403) return { ok: false, error: "Invalid username or application password." };
+    if (me.status === 401 || me.status === 403) return { ok: false, error: "Invalid username or application password (or the host is blocking the Authorization header — see WordPress setup notes)." };
     if (!me.ok) return { ok: false, error: `WordPress REST API not reachable (HTTP ${me.status}). Is the REST API enabled?` };
     const user = await me.json();
     let siteName = site;
     try {
-      const root = await fetch(`${site}/wp-json`);
+      const root = await fetch(`${site}/wp-json`, { headers: { "User-Agent": UA } });
       if (root.ok) siteName = (await root.json())?.name || site;
     } catch { /* non-fatal */ }
     return { ok: true, siteName, userName: user?.name || input.username };
@@ -58,7 +63,7 @@ export async function verifyWordPress(input: { siteUrl: string; username: string
 async function resolveTerm(site: string, auth: string, taxonomy: "categories" | "tags", name: string): Promise<number | null> {
   try {
     const found = await fetch(`${site}/wp-json/wp/v2/${taxonomy}?search=${encodeURIComponent(name)}`, {
-      headers: { Authorization: auth },
+      headers: { Authorization: auth, "User-Agent": UA },
     });
     if (found.ok) {
       const list = await found.json();
@@ -67,7 +72,7 @@ async function resolveTerm(site: string, auth: string, taxonomy: "categories" | 
     }
     const created = await fetch(`${site}/wp-json/wp/v2/${taxonomy}`, {
       method: "POST",
-      headers: { Authorization: auth, "Content-Type": "application/json" },
+      headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
       body: JSON.stringify({ name }),
     });
     if (created.ok) return (await created.json()).id;
@@ -89,6 +94,7 @@ async function uploadFeaturedImage(site: string, auth: string, imageUrl: string)
         Authorization: auth,
         "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="featured-${Date.now()}.${ext}"`,
+        "User-Agent": UA,
       },
       body: bytes,
     });
@@ -153,7 +159,7 @@ export function wordpressProvider(): PublishProvider {
       try {
         const res = await fetch(`${site}/wp-json/wp/v2/posts`, {
           method: "POST",
-          headers: { Authorization: auth, "Content-Type": "application/json" },
+          headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
           body: JSON.stringify(post),
         });
         if (!res.ok) {
