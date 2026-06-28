@@ -2,6 +2,7 @@
  * Static app configuration: content categories and pricing plans.
  * Kept in one place so UI, API, and database seed stay in sync.
  */
+import type { SocialPlatform, WorkspaceRole, Visibility, NotificationType } from "@/lib/types";
 
 export type Category = {
   slug: string;
@@ -206,3 +207,72 @@ export type LengthValue = (typeof LENGTHS)[number]["value"];
 
 export const DEFAULT_TONE: ToneValue = "engaging";
 export const DEFAULT_LENGTH: LengthValue = "medium";
+
+// =====================================================================
+// Phase 6: publishing platforms, roles, and option sets
+// =====================================================================
+
+export type PlatformMeta = {
+  id: SocialPlatform;
+  name: string;
+  emoji: string;
+  /** Whether real OAuth is wired (env client id present). Placeholder otherwise. */
+  envClientId: string;
+  color: string;
+};
+
+export const PLATFORMS: PlatformMeta[] = [
+  { id: "youtube",   name: "YouTube",        emoji: "▶️", envClientId: "YOUTUBE_CLIENT_ID",   color: "#FF0000" },
+  { id: "tiktok",    name: "TikTok",         emoji: "🎵", envClientId: "TIKTOK_CLIENT_ID",    color: "#000000" },
+  { id: "instagram", name: "Instagram",      emoji: "📸", envClientId: "INSTAGRAM_CLIENT_ID", color: "#E1306C" },
+  { id: "facebook",  name: "Facebook Pages", emoji: "📘", envClientId: "FACEBOOK_CLIENT_ID",  color: "#1877F2" },
+  { id: "linkedin",  name: "LinkedIn",       emoji: "💼", envClientId: "LINKEDIN_CLIENT_ID",  color: "#0A66C2" },
+  { id: "x",         name: "X (Twitter)",    emoji: "✖️", envClientId: "X_CLIENT_ID",         color: "#000000" },
+  { id: "pinterest", name: "Pinterest",      emoji: "📌", envClientId: "PINTEREST_CLIENT_ID", color: "#E60023" },
+];
+
+export const VISIBILITY_OPTIONS: { value: Visibility; label: string }[] = [
+  { value: "public",   label: "Public" },
+  { value: "unlisted", label: "Unlisted" },
+  { value: "private",  label: "Private" },
+];
+
+export const WORKSPACE_ROLES: { value: WorkspaceRole; label: string; desc: string }[] = [
+  { value: "owner",  label: "Owner",  desc: "Full control, billing, members." },
+  { value: "admin",  label: "Admin",  desc: "Manage members and all content." },
+  { value: "editor", label: "Editor", desc: "Create, edit, and publish content." },
+  { value: "viewer", label: "Viewer", desc: "Read-only access." },
+];
+
+/** Role capability map used for authorization on Phase 6 APIs. */
+export const ROLE_CAN: Record<WorkspaceRole, { manageMembers: boolean; publish: boolean; edit: boolean }> = {
+  owner:  { manageMembers: true,  publish: true,  edit: true },
+  admin:  { manageMembers: true,  publish: true,  edit: true },
+  editor: { manageMembers: false, publish: true,  edit: true },
+  viewer: { manageMembers: false, publish: false, edit: false },
+};
+
+export const NOTIFICATION_META: Record<NotificationType, { emoji: string; label: string }> = {
+  render_complete:      { emoji: "🎬", label: "Render complete" },
+  publish_success:      { emoji: "✅", label: "Published" },
+  publish_failed:       { emoji: "⚠️", label: "Publish failed" },
+  credits_low:          { emoji: "🪙", label: "Credits low" },
+  subscription_renewed: { emoji: "🔁", label: "Subscription renewed" },
+  storage_full:         { emoji: "💾", label: "Storage nearly full" },
+};
+
+export const AUTOMATION_TRIGGERS = [
+  { value: "render_complete",   label: "When a render completes" },
+  { value: "publish_success",   label: "When publishing succeeds" },
+  { value: "credits_low",       label: "When credits fall below a threshold" },
+  { value: "project_completed", label: "When a project is completed" },
+] as const;
+
+export const AUTOMATION_ACTIONS = [
+  { value: "schedule_publish", label: "Schedule publishing" },
+  { value: "notify",           label: "Notify the user" },
+  { value: "warn",             label: "Show a warning" },
+  { value: "archive",          label: "Archive after a period" },
+] as const;
+
+export const LOW_CREDITS_THRESHOLD = 10;

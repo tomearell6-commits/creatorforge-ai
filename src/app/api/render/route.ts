@@ -9,6 +9,9 @@ import {
 } from "@/lib/media/render/shotstack";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { CREDIT_COSTS } from "@/lib/constants";
+import { emitNotification } from "@/lib/notifications";
+import { logEvent } from "@/lib/analytics";
+import { runTrigger } from "@/lib/automation/engine";
 import type { Scene } from "@/lib/types";
 
 /**
@@ -268,5 +271,23 @@ export async function PATCH(request: Request) {
   }
 
   const { data } = await supabase.from("render_jobs").update(update).eq("id", id).select("*").single();
+
+  // First-time completion: notify, log analytics, fire automation rules.
+  if (update.status === "done" && !job.output_url) {
+    await emitNotification(supabase, {
+      userId: job.user_id,
+      type: "render_complete",
+      title: "Your video is ready",
+      body: "Render complete — saved to your Asset Library.",
+      link: "/dashboard/render",
+      metadata: { job_id: job.id },
+    });
+    await logEvent(supabase, { userId: job.user_id, eventType: "render", projectId: job.project_id });
+    await runTrigger(supabase, job.user_id, "render_complete", {
+      title: "Your video finished rendering.",
+      link: "/dashboard/render",
+    });
+  }
+
   return NextResponse.json({ job: data });
 }
