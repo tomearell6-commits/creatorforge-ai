@@ -21,9 +21,40 @@ export function isShotstackConfigured(): boolean {
 
 type Clip = Record<string, unknown>;
 
+/**
+ * A CreatorForge brand watermark overlay (HTML asset) for the whole timeline.
+ * Applied to free-plan renders so unpaid videos carry the brand; paid plans
+ * render clean. Sits on the top-most track, bottom-right corner.
+ */
+function brandWatermarkClip(totalLength: number): Clip {
+  return {
+    asset: {
+      type: "html",
+      html: "<div class='cf'><span class='dot'>&#9650;</span>CreatorForge&nbsp;AI</div>",
+      css:
+        ".cf{ display:flex; align-items:center; gap:8px; color:#ffffff; " +
+        "font-family:'Open Sans',sans-serif; font-size:22px; font-weight:700; " +
+        "text-shadow:0 1px 4px rgba(0,0,0,0.55); white-space:nowrap; } " +
+        ".dot{ color:#7c3aed; font-size:18px; }",
+      width: 320,
+      height: 44,
+      background: "transparent",
+    },
+    start: 0,
+    length: totalLength,
+    position: "bottomRight",
+    offset: { x: -0.02, y: 0.04 },
+    opacity: 0.9,
+  };
+}
+
 /** Build a Shotstack timeline from ordered scenes + an optional voiceover URL. */
-export function buildTimeline(opts: { scenes: Scene[]; voiceoverUrl?: string | null }) {
-  const { scenes, voiceoverUrl } = opts;
+export function buildTimeline(opts: {
+  scenes: Scene[];
+  voiceoverUrl?: string | null;
+  brand?: boolean;
+}) {
+  const { scenes, voiceoverUrl, brand } = opts;
   const imageClips: Clip[] = [];
   const captionClips: Clip[] = [];
   let t = 0;
@@ -53,7 +84,8 @@ export function buildTimeline(opts: { scenes: Scene[]; voiceoverUrl?: string | n
 
   const totalLength = Math.max(t, 1);
   const tracks: { clips: Clip[] }[] = [];
-  // First track renders on top → captions over images.
+  // First track renders on top. Brand watermark sits above everything (free plan).
+  if (brand) tracks.push({ clips: [brandWatermarkClip(totalLength)] });
   if (captionClips.length) tracks.push({ clips: captionClips });
   if (imageClips.length) tracks.push({ clips: imageClips });
   if (voiceoverUrl) {

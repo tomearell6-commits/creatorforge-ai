@@ -24,7 +24,8 @@ import type { Scene } from "@/lib/types";
 // Gather the project's scenes (ordered) + latest voiceover, and submit to Shotstack.
 async function submitProjectRender(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  projectId: string
+  projectId: string,
+  brand: boolean
 ): Promise<{ id: string } | { error: string; status: number }> {
   const { data: scenes } = await supabase
     .from("scenes")
@@ -52,9 +53,18 @@ async function submitProjectRender(
     };
   }
 
-  const spec = buildTimeline({ scenes: scenes as Scene[], voiceoverUrl: voiceover?.audio_url });
+  const spec = buildTimeline({ scenes: scenes as Scene[], voiceoverUrl: voiceover?.audio_url, brand });
   const id = await submitRender(spec);
   return { id };
+}
+
+/** Free plans get the CreatorForge watermark on renders; paid plans render clean. */
+async function isFreePlan(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase.from("profiles").select("plan").eq("user_id", userId).maybeSingle();
+  return (data?.plan ?? "free") === "free";
 }
 
 export async function POST(request: Request) {
@@ -103,7 +113,7 @@ export async function POST(request: Request) {
 
   let renderId: string;
   try {
-    const result = await submitProjectRender(supabase, projectId);
+    const result = await submitProjectRender(supabase, projectId, await isFreePlan(supabase, user.id));
     if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
     renderId = result.id;
   } catch (err) {
@@ -153,7 +163,7 @@ export async function PATCH(request: Request) {
   if (action === "retry") {
     if (isShotstackConfigured() && job.project_id) {
       try {
-        const result = await submitProjectRender(supabase, job.project_id);
+        const result = await submitProjectRender(supabase, job.project_id, await isFreePlan(supabase, user.id));
         if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
         const { data } = await supabase
           .from("render_jobs")
