@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { PLATFORMS } from "@/lib/constants";
 import type { SocialAccount, SocialPlatform } from "@/lib/types";
 
@@ -17,6 +18,9 @@ export function SocialAccounts() {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [wpOpen, setWpOpen] = useState(false);
+  const [wp, setWp] = useState({ siteUrl: "", username: "", appPassword: "" });
+  const [wpError, setWpError] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/social");
@@ -42,6 +46,21 @@ export function SocialAccounts() {
   async function disconnect(id: string) {
     setBusy(id);
     await fetch(`/api/social/${id}`, { method: "DELETE" });
+    await load();
+    setBusy(null);
+  }
+
+  async function connectWordPress() {
+    setBusy("wordpress"); setWpError(null);
+    const res = await fetch("/api/social", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ platform: "wordpress", ...wp }),
+    });
+    const json = await res.json();
+    if (!res.ok) { setWpError(json.error ?? "Failed to connect"); setBusy(null); return; }
+    setWp({ siteUrl: "", username: "", appPassword: "" });
+    setWpOpen(false);
     await load();
     setBusy(null);
   }
@@ -92,12 +111,31 @@ export function SocialAccounts() {
                       Disconnect
                     </Button>
                   </>
+                ) : p.connectType === "credentials" ? (
+                  <Button size="sm" onClick={() => setWpOpen((v) => !v)}>
+                    {wpOpen ? "Cancel" : "Connect"}
+                  </Button>
                 ) : (
                   <Button size="sm" disabled={busy === p.id} onClick={() => connect(p.id)}>
                     {busy === p.id ? "Connecting…" : "Connect"}
                   </Button>
                 )}
               </div>
+
+              {!acc && p.connectType === "credentials" && wpOpen && (
+                <div className="mt-3 space-y-2 border-t border-border pt-3">
+                  <p className="text-xs text-muted-foreground">
+                    In WordPress: <strong>Users → Profile → Application Passwords</strong> → add one named “CreatorForge”, then paste it below.
+                  </p>
+                  <Input value={wp.siteUrl} onChange={(e) => setWp({ ...wp, siteUrl: e.target.value })} placeholder="https://yourblog.com" />
+                  <Input value={wp.username} onChange={(e) => setWp({ ...wp, username: e.target.value })} placeholder="WordPress username" />
+                  <Input value={wp.appPassword} onChange={(e) => setWp({ ...wp, appPassword: e.target.value })} placeholder="Application password (xxxx xxxx xxxx)" />
+                  <Button size="sm" disabled={busy === "wordpress"} onClick={connectWordPress}>
+                    {busy === "wordpress" ? "Verifying…" : "Connect WordPress"}
+                  </Button>
+                  {wpError && <p className="text-xs text-red-600">{wpError}</p>}
+                </div>
+              )}
             </Card>
           );
         })}

@@ -110,3 +110,23 @@ members; member management is admin/owner only (enforced both in RLS and in the 
 via `can(...)`). Admin analytics is gated by `ADMIN_EMAILS` and uses the service-role
 client only after that check. **Access tokens in `social_accounts` should be
 encrypted at rest before a real launch.**
+
+## WordPress (real blog publishing)
+
+WordPress is a **real** publish provider (not placeholder) for SEO auto-blogging.
+
+- **Connect:** Social Accounts → WordPress → enter **Site URL + WP username +
+  Application Password** (WordPress 5.6+: Users → Profile → Application Passwords).
+  Verified via `GET /wp-json/wp/v2/users/me` (Basic auth); credentials stored on
+  the `social_accounts` row (`access_token` = app password, `metadata.site_url`).
+  The app password is **revocable** in WP and never returned to the browser.
+- **Publish:** `lib/publishing/providers/wordpress.ts` POSTs to
+  `/wp-json/wp/v2/posts`. The post **title** = job title, **content** = the
+  project's latest generated article/script (plain text auto-wrapped to HTML),
+  **excerpt** = description, **status** = publish (public) / draft (unlisted) /
+  private. Returns the live post URL.
+- **Flow:** generate a Blog-Posts script → AI optimize → select WordPress in the
+  Publishing Center → Publish now / schedule. Works with the Phase 6 scheduler &
+  automation for hands-off daily posting.
+- **Roadmap:** map tags/categories to WP term IDs, upload featured image via the
+  media endpoint, and write Yoast/Rank Math SEO meta. Encrypt the app password at rest.

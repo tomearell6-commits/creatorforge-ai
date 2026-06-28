@@ -5,16 +5,26 @@
  * scheduler/cron that drains due scheduled_posts.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { PublishJob, ScheduledPost, SocialAccount } from "@/lib/types";
+import type { PublishJob, ScheduledPost } from "@/lib/types";
 import { getPublishProvider } from "./providers";
 import { emitNotification } from "@/lib/notifications";
 import { logEvent } from "@/lib/analytics";
+
+/** Account shape used for publishing — includes WordPress credentials. */
+type PublishAccount = {
+  external_id: string | null;
+  account_name: string | null;
+  account_handle?: string | null;
+  access_token?: string | null;
+  metadata?: Record<string, unknown> | null;
+} | null;
 
 export async function executePost(
   supabase: SupabaseClient,
   job: PublishJob,
   post: ScheduledPost,
-  account: Pick<SocialAccount, "external_id" | "account_name"> | null
+  account: PublishAccount,
+  articleHtml?: string | null
 ): Promise<{ status: "published" | "failed"; error?: string }> {
   await supabase.from("scheduled_posts").update({ status: "publishing" }).eq("id", post.id);
 
@@ -28,13 +38,20 @@ export async function executePost(
         videoUrl: job.video_url ?? "",
         title: job.title,
         description: job.description,
+        articleHtml: articleHtml ?? null,
         hashtags: job.hashtags,
         tags: job.tags,
         thumbnailUrl: job.thumbnail_url,
         playlist: job.playlist,
         category: job.category,
         visibility: job.visibility,
-        account: { externalId: account.external_id, accountName: account.account_name },
+        account: {
+          externalId: account.external_id,
+          accountName: account.account_name,
+          accessToken: account.access_token ?? null,
+          siteUrl: (account.metadata?.site_url as string) ?? null,
+          username: account.account_handle ?? null,
+        },
       });
     } catch (err) {
       result = { status: "failed" as const, error: err instanceof Error ? err.message : "Publish failed" };

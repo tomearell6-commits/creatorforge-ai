@@ -219,6 +219,10 @@ export type PlatformMeta = {
   /** Whether real OAuth is wired (env client id present). Placeholder otherwise. */
   envClientId: string;
   color: string;
+  /** How the platform is connected: OAuth (default) or credential form (WordPress). */
+  connectType?: "oauth" | "credentials";
+  /** WordPress publishes blog articles, not videos. */
+  kind?: "video" | "blog";
 };
 
 export const PLATFORMS: PlatformMeta[] = [
@@ -229,6 +233,7 @@ export const PLATFORMS: PlatformMeta[] = [
   { id: "linkedin",  name: "LinkedIn",       emoji: "💼", envClientId: "LINKEDIN_CLIENT_ID",  color: "#0A66C2" },
   { id: "x",         name: "X (Twitter)",    emoji: "✖️", envClientId: "X_CLIENT_ID",         color: "#000000" },
   { id: "pinterest", name: "Pinterest",      emoji: "📌", envClientId: "PINTEREST_CLIENT_ID", color: "#E60023" },
+  { id: "wordpress", name: "WordPress",      emoji: "📝", envClientId: "WORDPRESS_UNUSED",    color: "#21759B", connectType: "credentials", kind: "blog" },
 ];
 
 export const VISIBILITY_OPTIONS: { value: Visibility; label: string }[] = [

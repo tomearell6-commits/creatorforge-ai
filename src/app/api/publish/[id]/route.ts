@@ -31,15 +31,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const platforms = posts.map((p) => p.platform);
   const { data: accounts } = await supabase
     .from("social_accounts")
-    .select("id, platform, external_id, account_name")
+    .select("id, platform, external_id, account_name, account_handle, access_token, metadata")
     .in("platform", platforms)
     .eq("status", "connected");
+
+  let articleHtml: string | null = null;
+  if (platforms.includes("wordpress") && job.project_id) {
+    const { data: script } = await supabase
+      .from("generated_scripts")
+      .select("content")
+      .eq("project_id", job.project_id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    articleHtml = script?.content ?? null;
+  }
 
   let anyFailed = false;
   for (const post of posts as ScheduledPost[]) {
     if (action === "retry" && post.status === "published") continue;
     const acc = accounts?.find((a) => a.platform === post.platform) ?? null;
-    const r = await executePost(supabase, job as PublishJob, post, acc);
+    const r = await executePost(supabase, job as PublishJob, post, acc, articleHtml);
     if (r.status === "failed") anyFailed = true;
   }
   await supabase

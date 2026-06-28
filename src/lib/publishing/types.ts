@@ -13,6 +13,8 @@ export type PublishInput = {
   videoUrl: string;
   title: string;
   description: string;
+  /** Full article body (HTML or text) for blog targets like WordPress. */
+  articleHtml?: string | null;
   hashtags: string[];
   tags: string[];
   thumbnailUrl?: string | null;
@@ -23,6 +25,9 @@ export type PublishInput = {
     accessToken?: string | null;
     externalId?: string | null;
     accountName?: string | null;
+    /** WordPress credential fields. */
+    siteUrl?: string | null;
+    username?: string | null;
   };
 };
 

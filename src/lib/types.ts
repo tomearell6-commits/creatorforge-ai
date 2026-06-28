@@ -134,7 +134,8 @@ export type RenderJob = {
 // =====================================================================
 
 export type SocialPlatform =
-  | "youtube" | "tiktok" | "instagram" | "facebook" | "linkedin" | "x" | "pinterest";
+  | "youtube" | "tiktok" | "instagram" | "facebook" | "linkedin" | "x" | "pinterest"
+  | "wordpress";
 
 export type SocialAccount = {
   id: string;

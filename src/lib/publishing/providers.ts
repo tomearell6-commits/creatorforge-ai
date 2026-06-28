@@ -9,6 +9,7 @@
 import type { SocialPlatform } from "@/lib/types";
 import type { PublishProvider, PublishInput, PublishResult } from "./types";
 import { PLATFORMS } from "@/lib/constants";
+import { wordpressProvider } from "./providers/wordpress";
 
 /** A platform is "configured" for real publishing when its client id + secret exist. */
 export function isPlatformConfigured(platform: SocialPlatform): boolean {
@@ -37,7 +38,9 @@ function placeholderProvider(platform: SocialPlatform): PublishProvider {
 }
 
 export function getPublishProvider(platform: SocialPlatform): PublishProvider {
-  // Real providers would be returned here when isPlatformConfigured(platform).
+  // WordPress is a real provider (REST API + application password on the account).
+  if (platform === "wordpress") return wordpressProvider();
+  // Other platforms: real providers would be returned when isPlatformConfigured(platform).
   // e.g. case "youtube": if (isPlatformConfigured("youtube")) return youtubeProvider();
   return placeholderProvider(platform);
 }

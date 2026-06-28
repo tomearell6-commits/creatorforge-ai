@@ -84,9 +84,22 @@ export async function POST(request: Request) {
   // One scheduled_post per selected platform, linked to the connected account.
   const { data: accounts } = await supabase
     .from("social_accounts")
-    .select("id, platform, external_id, account_name")
+    .select("id, platform, external_id, account_name, account_handle, access_token, metadata")
     .in("platform", body.platforms)
     .eq("status", "connected");
+
+  // For WordPress (blog) targets, publish the project's latest article/script.
+  let articleHtml: string | null = null;
+  if (body.platforms.includes("wordpress") && body.projectId) {
+    const { data: script } = await supabase
+      .from("generated_scripts")
+      .select("content")
+      .eq("project_id", body.projectId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    articleHtml = script?.content ?? null;
+  }
 
   const postStatus = body.mode === "draft" ? "draft" : body.mode === "schedule" ? "scheduled" : "publishing";
   const rows = body.platforms.map((platform) => {
@@ -108,7 +121,7 @@ export async function POST(request: Request) {
     let anyFailed = false;
     for (const post of posts as ScheduledPost[]) {
       const acc = accounts?.find((a) => a.platform === post.platform) ?? null;
-      const r = await executePost(supabase, job as PublishJob, post, acc);
+      const r = await executePost(supabase, job as PublishJob, post, acc, articleHtml);
       if (r.status === "failed") anyFailed = true;
     }
     await supabase
