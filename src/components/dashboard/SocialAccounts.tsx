@@ -14,13 +14,37 @@ function statusBadge(a: SocialAccount) {
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{label}</span>;
 }
 
-export function SocialAccounts() {
+const ERROR_MESSAGES: Record<string, string> = {
+  invalid_callback: "The connection link was invalid or expired. Please try again.",
+  not_configured: "That platform isn't configured yet (missing API credentials).",
+  access_denied: "You declined the authorization request.",
+};
+
+function prettyPlatform(id?: string) {
+  return PLATFORMS.find((p) => p.id === id)?.name ?? id ?? "the platform";
+}
+
+export function SocialAccounts({ connected, error }: { connected?: string; error?: string } = {}) {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [wpOpen, setWpOpen] = useState(false);
   const [wp, setWp] = useState({ siteUrl: "", username: "", appPassword: "" });
   const [wpError, setWpError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<{ kind: "ok" | "error"; text: string } | null>(
+    connected
+      ? { kind: "ok", text: `${prettyPlatform(connected)} connected successfully.` }
+      : error
+        ? { kind: "error", text: ERROR_MESSAGES[error] ?? `Couldn't connect ${prettyPlatform(error.replace(/_connect_failed$/, ""))}. Please try again.` }
+        : null
+  );
+
+  // Clean the ?connected=/?error= params from the URL after showing the banner.
+  useEffect(() => {
+    if ((connected || error) && typeof window !== "undefined") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [connected, error]);
 
   async function load() {
     const res = await fetch("/api/social");
@@ -80,6 +104,18 @@ export function SocialAccounts() {
 
   return (
     <div className="space-y-6">
+      {banner && (
+        <div
+          className={`flex items-center justify-between rounded-lg border p-3 text-sm ${
+            banner.kind === "ok"
+              ? "border-green-300 bg-green-50 text-green-700 dark:bg-green-900/20"
+              : "border-red-300 bg-red-50 text-red-700 dark:bg-red-900/20"
+          }`}
+        >
+          <span>{banner.kind === "ok" ? "✅ " : "⚠️ "}{banner.text}</span>
+          <button className="text-xs opacity-70 hover:opacity-100" onClick={() => setBanner(null)}>Dismiss</button>
+        </div>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {PLATFORMS.map((p) => {
           const acc = connectedBy.get(p.id);

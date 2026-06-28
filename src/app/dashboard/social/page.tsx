@@ -2,7 +2,12 @@ import { SocialAccounts } from "@/components/dashboard/SocialAccounts";
 
 export const metadata = { title: "Social Accounts" };
 
-export default function SocialPage() {
+export default async function SocialPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ connected?: string; error?: string }>;
+}) {
+  const { connected, error } = await searchParams;
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
@@ -11,7 +16,7 @@ export default function SocialPage() {
           Connect the platforms you publish to. Connections, status, and expiry are shown per account.
         </p>
       </div>
-      <SocialAccounts />
+      <SocialAccounts connected={connected} error={error} />
     </div>
   );
 }

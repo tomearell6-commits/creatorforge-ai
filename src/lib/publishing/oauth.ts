@@ -79,7 +79,7 @@ export function buildAuthorizeUrl(platform: SocialPlatform, state: string): { ur
       const { verifier, challenge } = pkce();
       const p = new URLSearchParams({
         response_type: "code", client_id: id!, redirect_uri: rd, state,
-        scope: "tweet.read tweet.write users.read offline.access",
+        scope: "tweet.read tweet.write users.read media.write offline.access",
         code_challenge: challenge, code_challenge_method: "S256",
       });
       return { url: `https://twitter.com/i/oauth2/authorize?${p}`, verifier };
@@ -158,6 +158,75 @@ export async function oauthExchange(
 // =====================================================================
 function caption(input: PublishInput): string {
   return [input.title, input.description, input.hashtags.join(" ")].filter(Boolean).join("\n\n").trim();
+}
+
+const X_UPLOAD = "https://upload.twitter.com/1.1/media/upload.json";
+
+/**
+ * Chunked video upload to X (v1.1 media/upload, OAuth2 user token + media.write):
+ * INIT → APPEND (4 MB chunks) → FINALIZE → poll STATUS. Returns the media_id, or
+ * null if anything fails (caller falls back to a text-only post).
+ */
+async function uploadXVideo(token: string, videoUrl: string): Promise<string | null> {
+  try {
+    const vid = await fetch(videoUrl);
+    if (!vid.ok) return null;
+    const bytes = Buffer.from(await vid.arrayBuffer());
+    const auth = { Authorization: `Bearer ${token}` };
+
+    // INIT
+    const init = await fetch(X_UPLOAD, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        command: "INIT", total_bytes: String(bytes.length), media_type: "video/mp4", media_category: "tweet_video",
+      }),
+    });
+    if (!init.ok) return null;
+    const mediaId = (await init.json()).media_id_string as string;
+
+    // APPEND (4 MB segments, multipart/form-data)
+    const chunkSize = 4 * 1024 * 1024;
+    for (let i = 0, seg = 0; i < bytes.length; i += chunkSize, seg++) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      const boundary = `xb${Date.now()}${seg}`;
+      const pre = Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="command"\r\n\r\nAPPEND\r\n` +
+        `--${boundary}\r\nContent-Disposition: form-data; name="media_id"\r\n\r\n${mediaId}\r\n` +
+        `--${boundary}\r\nContent-Disposition: form-data; name="segment_index"\r\n\r\n${seg}\r\n` +
+        `--${boundary}\r\nContent-Disposition: form-data; name="media"; filename="chunk"\r\n` +
+        `Content-Type: application/octet-stream\r\n\r\n`
+      );
+      const post = Buffer.from(`\r\n--${boundary}--\r\n`);
+      const res = await fetch(X_UPLOAD, {
+        method: "POST",
+        headers: { ...auth, "Content-Type": `multipart/form-data; boundary=${boundary}` },
+        body: Buffer.concat([pre, chunk, post]),
+      });
+      if (!res.ok) return null;
+    }
+
+    // FINALIZE
+    const fin = await fetch(X_UPLOAD, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ command: "FINALIZE", media_id: mediaId }),
+    });
+    if (!fin.ok) return null;
+    let info = (await fin.json()).processing_info;
+
+    // Poll STATUS until video processing completes.
+    for (let tries = 0; info && info.state !== "succeeded" && tries < 15; tries++) {
+      if (info.state === "failed") return null;
+      await new Promise((r) => setTimeout(r, Math.min((info.check_after_secs ?? 2) * 1000, 5000)));
+      const st = await fetch(`${X_UPLOAD}?command=STATUS&media_id=${mediaId}`, { headers: auth });
+      if (!st.ok) return null;
+      info = (await st.json()).processing_info;
+    }
+    return mediaId;
+  } catch {
+    return null;
+  }
 }
 
 function makeProvider(platform: SocialPlatform): PublishProvider {
@@ -239,10 +308,14 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             return { status: "published", externalPostId: j.data?.publish_id ?? "", externalUrl: undefined };
           }
           case "x": {
-            const text = [input.title, input.videoUrl].filter(Boolean).join(" ").slice(0, 280);
+            // Try a chunked video upload; fall back to a text post with the link.
+            const mediaId = input.videoUrl ? await uploadXVideo(token, input.videoUrl) : null;
+            const tweet: Record<string, unknown> = mediaId
+              ? { text: caption(input).slice(0, 280), media: { media_ids: [mediaId] } }
+              : { text: [input.title, input.videoUrl].filter(Boolean).join(" ").slice(0, 280) };
             const res = await fetch("https://api.twitter.com/2/tweets", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-              body: JSON.stringify({ text }),
+              body: JSON.stringify(tweet),
             });
             const j = await res.json();
             if (!res.ok) return { status: "failed", error: `X ${res.status}: ${JSON.stringify(j).slice(0, 160)}` };
