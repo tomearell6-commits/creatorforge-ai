@@ -276,3 +276,40 @@ export const AUTOMATION_ACTIONS = [
 ] as const;
 
 export const LOW_CREDITS_THRESHOLD = 10;
+
+// =====================================================================
+// Phase 7: enterprise / admin / business operations
+// =====================================================================
+
+/** Admin portal navigation (separate from the user dashboard). */
+export const ADMIN_NAV = [
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/subscriptions", label: "Subscriptions" },
+  { href: "/admin/support", label: "Support Tickets" },
+  { href: "/admin/monitoring", label: "Platform Health" },
+  { href: "/admin/audit", label: "Audit Logs" },
+  { href: "/admin/settings", label: "System Settings" },
+];
+
+export const TICKET_STATUSES = ["open", "pending", "resolved", "closed"] as const;
+export const TICKET_PRIORITIES = ["low", "normal", "high", "urgent"] as const;
+export const TICKET_CATEGORIES = ["Billing", "Technical", "Publishing", "Account", "Feature request", "Other"] as const;
+
+export const API_SCOPES = [
+  { value: "scripts:read", label: "Read scripts" },
+  { value: "scripts:write", label: "Generate scripts" },
+  { value: "media:write", label: "Generate media" },
+  { value: "publish:write", label: "Publish content" },
+  { value: "analytics:read", label: "Read analytics" },
+] as const;
+
+/** Auditable actions (kept in one place so logs/filters stay consistent). */
+export const AUDIT_ACTIONS = [
+  "auth.login", "auth.logout", "project.created", "content.published",
+  "payment.completed", "credits.changed", "role.changed", "subscription.updated",
+  "apikey.created", "apikey.revoked", "workspace.modified", "user.suspended", "user.activated",
+] as const;
+
+export const DEFAULT_AFFILIATE_RATE = 0.3; // 30% commission
+export const REFERRAL_REWARD_CREDITS = 50; // credits granted when a referral converts

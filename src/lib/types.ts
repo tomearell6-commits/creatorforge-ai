@@ -287,3 +287,127 @@ export type ActivityLog = {
   metadata: Record<string, unknown>;
   created_at: string;
 };
+
+// =====================================================================
+// Phase 7: enterprise, admin, affiliate/referral, API, support, audit
+// =====================================================================
+
+export type AdminRole = "super_admin" | "admin" | "support";
+export type AdminUser = { id: string; user_id: string; role: AdminRole; created_at: string };
+
+export type Referral = {
+  id: string;
+  referrer_id: string;
+  referred_user_id: string | null;
+  code: string;
+  status: "pending" | "converted";
+  reward_credits: number;
+  created_at: string;
+};
+
+export type ReferralReward = {
+  id: string;
+  user_id: string;
+  referral_id: string | null;
+  type: "credits" | "cash";
+  amount: number;
+  status: "pending" | "granted" | "paid";
+  created_at: string;
+};
+
+export type AffiliateAccount = {
+  id: string;
+  user_id: string;
+  code: string;
+  status: "pending" | "active" | "suspended";
+  commission_rate: number;
+  payout_method: string | null;
+  balance: number;
+  created_at: string;
+};
+
+export type AffiliateCommission = {
+  id: string;
+  affiliate_id: string;
+  referred_user_id: string | null;
+  amount: number;
+  status: "pending" | "approved" | "paid";
+  source: string | null;
+  created_at: string;
+};
+
+export type ApiKey = {
+  id: string;
+  user_id: string;
+  name: string;
+  key_prefix: string;
+  scopes: string[];
+  rate_limit: number;
+  request_count: number;
+  last_used_at: string | null;
+  revoked: boolean;
+  created_at: string;
+};
+
+export type TicketStatus = "open" | "pending" | "resolved" | "closed";
+export type TicketPriority = "low" | "normal" | "high" | "urgent";
+
+export type SupportTicket = {
+  id: string;
+  user_id: string;
+  subject: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  category: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SupportMessage = {
+  id: string;
+  ticket_id: string;
+  user_id: string;
+  is_staff: boolean;
+  body: string;
+  attachments: unknown[];
+  created_at: string;
+};
+
+export type AuditLog = {
+  id: string;
+  user_id: string | null;
+  actor_email: string | null;
+  action: string;
+  target_type: string | null;
+  target_id: string | null;
+  ip: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type PlatformNotification = {
+  id: string;
+  audience: "all" | "admins" | "user";
+  user_id: string | null;
+  title: string;
+  body: string | null;
+  level: "info" | "warning" | "critical";
+  created_at: string;
+};
+
+export type BillingEvent = {
+  id: string;
+  user_id: string | null;
+  type: "payment" | "refund" | "renewal" | "chargeback";
+  amount: number;
+  currency: string;
+  provider: string | null;
+  provider_ref: string | null;
+  status: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type FeatureFlag = { key: string; enabled: boolean; description: string | null; rollout: Record<string, unknown>; updated_at: string };
+
+export type WhiteLabelConfig = { brandName: string; brandColor: string; logoUrl: string | null; customDomain?: string | null; emailFrom?: string | null };

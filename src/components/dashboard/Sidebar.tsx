@@ -22,6 +22,12 @@ import {
   Users,
   Workflow,
   ShieldCheck,
+  KeyRound,
+  LifeBuoy,
+  Gift,
+  Handshake,
+  Palette,
+  Crown,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -55,10 +61,21 @@ const NAV_GROUPS: { heading?: string; items: { href: string; label: string; icon
     ],
   },
   {
+    heading: "Business",
+    items: [
+      { href: "/dashboard/api", label: "API Center", icon: KeyRound },
+      { href: "/dashboard/referrals", label: "Referrals", icon: Gift },
+      { href: "/dashboard/affiliate", label: "Affiliate Center", icon: Handshake },
+      { href: "/dashboard/white-label", label: "White Label", icon: Palette },
+      { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
+    ],
+  },
+  {
     heading: "Account",
     items: [
       { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
+      { href: "/admin", label: "Admin Portal", icon: Crown },
     ],
   },
 ];
