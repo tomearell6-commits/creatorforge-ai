@@ -83,6 +83,24 @@ export function RenderQueue({
     else setError(data.error || "Retry failed.");
   }
 
+  // Cross-origin URLs ignore <a download>; fetch as a blob to force a real download.
+  async function downloadFile(url: string, filename: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -143,13 +161,13 @@ export function RenderQueue({
                 <div className="space-y-2">
                   {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                   <video controls src={job.output_url!} className="w-full rounded-lg bg-black" />
-                  <a
-                    href={job.output_url!}
-                    download={`creatorforge-${job.id}.mp4`}
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(job.output_url!, `creatorforge-${job.id}.mp4`)}
                     className="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline"
                   >
                     <Download className="h-4 w-4" /> Download MP4
-                  </a>
+                  </button>
                 </div>
               )}
 

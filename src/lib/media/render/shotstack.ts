@@ -59,15 +59,18 @@ export function buildTimeline(opts: {
   const captionClips: Clip[] = [];
   let t = 0;
 
-  for (const s of scenes) {
+  // Alternate Ken Burns moves so the video feels dynamic instead of a static zoom.
+  const motions = ["zoomIn", "slideLeft", "zoomOut", "slideRight", "zoomIn", "slideUp"];
+
+  scenes.forEach((s, i) => {
     const len = Math.max(2, Number(s.duration) || 4);
     if (s.image_url) {
       imageClips.push({
         asset: { type: "image", src: s.image_url },
         start: Number(t.toFixed(2)),
         length: len,
-        effect: "zoomIn",
-        transition: { in: "fade", out: "fade" },
+        effect: motions[i % motions.length],
+        transition: { in: i === 0 ? "fade" : "slideLeft", out: "fade" },
       });
     }
     const caption = (s.text || "").trim().replace(/\s+/g, " ").slice(0, 120);
@@ -80,7 +83,7 @@ export function buildTimeline(opts: {
       });
     }
     t += len;
-  }
+  });
 
   const totalLength = Math.max(t, 1);
   const tracks: { clips: Clip[] }[] = [];

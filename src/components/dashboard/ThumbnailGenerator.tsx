@@ -27,6 +27,25 @@ export function ThumbnailGenerator({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Cross-origin (Supabase) URLs ignore the <a download> attribute, so fetch the
+  // image as a blob and trigger a real download.
+  async function downloadImage(url: string, filename: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  }
+
   async function generate() {
     setError(null);
     setLoading(true);
@@ -98,13 +117,13 @@ export function ThumbnailGenerator({
                 <div className="flex items-center justify-between">
                   <span className="text-xs capitalize text-muted-foreground">{t.style}</span>
                   {t.image_url && (
-                    <a
-                      href={t.image_url}
-                      download={`thumbnail-${t.id}.jpg`}
+                    <button
+                      type="button"
+                      onClick={() => downloadImage(t.image_url!, `thumbnail-${t.id}.jpg`)}
                       className="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline"
                     >
                       <Download className="h-4 w-4" /> Download
-                    </a>
+                    </button>
                   )}
                 </div>
               </Card>
