@@ -68,11 +68,59 @@ const openAIImageProvider: ImageProvider = {
   },
 };
 
+/**
+ * Google image provider via the Gemini API. Default model: Imagen 4
+ * (imagen-4.0-generate-001) using the :predict endpoint, which supports real
+ * aspect ratios (16:9 / 9:16 / 1:1) — ideal for video scenes. Override the model
+ * with GEMINI_IMAGE_MODEL (e.g. gemini-2.5-flash-image). Activated by
+ * IMAGE_PROVIDER=gemini + GEMINI_API_KEY.
+ */
+const geminiImageProvider: ImageProvider = {
+  id: "gemini",
+  name: "Google Imagen 4 (Gemini API)",
+  async generate(input: ImageGenInput) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+    const model = process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
+
+    const w = input.width ?? 1280;
+    const h = input.height ?? 720;
+    const aspectRatio = w > h ? "16:9" : w < h ? "9:16" : "1:1";
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instances: [{ prompt: input.prompt }],
+          parameters: { sampleCount: 1, aspectRatio },
+        }),
+      }
+    );
+    if (!res.ok) throw new Error(`Gemini image error ${res.status}: ${await res.text()}`);
+
+    const json = (await res.json()) as { predictions?: { bytesBase64Encoded?: string; mimeType?: string }[] };
+    const pred = json.predictions?.[0];
+    if (!pred?.bytesBase64Encoded) throw new Error("Gemini image response had no image data");
+
+    return {
+      data: new Uint8Array(Buffer.from(pred.bytesBase64Encoded, "base64")),
+      contentType: pred.mimeType || "image/png",
+      width: w,
+      height: h,
+      provider: "gemini",
+    };
+  },
+};
+
 /** Resolve the active image provider from IMAGE_PROVIDER (default: placeholder). */
 export function getImageProvider(): ImageProvider {
   switch (process.env.IMAGE_PROVIDER) {
     case "openai":
       return openAIImageProvider;
+    case "gemini":
+      return geminiImageProvider;
     default:
       return placeholderImageProvider;
   }
