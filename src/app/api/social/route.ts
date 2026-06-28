@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatformConfigured } from "@/lib/publishing/providers";
 import { verifyWordPress, normalizeSite } from "@/lib/publishing/providers/wordpress";
+import { youtubeAuthorizeUrl, isYouTubeConfigured } from "@/lib/publishing/providers/youtube";
 import { encryptSecret } from "@/lib/security/secrets";
-import { limitRequest } from "@/lib/security/ratelimit";
+import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { PLATFORMS } from "@/lib/constants";
 import type { SocialPlatform } from "@/lib/types";
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const rl = limitRequest(request, "social-connect", 20, 60_000);
+  const rl = await limitRequestAsync(request, "social-connect", 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many attempts. Try again shortly." }, { status: 429 });
 
   const payload = (await request.json()) as {
@@ -76,13 +77,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ mode: "wordpress", account: data });
   }
 
-  // Real OAuth path (when client id/secret configured): return authorize URL.
+  // YouTube: real Google OAuth2 flow.
+  if (platform === "youtube" && isYouTubeConfigured()) {
+    return NextResponse.json({ mode: "oauth", authorizeUrl: youtubeAuthorizeUrl(user.id) });
+  }
+
+  // Other OAuth platforms (when configured) — real flow not yet implemented.
   if (isPlatformConfigured(platform)) {
-    const redirect = `${process.env.NEXT_PUBLIC_APP_URL}/api/social/callback?platform=${platform}`;
-    return NextResponse.json({
-      mode: "oauth",
-      authorizeUrl: `https://oauth.${platform}.com/authorize?client_id=${process.env[meta.envClientId]}&redirect_uri=${encodeURIComponent(redirect)}`,
-    });
+    return NextResponse.json(
+      { error: `${meta.name} OAuth isn't wired yet. Use placeholder mode or contact support.` },
+      { status: 501 }
+    );
   }
 
   // Placeholder: simulate a connected account.

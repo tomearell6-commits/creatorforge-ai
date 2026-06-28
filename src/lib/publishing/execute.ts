@@ -18,6 +18,7 @@ type PublishAccount = {
   account_name: string | null;
   account_handle?: string | null;
   access_token?: string | null;
+  refresh_token?: string | null;
   metadata?: Record<string, unknown> | null;
 } | null;
 
@@ -51,6 +52,7 @@ export async function executePost(
           externalId: account.external_id,
           accountName: account.account_name,
           accessToken: decryptSecret(account.access_token ?? null),
+          refreshToken: decryptSecret(account.refresh_token ?? null),
           siteUrl: (account.metadata?.site_url as string) ?? null,
           username: account.account_handle ?? null,
         },

@@ -23,6 +23,7 @@ export type PublishInput = {
   visibility: Visibility;
   account: {
     accessToken?: string | null;
+    refreshToken?: string | null;
     externalId?: string | null;
     accountName?: string | null;
     /** WordPress credential fields. */

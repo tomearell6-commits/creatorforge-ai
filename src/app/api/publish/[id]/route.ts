@@ -31,7 +31,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const platforms = posts.map((p) => p.platform);
   const { data: accounts } = await supabase
     .from("social_accounts")
-    .select("id, platform, external_id, account_name, account_handle, access_token, metadata")
+    .select("id, platform, external_id, account_name, account_handle, access_token, refresh_token, metadata")
     .in("platform", platforms)
     .eq("status", "connected");
 

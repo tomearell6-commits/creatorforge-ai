@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateApiKey } from "@/lib/apikeys";
 import { logAudit } from "@/lib/audit";
-import { limitRequest } from "@/lib/security/ratelimit";
+import { limitRequestAsync } from "@/lib/security/ratelimit";
 
 /**
  * API Center (Phase 7 — Module 7).
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const rl = limitRequest(request, "apikey-create", 10, 60_000);
+  const rl = await limitRequestAsync(request, "apikey-create", 10, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
   const { name, scopes } = await request.json();

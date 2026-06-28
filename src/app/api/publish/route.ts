@@ -84,7 +84,7 @@ export async function POST(request: Request) {
   // One scheduled_post per selected platform, linked to the connected account.
   const { data: accounts } = await supabase
     .from("social_accounts")
-    .select("id, platform, external_id, account_name, account_handle, access_token, metadata")
+    .select("id, platform, external_id, account_name, account_handle, access_token, refresh_token, metadata")
     .in("platform", body.platforms)
     .eq("status", "connected");
 
