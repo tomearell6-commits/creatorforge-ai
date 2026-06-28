@@ -55,6 +55,7 @@ export async function executePost(
           refreshToken: decryptSecret(account.refresh_token ?? null),
           siteUrl: (account.metadata?.site_url as string) ?? null,
           username: account.account_handle ?? null,
+          metadata: account.metadata ?? null,
         },
       });
     } catch (err) {

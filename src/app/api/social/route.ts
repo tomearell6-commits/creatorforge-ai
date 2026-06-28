@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isPlatformConfigured } from "@/lib/publishing/providers";
 import { verifyWordPress, normalizeSite } from "@/lib/publishing/providers/wordpress";
 import { youtubeAuthorizeUrl, isYouTubeConfigured } from "@/lib/publishing/providers/youtube";
+import { buildAuthorizeUrl, oauthConfigured } from "@/lib/publishing/oauth";
 import { encryptSecret } from "@/lib/security/secrets";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { PLATFORMS } from "@/lib/constants";
@@ -82,12 +83,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ mode: "oauth", authorizeUrl: youtubeAuthorizeUrl(user.id) });
   }
 
-  // Other OAuth platforms (when configured) — real flow not yet implemented.
+  // LinkedIn / Facebook / Instagram / X / Pinterest / TikTok via the OAuth registry.
+  if (oauthConfigured(platform)) {
+    const { url, verifier } = buildAuthorizeUrl(platform, user.id);
+    const res = NextResponse.json({ mode: "oauth", authorizeUrl: url });
+    if (verifier) {
+      // PKCE (X): stash the verifier for the callback.
+      res.cookies.set(`pkce_${platform}`, verifier, {
+        httpOnly: true, secure: true, sameSite: "lax", maxAge: 600, path: "/",
+      });
+    }
+    return res;
+  }
+
+  // Configured via legacy env but not wired here.
   if (isPlatformConfigured(platform)) {
-    return NextResponse.json(
-      { error: `${meta.name} OAuth isn't wired yet. Use placeholder mode or contact support.` },
-      { status: 501 }
-    );
+    return NextResponse.json({ error: `${meta.name} OAuth isn't available.` }, { status: 501 });
   }
 
   // Placeholder: simulate a connected account.

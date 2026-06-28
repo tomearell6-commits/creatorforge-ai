@@ -29,6 +29,8 @@ export type PublishInput = {
     /** WordPress credential fields. */
     siteUrl?: string | null;
     username?: string | null;
+    /** Platform-specific connection data (page id, ig user id, board id, …). */
+    metadata?: Record<string, unknown> | null;
   };
 };
 
