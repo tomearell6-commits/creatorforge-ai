@@ -46,7 +46,7 @@ const openAIImageProvider: ImageProvider = {
         prompt: input.prompt,
         n: 1,
         size,
-        quality: "medium",
+        quality: "high",
         output_format: "jpeg",
       }),
     });
