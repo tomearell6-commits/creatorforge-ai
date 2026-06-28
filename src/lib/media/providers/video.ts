@@ -1,9 +1,9 @@
 import type { VideoProvider } from "../types";
+import { falVideoProvider } from "./fal";
 
 /**
- * Placeholder video provider. Real text-to-video is out of scope for Phase 3,
- * so this records the request and returns a "placeholder" status with no URL.
- * Wire up Replicate / Runway / etc. via VIDEO_PROVIDER in Phase 4.
+ * Placeholder video provider — returns "placeholder" status with no URL.
+ * Real AI video is provided by fal.ai (VIDEO_PROVIDER=fal + FAL_KEY).
  */
 const placeholderVideoProvider: VideoProvider = {
   id: "placeholder",
@@ -16,7 +16,8 @@ const placeholderVideoProvider: VideoProvider = {
 /** Resolve the active video provider from VIDEO_PROVIDER. */
 export function getVideoProvider(): VideoProvider {
   switch (process.env.VIDEO_PROVIDER) {
-    // case "replicate": return replicateVideoProvider;
+    case "fal":
+      return falVideoProvider;
     default:
       return placeholderVideoProvider;
   }

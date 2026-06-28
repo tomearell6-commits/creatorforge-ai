@@ -58,6 +58,8 @@ export type VideoGenInput = {
   prompt: string;
   durationSeconds?: number;
   seed?: string;
+  /** Optional first frame for image-to-video (scene image → consistent clip). */
+  imageUrl?: string | null;
 };
 
 export type VideoGenResult = {
