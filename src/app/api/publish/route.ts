@@ -53,6 +53,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Pick a date/time to schedule" }, { status: 400 });
   }
 
+  // Normalize empty strings to null so they don't hit timestamp columns.
+  const scheduledAt = body.scheduledAt?.trim() ? new Date(body.scheduledAt).toISOString() : null;
+
   const jobStatus = body.mode === "now" ? "publishing" : body.mode === "schedule" ? "scheduled" : "draft";
 
   const { data: job, error: jobErr } = await supabase
@@ -72,7 +75,7 @@ export async function POST(request: Request) {
       visibility: body.visibility ?? "public",
       mode: body.mode,
       status: jobStatus,
-      scheduled_at: body.scheduledAt ?? null,
+      scheduled_at: scheduledAt,
     })
     .select("*")
     .single();
@@ -93,7 +96,7 @@ export async function POST(request: Request) {
       publish_job_id: job.id,
       social_account_id: acc?.id ?? null,
       platform,
-      scheduled_at: body.scheduledAt ?? new Date().toISOString(),
+      scheduled_at: scheduledAt ?? new Date().toISOString(),
       status: postStatus,
     };
   });
