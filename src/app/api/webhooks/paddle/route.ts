@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyPaddleWebhook, priceToPlan } from "@/lib/payments/paddle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planCredits } from "@/lib/constants";
+import { captureError } from "@/lib/logger";
 
 /**
  * Paddle Billing webhook. Verifies the signature, then on the relevant events
@@ -112,7 +113,7 @@ export async function POST(request: Request) {
       await admin.from("profiles").update({ plan: "free" }).eq("user_id", userId);
     }
   } catch (e) {
-    console.error("Paddle webhook handler error:", e);
+    captureError(e, { category: "payment", provider: "paddle", stage: "handler" });
     return NextResponse.json({ error: "Handler error" }, { status: 500 });
   }
 

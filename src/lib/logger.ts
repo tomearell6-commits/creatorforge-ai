@@ -26,10 +26,33 @@ export const log = {
   error: (category: LogCategory, message: string, data?: Record<string, unknown>) => emit("error", category, message, data),
 };
 
-/** Central error capture. Forward to Sentry here once @sentry/nextjs is installed. */
+let sentryReady = false;
+
+/** Forward to Sentry (server-side only, lazily initialized, never throws). */
+function forwardToSentry(err: unknown, context?: Record<string, unknown>) {
+  if (typeof window !== "undefined" || !process.env.SENTRY_DSN) return;
+  void (async () => {
+    try {
+      const Sentry = await import("@sentry/node");
+      if (!sentryReady) {
+        Sentry.init({
+          dsn: process.env.SENTRY_DSN,
+          environment: process.env.NODE_ENV,
+          tracesSampleRate: 0.1,
+        });
+        sentryReady = true;
+      }
+      Sentry.captureException(err instanceof Error ? err : new Error(String(err)), { extra: context });
+    } catch {
+      /* monitoring must never break the request */
+    }
+  })();
+}
+
+/** Central error capture: structured log + Sentry (when SENTRY_DSN is set). */
 export function captureError(err: unknown, context?: { category?: LogCategory; [k: string]: unknown }) {
   const message = err instanceof Error ? err.message : String(err);
   const stack = err instanceof Error ? err.stack : undefined;
   emit("error", context?.category ?? "system", message, { stack, ...context });
-  // if (process.env.SENTRY_DSN) Sentry.captureException(err, { extra: context });
+  forwardToSentry(err, context);
 }

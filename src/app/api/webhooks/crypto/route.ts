@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyCryptoWebhook } from "@/lib/payments/crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planCredits } from "@/lib/constants";
+import { captureError } from "@/lib/logger";
 
 /**
  * NOWPayments IPN webhook. Verifies the signature, and on a confirmed/finished
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       status: "completed",
     });
   } catch (e) {
-    console.error("Crypto webhook handler error:", e);
+    captureError(e, { category: "payment", provider: "nowpayments", stage: "handler" });
     return NextResponse.json({ error: "Handler error" }, { status: 500 });
   }
 

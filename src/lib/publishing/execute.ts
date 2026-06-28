@@ -10,6 +10,7 @@ import { getPublishProvider } from "./providers";
 import { emitNotification } from "@/lib/notifications";
 import { logEvent } from "@/lib/analytics";
 import { decryptSecret } from "@/lib/security/secrets";
+import { captureError } from "@/lib/logger";
 
 /** Account shape used for publishing — includes WordPress credentials. */
 type PublishAccount = {
@@ -55,6 +56,7 @@ export async function executePost(
         },
       });
     } catch (err) {
+      captureError(err, { category: "publishing", platform: post.platform, jobId: job.id });
       result = { status: "failed" as const, error: err instanceof Error ? err.message : "Publish failed" };
     }
   }

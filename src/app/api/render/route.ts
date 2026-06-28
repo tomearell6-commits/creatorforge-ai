@@ -12,6 +12,7 @@ import { CREDIT_COSTS } from "@/lib/constants";
 import { emitNotification } from "@/lib/notifications";
 import { logEvent } from "@/lib/analytics";
 import { runTrigger } from "@/lib/automation/engine";
+import { captureError } from "@/lib/logger";
 import type { Scene } from "@/lib/types";
 
 /**
@@ -120,7 +121,7 @@ export async function POST(request: Request) {
     if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
     renderId = result.id;
   } catch (err) {
-    console.error("render submit failed:", err);
+    captureError(err, { category: "rendering", route: "POST /api/render", projectId });
     return NextResponse.json({ error: err instanceof Error ? err.message : "Render failed to submit" }, { status: 502 });
   }
 
@@ -254,7 +255,7 @@ export async function PATCH(request: Request) {
           logs: `${job.logs}\nRender complete — saved to your Asset Library.`.trim(),
         });
       } catch (err) {
-        console.error("store rendered mp4 failed:", err);
+        captureError(err, { category: "rendering", step: "store_mp4", jobId: job.id });
         // Fall back to the Shotstack URL so the user still gets the video.
         Object.assign(update, { status: "done", progress: 100, output_url: st.url, logs: `${job.logs}\nRender complete.`.trim() });
       }
