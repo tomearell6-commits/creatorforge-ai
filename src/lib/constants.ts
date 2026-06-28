@@ -8,22 +8,120 @@ export type Category = {
   name: string;
   description: string;
   emoji: string;
+  /** Sub-niches shown in the homepage niche explorer preview. */
+  subcategories: string[];
+  /** What the platform produces for this niche (pipeline output). */
+  produces: string;
 };
 
+// Output presets reused across niches.
+const VIDEO_OUTPUT = "Script · Voiceover · Scene images · Captions · MP4 video";
+
 export const CATEGORIES: Category[] = [
-  { slug: "horror-stories", name: "Horror Stories", description: "Spine-chilling narrated horror videos.", emoji: "👻" },
-  { slug: "motivational", name: "Motivational Videos", description: "Inspiring, high-energy motivational clips.", emoji: "🔥" },
-  { slug: "anime-stories", name: "Anime Stories", description: "Anime-styled narrative content.", emoji: "🌸" },
-  { slug: "business-marketing", name: "Business Marketing", description: "Marketing copy and brand storytelling.", emoji: "📈" },
-  { slug: "product-ads", name: "Product Ads", description: "Short, punchy product advertisements.", emoji: "🛍️" },
-  { slug: "educational", name: "Educational Content", description: "Explainers and how-to scripts.", emoji: "🎓" },
-  { slug: "kids-stories", name: "Kids Stories", description: "Friendly, age-appropriate stories for children.", emoji: "🧸" },
-  { slug: "ai-news", name: "AI News", description: "Breaking news and updates from the AI world.", emoji: "🤖" },
-  { slug: "finance", name: "Finance Content", description: "Money, markets, and personal-finance scripts.", emoji: "💰" },
-  { slug: "relationship-stories", name: "Relationship Stories", description: "Emotional relationship narratives.", emoji: "💞" },
-  { slug: "podcast-scripts", name: "Podcast Scripts", description: "Long-form conversational podcast outlines.", emoji: "🎙️" },
-  { slug: "blog-posts", name: "Blog Posts", description: "SEO-friendly written blog articles.", emoji: "✍️" },
-  { slug: "social-captions", name: "Social Media Captions", description: "Scroll-stopping captions for any platform.", emoji: "📱" },
+  {
+    slug: "horror-stories",
+    name: "Horror Stories",
+    description: "Spine-chilling narrated horror videos.",
+    emoji: "👻",
+    subcategories: ["True scary stories", "Creepypasta", "Urban legends", "Haunted places", "Reddit r/nosleep"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "motivational",
+    name: "Motivational Videos",
+    description: "Inspiring, high-energy motivational clips.",
+    emoji: "🔥",
+    subcategories: ["Discipline & hustle", "Stoic wisdom", "Morning motivation", "Gym & fitness", "Success mindset"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "anime-stories",
+    name: "Anime Stories",
+    description: "Anime-styled narrative content.",
+    emoji: "🌸",
+    subcategories: ["Anime recaps", "Original tales", "Character breakdowns", "Manga summaries", "Top-10 rankings"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "business-marketing",
+    name: "Business Marketing",
+    description: "Marketing copy and brand storytelling.",
+    emoji: "📈",
+    subcategories: ["Brand storytelling", "Sales pages", "Case studies", "Value propositions", "Explainer ads"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "product-ads",
+    name: "Product Ads",
+    description: "Short, punchy product advertisements.",
+    emoji: "🛍️",
+    subcategories: ["UGC-style ads", "Feature highlights", "Testimonials", "Launch promos", "Discount offers"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "educational",
+    name: "Educational Content",
+    description: "Explainers and how-to scripts.",
+    emoji: "🎓",
+    subcategories: ["How-to tutorials", "Explainers", "“Top 5” listicles", "Science facts", "History lessons"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "kids-stories",
+    name: "Kids Stories",
+    description: "Friendly, age-appropriate stories for children.",
+    emoji: "🧸",
+    subcategories: ["Bedtime stories", "Fairy tales", "Moral lessons", "Animal adventures", "Nursery rhymes"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "ai-news",
+    name: "AI News",
+    description: "Breaking news and updates from the AI world.",
+    emoji: "🤖",
+    subcategories: ["Model releases", "Tool roundups", "Industry headlines", "AI tutorials", "Ethics & debates"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "finance",
+    name: "Finance Content",
+    description: "Money, markets, and personal-finance scripts.",
+    emoji: "💰",
+    subcategories: ["Personal finance tips", "Crypto updates", "Stock breakdowns", "Budgeting", "Side hustles"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "relationship-stories",
+    name: "Relationship Stories",
+    description: "Emotional relationship narratives.",
+    emoji: "💞",
+    subcategories: ["Love stories", "Breakup advice", "Dating tips", "Confessions", "Reddit r/AITA"],
+    produces: VIDEO_OUTPUT,
+  },
+  {
+    slug: "podcast-scripts",
+    name: "Podcast Scripts",
+    description: "Long-form conversational podcast outlines.",
+    emoji: "🎙️",
+    subcategories: ["Interview outlines", "Solo episodes", "Show notes", "Intro & outro", "Q&A segments"],
+    produces: "Episode script · Voiceover · Show notes",
+  },
+  {
+    slug: "blog-posts",
+    name: "Blog Posts",
+    description: "SEO-friendly written blog articles.",
+    emoji: "✍️",
+    subcategories: ["SEO articles", "Listicles", "How-to guides", "Product reviews", "Opinion pieces"],
+    produces: "SEO article · Headings · Meta description",
+  },
+  {
+    slug: "social-captions",
+    name: "Social Media Captions",
+    description: "Scroll-stopping captions for any platform.",
+    emoji: "📱",
+    subcategories: ["Instagram", "TikTok", "YouTube Shorts", "LinkedIn", "X / Threads"],
+    produces: "Hooks · Captions · Hashtags",
+  },
 ];
 
 export type Plan = {

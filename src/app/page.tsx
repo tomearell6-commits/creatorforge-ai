@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { NicheExplorer } from "@/components/marketing/NicheExplorer";
 import { CATEGORIES } from "@/lib/constants";
 
 export default function LandingPage() {
@@ -68,15 +69,11 @@ export default function LandingPage() {
         <section className="border-t border-border bg-muted/40 py-20">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="text-center text-3xl font-bold">Built for every niche</h2>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
-              {CATEGORIES.map((c) => (
-                <span
-                  key={c.slug}
-                  className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium"
-                >
-                  {c.emoji} {c.name}
-                </span>
-              ))}
+            <p className="mt-3 text-center text-muted-foreground">
+              Pick a niche to preview its sub-topics and exactly what CreatorForge produces for it.
+            </p>
+            <div className="mt-10">
+              <NicheExplorer categories={CATEGORIES} />
             </div>
           </div>
         </section>
