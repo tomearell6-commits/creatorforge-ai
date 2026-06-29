@@ -3,6 +3,7 @@ import {
   Mic, Clapperboard, ImageIcon, Library, Server, Send, Share2, CalendarDays,
   BarChart3, Bell, Users, Workflow, KeyRound, LifeBuoy, Gift, Handshake, Palette,
   Crown, ShoppingBag, Video, Music, ListVideo, LayoutTemplate, Wand2, Coins,
+  Search, FileText, Globe, CalendarRange,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
@@ -33,6 +34,15 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/thumbnails", label: "Thumbnails", icon: ImageIcon },
       { href: "/dashboard/assets", label: "Asset Library", icon: Library },
       { href: "/dashboard/render", label: "Render Queue", icon: Server },
+    ],
+  },
+  {
+    heading: "SEO Studio",
+    items: [
+      { href: "/dashboard/seo", label: "SEO Dashboard", icon: Search },
+      { href: "/dashboard/seo/new", label: "New SEO Article", icon: FileText },
+      { href: "/dashboard/seo/sites", label: "WordPress Sites", icon: Globe },
+      { href: "/dashboard/seo/calendar", label: "Blog Calendar", icon: CalendarRange },
     ],
   },
   {

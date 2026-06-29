@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 
 const NAV = [
   { label: "Tools", href: "#tools" },
+  { label: "SEO Studio", href: "/tools/seo-content-studio" },
   { label: "Resources", href: "#templates" },
   { label: "Pricing", href: "#pricing" },
   { label: "Affiliate", href: "/signup" },

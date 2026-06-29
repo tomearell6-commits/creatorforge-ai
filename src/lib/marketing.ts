@@ -15,9 +15,9 @@ export const HERO_MODELS = [
 
 /** Horizontal tool/model pills under the hero. */
 export const TOOL_PILLS = [
-  "AI Shorts", "Image to Video", "Text to Image", "Script to Video", "AI UGC",
-  "Product Ads", "Music Video", "Talking Avatar", "Caption Generator",
-  "YouTube Shorts", "TikTok Ads", "Instagram Reels",
+  "AI Shorts", "SEO Blog Posts", "WordPress Publishing", "Image to Video", "Text to Image",
+  "Script to Video", "AI UGC", "Product Ads", "Music Video", "Talking Avatar",
+  "Caption Generator", "YouTube Shorts", "TikTok Ads", "Instagram Reels",
 ];
 
 /** Three featured tool cards. */
@@ -39,6 +39,13 @@ export const FEATURE_CARDS = [
     desc: "Turn product images, photos, and brand visuals into engaging videos.",
     tint: "from-lime-200 to-lime-50",
     emoji: "✨",
+  },
+  {
+    title: "SEO Content Studio",
+    desc: "Generate full SEO blog packages and auto-publish them to WordPress on a schedule.",
+    tint: "from-green-200 to-green-50",
+    emoji: "🔍",
+    href: "/tools/seo-content-studio",
   },
 ];
 
@@ -76,6 +83,7 @@ export const TEMPLATE_SECTIONS = [
   { id: "ads", label: "Paid Ads", items: ["Product Demo", "UGC Ad", "Marketplace Ad", "Business Promo"] },
   { id: "viral", label: "Viral Videos", items: ["Crypto Explainer", "Reddit Story", "Top 5 List", "Did You Know"] },
   { id: "music", label: "Music Videos", items: ["Music Visualizer", "Lyric Video", "Beat Loop", "Concert Cut"] },
+  { id: "seo", label: "SEO Blog Posts", items: ["How-To Guide", "Listicle", "Product Review", "Comparison Post", "Ultimate Guide", "Buying Guide"] },
 ];
 
 /** Marketing pricing tiers (display only — billing logic uses lib/constants PLANS). */
@@ -139,11 +147,19 @@ export const FOOTER_COLUMNS = [
   {
     heading: "Popular Tools",
     links: [
-      "Image to Video AI", "AI UGC Video Generator", "Script to Video AI",
+      "SEO Blog Post Generator", "Image to Video AI", "AI UGC Video Generator", "Script to Video AI",
       "AI YouTube Shorts Generator", "AI TikTok Video Generator", "AI Image Generator",
       "TikTok Ad Maker", "Instagram Video Ad Maker", "AI Shorts Series Maker",
       "YouTube Caption Generator", "TikTok Caption Generator", "Instagram Caption Generator",
       "Facebook Caption Generator", "LinkedIn Caption Generator",
+    ],
+  },
+  {
+    heading: "SEO Tools",
+    links: [
+      "SEO Blog Post Generator", "WordPress Auto Poster", "AI SEO Article Writer",
+      "Blog Content Calendar", "Meta Description Generator", "SEO Title Generator",
+      "Keyword Content Planner",
     ],
   },
   {

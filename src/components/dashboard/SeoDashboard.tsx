@@ -1,0 +1,66 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+
+type Article = { id: string; main_keyword: string; seo_title: string; status: string; category: string; scheduled_at: string | null; published_at: string | null; seo_score: number; created_at: string };
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return <Card className="p-4"><div className="text-2xl font-bold">{value}</div><div className="text-xs text-muted-foreground">{label}</div></Card>;
+}
+
+export function SeoDashboard() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [sites, setSites] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/seo/articles").then((r) => r.json()),
+      fetch("/api/wordpress/sites").then((r) => r.json()),
+    ]).then(([a, s]) => { setArticles(a.articles ?? []); setSites((s.sites ?? []).length); setLoading(false); });
+  }, []);
+
+  const published = articles.filter((a) => a.status === "published").length;
+  const scheduled = articles.filter((a) => a.status === "scheduled").length;
+  const drafts = articles.filter((a) => a.status === "draft").length;
+  const failed = articles.filter((a) => a.status === "failed").length;
+  const successRate = published + failed > 0 ? Math.round((published / (published + failed)) * 100) : 100;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button asChild><Link href="/dashboard/seo/new">＋ New SEO Article</Link></Button>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Articles generated" value={articles.length} />
+        <Stat label="Published" value={published} />
+        <Stat label="Scheduled" value={scheduled} />
+        <Stat label="Drafts" value={drafts} />
+        <Stat label="WordPress sites" value={sites} />
+        <Stat label="Publishing success" value={`${successRate}%`} />
+        <Stat label="Avg SEO score" value={articles.length ? Math.round(articles.reduce((s, a) => s + (a.seo_score || 0), 0) / articles.length) : "—"} />
+        <Stat label="Failed" value={failed} />
+      </div>
+
+      <Card>
+        <h3 className="font-semibold">Recent articles</h3>
+        {loading && <p className="mt-2 text-sm text-muted-foreground">Loading…</p>}
+        {!loading && articles.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No articles yet — create your first SEO article.</p>}
+        <div className="mt-3 space-y-2">
+          {articles.slice(0, 12).map((a) => (
+            <div key={a.id} className="flex items-center justify-between rounded-lg border border-border p-2 text-sm">
+              <div className="min-w-0">
+                <div className="truncate font-medium">{a.seo_title || a.main_keyword}</div>
+                <div className="text-xs text-muted-foreground">{a.main_keyword} · SEO {a.seo_score ?? "—"}</div>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${a.status === "published" ? "bg-green-100 text-green-700" : a.status === "failed" ? "bg-red-100 text-red-700" : a.status === "scheduled" ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground"}`}>{a.status}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}

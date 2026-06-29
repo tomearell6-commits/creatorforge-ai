@@ -54,7 +54,7 @@ export default function LandingPage() {
 
         {/* Featured tool cards */}
         <section id="tools" className="mx-auto max-w-6xl px-4 py-16">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURE_CARDS.map((c) => <FeatureCard key={c.title} {...c} />)}
           </div>
         </section>

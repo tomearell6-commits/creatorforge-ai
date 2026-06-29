@@ -342,3 +342,19 @@ export const RENDER_TIERS: RenderTier[] = [
 export function renderTier(id?: string): RenderTier {
   return RENDER_TIERS.find((t) => t.id === id) ?? RENDER_TIERS[0];
 }
+
+// =====================================================================
+// SEO Content Studio — credit costs + option sets
+// =====================================================================
+export const SEO_CREDIT_COSTS = {
+  brief: 2,
+  article: 20,        // full SEO package generation
+  imagePrompt: 1,
+  featuredImage: 3,
+  publish: 2,         // WordPress publish
+  report: 1,
+} as const;
+
+export const SEO_ARTICLE_TYPES = ["How-to guide", "Listicle", "Product review", "Comparison", "Ultimate guide", "Opinion / thought leadership", "News", "Case study"] as const;
+export const SEO_SEARCH_INTENTS = ["Informational", "Commercial", "Transactional", "Navigational"] as const;
+export const SEO_WORD_COUNTS = [800, 1200, 1500, 2000, 3000] as const;
