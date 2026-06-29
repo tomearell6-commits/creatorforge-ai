@@ -298,6 +298,23 @@ export const ADMIN_NAV = [
   { href: "/admin/settings", label: "System Settings" },
 ];
 
+/** AI Infrastructure Operations Center — admin submenu. */
+export const ADMIN_INFRA_NAV = [
+  { href: "/admin/infra", label: "Overview" },
+  { href: "/admin/infra/ai", label: "AI Providers" },
+  { href: "/admin/infra/payments", label: "Payment Providers" },
+  { href: "/admin/infra/storage", label: "Storage Services" },
+  { href: "/admin/infra/email", label: "Email Services" },
+  { href: "/admin/infra/auth", label: "Authentication" },
+  { href: "/admin/infra/publishing", label: "Publishing Providers" },
+  { href: "/admin/infra/api-keys", label: "API Keys" },
+  { href: "/admin/infra/usage", label: "Usage Analytics" },
+  { href: "/admin/infra/costs", label: "Cost Management" },
+  { href: "/admin/infra/alerts", label: "Alerts" },
+  { href: "/admin/infra/renewals", label: "Renewal Center" },
+  { href: "/admin/infra/health", label: "Service Health" },
+];
+
 export const TICKET_STATUSES = ["open", "pending", "resolved", "closed"] as const;
 export const TICKET_PRIORITIES = ["low", "normal", "high", "urgent"] as const;
 export const TICKET_CATEGORIES = ["Billing", "Technical", "Publishing", "Account", "Feature request", "Other"] as const;

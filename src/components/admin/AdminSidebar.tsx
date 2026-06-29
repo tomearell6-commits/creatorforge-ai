@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ADMIN_NAV } from "@/lib/constants";
+import { ADMIN_NAV, ADMIN_INFRA_NAV } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export function AdminSidebar() {
@@ -24,6 +24,19 @@ export function AdminSidebar() {
             </Link>
           );
         })}
+
+        <p className="px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Infrastructure</p>
+        {ADMIN_INFRA_NAV.map(({ href, label }) => {
+          const active = href === "/admin/infra" ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link key={href} href={href}
+              className={cn("block rounded-lg px-3 py-1.5 text-sm transition-colors",
+                active ? "bg-brand-600 text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
+              {label}
+            </Link>
+          );
+        })}
+
         <Link href="/dashboard" className="mt-4 block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
           ← Back to app
         </Link>
