@@ -27,18 +27,21 @@ export const FEATURE_CARDS = [
     desc: "Generate short-form faceless videos for TikTok, YouTube Shorts, and Instagram Reels.",
     tint: "from-brand-200 to-brand-50",
     emoji: "🎬",
+    href: "/dashboard/create/ai-shorts",
   },
   {
     title: "Product Ad Generator",
     desc: "Create scroll-stopping product ads for ecommerce, dropshipping, and social campaigns.",
     tint: "from-emerald-200 to-emerald-50",
     emoji: "🛍️",
+    href: "/dashboard/create/product-ads",
   },
   {
     title: "Image to Video Studio",
     desc: "Turn product images, photos, and brand visuals into engaging videos.",
     tint: "from-lime-200 to-lime-50",
     emoji: "✨",
+    href: "/dashboard/create/image-to-video",
   },
   {
     title: "SEO Content Studio",

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { FOOTER_COLUMNS } from "@/lib/marketing";
+import { slugify } from "@/config/contentCategories";
 
 export function SiteFooter() {
   return (
@@ -13,7 +14,7 @@ export function SiteFooter() {
               <ul className="mt-3 space-y-2">
                 {col.links.map((l) => (
                   <li key={l}>
-                    <Link href="/signup" className="text-sm text-muted-foreground hover:text-brand-700">{l}</Link>
+                    <Link href={`/dashboard/create/${slugify(l)}`} className="text-sm text-muted-foreground hover:text-brand-700">{l}</Link>
                   </li>
                 ))}
               </ul>
