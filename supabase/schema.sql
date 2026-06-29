@@ -966,3 +966,15 @@ insert into public.feature_flags (key, enabled, description) values
   ('referral_program',  true,  'Referral program enabled'),
   ('white_label',       false, 'White-label customization enabled')
 on conflict (key) do nothing;
+
+-- =====================================================================
+-- AI Video render tiers (mirrors migrations/0008_ai_video.sql)
+-- =====================================================================
+-- =====================================================================
+-- AI Video render tiers. Adds render mode + a metadata bag to render_jobs
+-- so the queue can track the two-stage flow (fal clips → Shotstack assembly).
+-- Idempotent.
+-- =====================================================================
+
+alter table public.render_jobs add column if not exists mode text not null default 'slideshow';
+alter table public.render_jobs add column if not exists metadata jsonb not null default '{}'::jsonb;

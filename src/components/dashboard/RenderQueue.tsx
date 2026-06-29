@@ -6,6 +6,7 @@ import { Play, RotateCcw, Server, Download } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { cn, formatDate } from "@/lib/utils";
+import { RENDER_TIERS } from "@/lib/constants";
 import type { RenderJob } from "@/lib/types";
 
 const STATUS_STYLES: Record<RenderJob["status"], string> = {
@@ -28,6 +29,7 @@ export function RenderQueue({
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsUpgrade, setNeedsUpgrade] = useState(false);
+  const [tierId, setTierId] = useState<string>("slideshow");
 
   // Poll active jobs. With Shotstack, this refreshes the real render status;
   // in placeholder mode it advances the simulated progress.
@@ -54,7 +56,7 @@ export function RenderQueue({
       const res = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId }),
+        body: JSON.stringify({ projectId, mode: tierId }),
       });
       const data = await res.json();
       if (res.status === 402) {
@@ -101,16 +103,41 @@ export function RenderQueue({
     }
   }
 
+  const tier = RENDER_TIERS.find((t) => t.id === tierId) ?? RENDER_TIERS[0];
+
   return (
     <div className="space-y-5">
+      {/* Render mode / tier picker */}
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {RENDER_TIERS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTierId(t.id)}
+            className={cn(
+              "rounded-xl border p-3 text-left transition-colors",
+              tierId === t.id ? "border-brand-600 bg-brand-50 dark:bg-brand-900/20" : "border-border hover:border-brand-300"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">{t.label}</span>
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t.credits} cr</span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          {live
-            ? "Renders your scenes + voiceover + captions into an MP4 (5 credits). Takes ~1–2 min."
-            : "Placeholder renders — progress is simulated. Set SHOTSTACK_API_KEY for real video."}
+          {!live
+            ? "Placeholder renders — progress is simulated. Set SHOTSTACK_API_KEY for real video."
+            : tier.model
+              ? `${tier.label}: generates real AI footage per scene, then assembles with voiceover + captions. Takes ~10–30 min (${tier.credits} credits).`
+              : `Slideshow: AI images + motion + captions → MP4 (${tier.credits} credits). ~1–2 min.`}
         </p>
         <Button onClick={startRender} disabled={starting}>
-          <Play className="h-4 w-4" /> {starting ? "Submitting…" : "Render video"}
+          <Play className="h-4 w-4" /> {starting ? "Submitting…" : tier.model ? "Generate AI video" : "Render video"}
         </Button>
       </div>
 

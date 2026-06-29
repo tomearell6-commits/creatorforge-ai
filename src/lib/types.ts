@@ -125,6 +125,8 @@ export type RenderJob = {
   error: string | null;
   output_url: string | null;
   provider_job_id: string | null;
+  mode: string;
+  metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 };

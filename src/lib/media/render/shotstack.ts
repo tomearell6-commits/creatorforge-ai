@@ -53,18 +53,30 @@ export function buildTimeline(opts: {
   scenes: Scene[];
   voiceoverUrl?: string | null;
   brand?: boolean;
+  /** AI Video mode: per-scene generated clip URLs (aligned to scenes by index). */
+  clipUrls?: (string | null)[] | null;
 }) {
-  const { scenes, voiceoverUrl, brand } = opts;
+  const { scenes, voiceoverUrl, brand, clipUrls } = opts;
   const imageClips: Clip[] = [];
   const captionClips: Clip[] = [];
   let t = 0;
 
-  // Alternate Ken Burns moves so the video feels dynamic instead of a static zoom.
+  // Alternate Ken Burns moves so the slideshow feels dynamic instead of a static zoom.
   const motions = ["zoomIn", "slideLeft", "zoomOut", "slideRight", "zoomIn", "slideUp"];
 
   scenes.forEach((s, i) => {
     const len = Math.max(2, Number(s.duration) || 4);
-    if (s.image_url) {
+    const clip = clipUrls?.[i];
+    if (clip) {
+      // AI Video: use the generated moving footage (already animated → no effect).
+      imageClips.push({
+        asset: { type: "video", src: clip, volume: 0 },
+        start: Number(t.toFixed(2)),
+        length: len,
+        fit: "cover",
+        transition: { in: i === 0 ? "fade" : "fade", out: "fade" },
+      });
+    } else if (s.image_url) {
       imageClips.push({
         asset: { type: "image", src: s.image_url },
         start: Number(t.toFixed(2)),

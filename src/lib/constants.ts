@@ -318,3 +318,27 @@ export const AUDIT_ACTIONS = [
 
 export const DEFAULT_AFFILIATE_RATE = 0.3; // 30% commission
 export const REFERRAL_REWARD_CREDITS = 50; // credits granted when a referral converts
+
+// =====================================================================
+// AI Video render tiers (slideshow = free; AI tiers = fal.ai models)
+// =====================================================================
+export type RenderTier = {
+  id: "slideshow" | "ai_standard" | "ai_pro" | "ai_cinematic";
+  label: string;
+  desc: string;
+  /** fal.ai model id; null = the classic image slideshow (no AI video). */
+  model: string | null;
+  /** Credits charged per render for this tier. */
+  credits: number;
+};
+
+export const RENDER_TIERS: RenderTier[] = [
+  { id: "slideshow",    label: "Slideshow (free motion)", desc: "AI images + Ken Burns motion + captions", model: null, credits: 5 },
+  { id: "ai_standard",  label: "AI Video — Standard",     desc: "Real AI footage (MiniMax) · budget",       model: "fal-ai/minimax/video-01", credits: 80 },
+  { id: "ai_pro",       label: "AI Video — Pro",          desc: "Higher quality footage (Kling v2)",        model: "fal-ai/kling-video/v2/master/text-to-video", credits: 200 },
+  { id: "ai_cinematic", label: "AI Video — Cinematic",    desc: "Top quality + native sound (Veo 3)",       model: "fal-ai/veo3", credits: 350 },
+];
+
+export function renderTier(id?: string): RenderTier {
+  return RENDER_TIERS.find((t) => t.id === id) ?? RENDER_TIERS[0];
+}

@@ -28,10 +28,10 @@ function authHeader() {
   return { Authorization: `Key ${process.env.FAL_KEY}`, "Content-Type": "application/json" };
 }
 
-/** Submit a clip job; returns the queue handles to poll. */
-export async function submitClip(input: VideoGenInput): Promise<{ requestId: string; statusUrl: string; responseUrl: string; model: string }> {
+/** Submit a clip job; returns the queue handles to poll. `modelId` overrides the default. */
+export async function submitClip(input: VideoGenInput, modelId?: string): Promise<{ requestId: string; statusUrl: string; responseUrl: string; model: string }> {
   if (!isFalConfigured()) throw new Error("FAL_KEY is not set");
-  const m = model(input);
+  const m = modelId || model(input);
   const body: Record<string, unknown> = { prompt: input.prompt };
   if (input.imageUrl) body.image_url = input.imageUrl;
   if (input.durationSeconds) body.duration = input.durationSeconds;
