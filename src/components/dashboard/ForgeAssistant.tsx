@@ -14,6 +14,15 @@ const QUICK_ACTIONS = [
 
 const WELCOME = "Hi! I'm Forge AI Assistant 👋 I can guide you step by step — creating videos, SEO articles, product ads, connecting WordPress or social accounts, rendering, publishing, and how credits work. What would you like to do?";
 
+// Interactive guided tours (free — they highlight the UI, they don't ask the AI).
+const TOUR_ACTIONS: { label: string; tour: string }[] = [
+  { label: "Guide me to create my first video", tour: "create-first-video" },
+  { label: "Show me how to use AI Shorts", tour: "ai-shorts" },
+  { label: "Help me connect WordPress", tour: "connect-wordpress" },
+  { label: "Help me top up credits", tour: "top-up-credits" },
+  { label: "Show me how to publish content", tour: "schedule-content" },
+];
+
 const PAGE_LABELS: [RegExp, string][] = [
   [/\/dashboard\/credits/, "Credit Wallet"], [/\/dashboard\/billing/, "Billing"],
   [/\/dashboard\/seo/, "AI SEO Studio"], [/\/dashboard\/render/, "Render Queue"],
@@ -94,6 +103,11 @@ export function ForgeAssistant() {
     } finally { setBusy(false); }
   }
 
+  function startTour(tourId: string) {
+    window.dispatchEvent(new CustomEvent("start-forge-tour", { detail: { tourId } }));
+    setOpen(false); // close the panel so the highlighted UI is visible
+  }
+
   async function feedback(rating: "up" | "down") {
     await fetch("/api/assistant/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId, rating }) });
   }
@@ -144,12 +158,20 @@ export function ForgeAssistant() {
             ))}
             {busy && <div className="flex justify-start"><div className="rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div></div>}
 
-            {/* Quick actions (only before the first user message) */}
+            {/* Quick actions + guided tours (only before the first user message) */}
             {messages.length === 1 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {QUICK_ACTIONS.map((q) => (
-                  <button key={q} onClick={() => send(q)} className="rounded-full border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">{q}</button>
-                ))}
+              <div className="space-y-2 pt-1">
+                <div className="flex flex-wrap gap-1.5">
+                  {QUICK_ACTIONS.map((q) => (
+                    <button key={q} onClick={() => send(q)} className="rounded-full border border-border bg-card px-2.5 py-1 text-xs hover:bg-muted">{q}</button>
+                  ))}
+                </div>
+                <p className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Guided tours (free)</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {TOUR_ACTIONS.map((t) => (
+                    <button key={t.tour} onClick={() => startTour(t.tour)} className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs text-brand-800 hover:bg-brand-100">{t.label}</button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

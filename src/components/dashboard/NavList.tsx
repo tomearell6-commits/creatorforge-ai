@@ -17,13 +17,14 @@ export function NavList({ onNavigate }: { onNavigate?: () => void }) {
               {group.heading}
             </p>
           )}
-          {group.items.map(({ href, label, icon: Icon }) => {
+          {group.items.map(({ href, label, icon: Icon, tour }) => {
             const base = href.split("?")[0];
             const active = pathname === base;
             return (
               <Link
                 key={`${href}-${label}`}
                 href={href}
+                data-tour={tour}
                 onClick={onNavigate}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",

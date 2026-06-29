@@ -5,7 +5,7 @@ import {
   LayoutGrid, Wallet,
 } from "lucide-react";
 
-export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
+export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; tour?: string };
 export type NavGroup = { heading?: string; items: NavItem[] };
 
 /**
@@ -19,8 +19,8 @@ export const NAV_GROUPS: NavGroup[] = [
     heading: "Create Content",
     items: [
       { href: "/dashboard/create", label: "Create Hub", icon: LayoutGrid },
-      { href: "/dashboard/create?group=video", label: "AI Video Studio", icon: Video },
-      { href: "/dashboard/create?group=ad", label: "AI Ad Studio", icon: Megaphone },
+      { href: "/dashboard/create?group=video", label: "AI Video Studio", icon: Video, tour: "ai-video-studio" },
+      { href: "/dashboard/create?group=ad", label: "AI Ad Studio", icon: Megaphone, tour: "ai-ad-studio" },
       { href: "/dashboard/create?group=image", label: "AI Image Studio", icon: ImageIcon },
       { href: "/dashboard/create?group=seo", label: "AI SEO Studio", icon: Search },
       { href: "/dashboard/create?group=social", label: "AI Social Studio", icon: Share2 },
@@ -32,15 +32,15 @@ export const NAV_GROUPS: NavGroup[] = [
     heading: "Management",
     items: [
       { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
-      { href: "/dashboard/templates", label: "Templates", icon: LayoutTemplate },
+      { href: "/dashboard/templates", label: "Templates", icon: LayoutTemplate, tour: "templates" },
       { href: "/dashboard/assets", label: "Media Library", icon: Library },
-      { href: "/dashboard/render", label: "Render Queue", icon: Server },
-      { href: "/dashboard/calendar", label: "Publishing Calendar", icon: CalendarDays },
-      { href: "/dashboard/seo", label: "SEO Dashboard", icon: Search },
-      { href: "/dashboard/seo/sites", label: "WordPress Sites", icon: Globe },
-      { href: "/dashboard/social", label: "Social Accounts", icon: Share2 },
+      { href: "/dashboard/render", label: "Render Queue", icon: Server, tour: "render-queue" },
+      { href: "/dashboard/calendar", label: "Publishing Calendar", icon: CalendarDays, tour: "publishing-calendar" },
+      { href: "/dashboard/seo", label: "SEO Dashboard", icon: Search, tour: "seo-studio" },
+      { href: "/dashboard/seo/sites", label: "WordPress Sites", icon: Globe, tour: "wordpress-connect" },
+      { href: "/dashboard/social", label: "Social Accounts", icon: Share2, tour: "social-accounts" },
       { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-      { href: "/dashboard/credits", label: "Credit Wallet", icon: Wallet },
+      { href: "/dashboard/credits", label: "Credit Wallet", icon: Wallet, tour: "credit-topup" },
       { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
