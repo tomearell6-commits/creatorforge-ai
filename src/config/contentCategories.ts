@@ -68,13 +68,15 @@ const GROUP_ITEMS: Record<string, Raw[]> = {
   seo: [
     { name: "SEO Blog Post Generator", featured: true },
     { name: "WordPress Auto Poster", route: "/dashboard/seo/sites" },
-    "AI SEO Article Writer", "Keyword Content Planner", "Meta Title Generator", "Meta Description Generator",
+    "AI SEO Article Writer", "Keyword Content Planner",
+    { name: "Meta Title Generator", route: "/dashboard/tools/meta-title-generator" }, "Meta Description Generator",
     { name: "Blog Content Calendar", route: "/dashboard/seo/calendar" },
     "Product Description Generator", "Landing Page Copy Generator", "FAQ Generator", "Schema Markup Assistant",
   ],
   social: [
     { name: "Social Media Captions", featured: true }, "Instagram Captions", "TikTok Captions",
-    "YouTube Descriptions", "LinkedIn Posts", "Facebook Posts", "X/Twitter Posts", "Hashtag Generator",
+    "YouTube Descriptions", "LinkedIn Posts", "Facebook Posts", "X/Twitter Posts",
+    { name: "Hashtag Generator", route: "/dashboard/tools/hashtag-generator" },
     { name: "Content Calendar", route: "/dashboard/calendar" }, "Viral Hook Generator", "Newsletter Summary",
   ],
   audio: [
