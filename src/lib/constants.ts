@@ -471,6 +471,52 @@ export function actionEstimate(id: string): ActionEstimate | undefined {
 }
 
 /** Ledger entry types (must match the DB CHECK-free text values in 0010). */
+// =====================================================================
+// CreatorForge Autopilot — campaign automation
+// =====================================================================
+export const AUTOPILOT_MODES = [
+  { id: "manual",   name: "Manual",        desc: "AI creates content. You review and publish manually." },
+  { id: "assisted", name: "Assisted",      desc: "AI creates + schedules. You approve the publishing queue." },
+  { id: "full",     name: "Full Autopilot", desc: "AI creates, schedules, and publishes on your schedule, then reports." },
+] as const;
+
+export const AUTOPILOT_GOALS = [
+  { id: "traffic", label: "Traffic" }, { id: "sales", label: "Sales" }, { id: "brand", label: "Brand awareness" },
+  { id: "leads", label: "Lead generation" }, { id: "community", label: "Community growth" }, { id: "education", label: "Education" },
+] as const;
+
+export const AUTOPILOT_FREQUENCIES = [
+  { id: "daily", label: "Daily", perWeek: 7 }, { id: "twice_daily", label: "Twice daily", perWeek: 14 },
+  { id: "three_weekly", label: "Three times weekly", perWeek: 3 }, { id: "weekly", label: "Weekly", perWeek: 1 },
+  { id: "custom", label: "Custom schedule", perWeek: 5 },
+] as const;
+
+export const AUTOPILOT_CHANNELS = [
+  { id: "website", label: "Website" }, { id: "wordpress", label: "WordPress" }, { id: "youtube", label: "YouTube" },
+  { id: "youtube_shorts", label: "YouTube Shorts" }, { id: "tiktok", label: "TikTok" }, { id: "instagram", label: "Instagram" },
+  { id: "facebook", label: "Facebook Pages" }, { id: "linkedin", label: "LinkedIn" }, { id: "pinterest", label: "Pinterest" },
+  { id: "x", label: "X (Twitter)" }, { id: "email", label: "Email newsletters" },
+] as const;
+
+/** Content types Autopilot can plan, with credit estimates (mirror real costs). */
+export const AUTOPILOT_CONTENT_TYPES = [
+  { id: "ai_shorts",    label: "AI Shorts",       credits: 80, destination: "youtube_shorts" },
+  { id: "long_video",   label: "Long-form video", credits: 80, destination: "youtube" },
+  { id: "blog",         label: "Blog post",       credits: 20, destination: "wordpress" },
+  { id: "seo_article",  label: "SEO article",     credits: 20, destination: "wordpress" },
+  { id: "product_ad",   label: "Product ad",      credits: 80, destination: "instagram" },
+  { id: "social_post",  label: "Social post",     credits: 1,  destination: "instagram" },
+  { id: "newsletter",   label: "Email newsletter", credits: 1, destination: "email" },
+] as const;
+
+export function autopilotContentType(id: string) {
+  return AUTOPILOT_CONTENT_TYPES.find((c) => c.id === id) ?? AUTOPILOT_CONTENT_TYPES[0];
+}
+
+export const AUTOPILOT_JOB_STATUSES = [
+  "planned", "queued", "generating", "awaiting_approval", "scheduled", "publishing", "published", "failed",
+] as const;
+
 export const LEDGER_ENTRY_TYPES = [
   "monthly_renewal", "topup_purchase", "refund", "bonus", "promo",
   "manual_adjustment", "generation", "rendering", "publishing", "admin_adjustment",

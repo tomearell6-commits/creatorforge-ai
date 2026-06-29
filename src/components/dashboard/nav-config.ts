@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FolderKanban, CreditCard, Settings, Server, Share2, CalendarDays,
   BarChart3, Bell, Users, Workflow, KeyRound, LifeBuoy, Gift, Handshake, Palette,
   Crown, Video, Music, LayoutTemplate, Search, Globe, Library, Megaphone, Image as ImageIcon,
-  LayoutGrid, Wallet,
+  LayoutGrid, Wallet, Rocket, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; tour?: string };
@@ -26,6 +26,19 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/create?group=social", label: "AI Social Studio", icon: Share2 },
       { href: "/dashboard/create?group=audio", label: "AI Audio & Music Studio", icon: Music },
       { href: "/dashboard/create?group=automation", label: "AI Automation Studio", icon: Workflow },
+    ],
+  },
+  {
+    heading: "CreatorForge Autopilot",
+    items: [
+      { href: "/dashboard/autopilot", label: "Overview", icon: Rocket },
+      { href: "/dashboard/autopilot/campaigns", label: "Campaigns", icon: Megaphone },
+      { href: "/dashboard/autopilot/planner", label: "Planner", icon: CalendarDays },
+      { href: "/dashboard/autopilot/rules", label: "Automation Rules", icon: Workflow },
+      { href: "/dashboard/autopilot/queue", label: "Publishing Queue", icon: ListChecks },
+      { href: "/dashboard/autopilot/reports", label: "Reports", icon: BarChart3 },
+      { href: "/dashboard/autopilot/history", label: "History", icon: HistoryIcon },
+      { href: "/dashboard/autopilot/settings", label: "Settings", icon: Settings },
     ],
   },
   {
