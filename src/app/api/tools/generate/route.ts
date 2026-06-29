@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { toolGenerate, willUseRealToolAI, type ToolId } from "@/lib/tools/generate";
+import { toolGenerate, willUseRealToolAI, isToolId, type ToolId } from "@/lib/tools/generate";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
   const { tool, topic, platform } = (await request.json()) as { tool: ToolId; topic: string; platform?: string };
   if (!topic?.trim()) return NextResponse.json({ error: "Enter a topic or keyword." }, { status: 400 });
-  if (tool !== "hashtags" && tool !== "meta-titles") return NextResponse.json({ error: "Unknown tool." }, { status: 400 });
+  if (!isToolId(tool)) return NextResponse.json({ error: "Unknown tool." }, { status: 400 });
 
   const billable = willUseRealToolAI();
   if (billable && (await getCreditBalance()) < COST) {
