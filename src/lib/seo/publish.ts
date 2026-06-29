@@ -42,6 +42,8 @@ export type WpPublishInput = {
   /** draft | publish | future. For future, pass scheduledAt (ISO). */
   status: "draft" | "publish" | "future";
   scheduledAt?: string | null;
+  /** Optional featured image bytes to upload + attach. */
+  featuredImage?: { data: Uint8Array; contentType: string } | null;
 };
 
 export type WpPublishResult = { ok: true; postId: string; url: string; status: string } | { ok: false; error: string };
@@ -55,6 +57,25 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
   for (const t of (input.tags ?? []).slice(0, 12)) {
     const id = await resolveTerm(site, auth, "tags", t);
     if (id) tagIds.push(id);
+  }
+
+  // Upload featured image to the media library (best-effort).
+  let featuredMediaId: number | null = null;
+  if (input.featuredImage) {
+    try {
+      const ext = input.featuredImage.contentType.includes("png") ? "png" : "jpg";
+      const res = await fetch(`${site}/wp-json/wp/v2/media`, {
+        method: "POST",
+        headers: {
+          Authorization: auth,
+          "Content-Type": input.featuredImage.contentType,
+          "Content-Disposition": `attachment; filename="featured-${Date.now()}.${ext}"`,
+          "User-Agent": UA,
+        },
+        body: Buffer.from(input.featuredImage.data),
+      });
+      if (res.ok) featuredMediaId = (await res.json()).id;
+    } catch { /* best-effort */ }
   }
 
   const post: Record<string, unknown> = {
@@ -75,6 +96,7 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
   if (input.status === "future" && input.scheduledAt) post.date = input.scheduledAt;
   if (categoryId) post.categories = [categoryId];
   if (tagIds.length) post.tags = tagIds;
+  if (featuredMediaId) post.featured_media = featuredMediaId;
 
   try {
     const res = await fetch(`${site}/wp-json/wp/v2/posts`, {

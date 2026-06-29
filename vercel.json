@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/seo-publish", "schedule": "0 * * * *" }
+  ]
+}

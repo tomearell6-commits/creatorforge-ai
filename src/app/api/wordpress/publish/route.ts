@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decryptSecret } from "@/lib/security/secrets";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
+import { generateFeaturedImage } from "@/lib/seo/featured-image";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { SEO_CREDIT_COSTS } from "@/lib/constants";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
@@ -33,10 +34,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not enough credits to publish.", code: "insufficient_credits" }, { status: 402 });
   }
 
+  // Schedule = CreatorForge-managed: mark scheduled, the cron publishes it when due.
+  if (mode === "schedule") {
+    await supabase.from("seo_articles").update({
+      status: "scheduled", wordpress_site_id: siteId, scheduled_at: scheduledAt, updated_at: new Date().toISOString(),
+    }).eq("id", articleId);
+    await supabase.from("wordpress_publish_history").insert({
+      user_id: user.id, article_id: articleId, wordpress_site_id: siteId, status: "scheduled",
+    });
+    return NextResponse.json({ ok: true, scheduled: true, scheduledAt });
+  }
+
   const appPassword = decryptSecret(site.encrypted_application_password);
   if (!appPassword) return NextResponse.json({ error: "Could not read the site credentials — reconnect the site." }, { status: 400 });
 
-  const wpStatus = mode === "now" ? "publish" : mode === "schedule" ? "future" : "draft";
+  // Generate + attach a featured image (best-effort; charged only for real providers).
+  const featured = await generateFeaturedImage(article.featured_image_prompt);
+  const imageBillable = featured && featured.provider !== "placeholder";
+
   const result = await publishArticleToWordPress({
     siteUrl: site.site_url,
     username: site.username,
@@ -50,11 +65,11 @@ export async function POST(request: Request) {
     metaTitle: article.meta_title,
     metaDescription: article.meta_description,
     focusKeyword: article.main_keyword,
-    status: wpStatus,
-    scheduledAt: mode === "schedule" ? scheduledAt : null,
+    status: mode === "now" ? "publish" : "draft",
+    featuredImage: featured ? { data: featured.data, contentType: featured.contentType } : null,
   });
 
-  const articleStatus = mode === "now" ? "published" : mode === "schedule" ? "scheduled" : "draft";
+  const articleStatus = mode === "now" ? "published" : "draft";
 
   if (!result.ok) {
     captureError(result.error, { category: "publishing", platform: "wordpress", articleId });
@@ -66,11 +81,11 @@ export async function POST(request: Request) {
   }
 
   await deductCredits(SEO_CREDIT_COSTS.publish, "wordpress_publish");
+  if (imageBillable) await deductCredits(SEO_CREDIT_COSTS.featuredImage, "seo_featured_image");
   await supabase.from("seo_articles").update({
     status: articleStatus,
     wordpress_site_id: siteId,
     wordpress_post_id: result.postId,
-    scheduled_at: mode === "schedule" ? scheduledAt : null,
     published_at: mode === "now" ? new Date().toISOString() : null,
     updated_at: new Date().toISOString(),
   }).eq("id", articleId);
