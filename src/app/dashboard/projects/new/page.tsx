@@ -6,7 +6,13 @@ import { CATEGORIES } from "@/lib/constants";
 
 export const metadata = { title: "New Project — CreatorForge AI" };
 
-export default function NewProjectPage() {
+export default async function NewProjectPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ idea?: string; category?: string }>;
+}) {
+  const { idea, category } = await searchParams;
+  const validCategory = CATEGORIES.some((c) => c.slug === category) ? category : "";
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
@@ -29,7 +35,7 @@ export default function NewProjectPage() {
               id="category"
               name="category"
               required
-              defaultValue=""
+              defaultValue={validCategory}
               className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <option value="" disabled>
@@ -49,6 +55,7 @@ export default function NewProjectPage() {
               id="idea"
               name="idea"
               rows={4}
+              defaultValue={idea ?? ""}
               placeholder="Describe the story, topic, or angle you want to create…"
             />
           </div>

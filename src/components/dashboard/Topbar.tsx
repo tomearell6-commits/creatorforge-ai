@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./SignOutButton";
+import { CreditBadge } from "./CreditBadge";
 
-/** Dashboard top bar: shows the signed-in user + credits + sign-out. */
+/** Dashboard top bar: signed-in user + credit badge + sign-out. */
 export async function Topbar() {
   const supabase = await createClient();
   const {
@@ -22,11 +23,7 @@ export async function Topbar() {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background px-6">
-      <div className="text-sm text-muted-foreground">
-        Plan: <span className="font-medium capitalize text-foreground">{plan}</span>
-        <span className="mx-2">·</span>
-        Credits: <span className="font-medium text-foreground">{credits}</span>
-      </div>
+      <CreditBadge credits={credits} plan={plan} />
       <div className="flex items-center gap-3">
         <span className="hidden text-sm text-muted-foreground sm:inline">{user?.email}</span>
         <SignOutButton />
