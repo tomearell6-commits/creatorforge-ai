@@ -1,109 +1,118 @@
-import Link from "next/link";
-import { ArrowRight, Sparkles, Wand2, Layers, ShieldCheck } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { NicheExplorer } from "@/components/marketing/NicheExplorer";
-import { CATEGORIES } from "@/lib/constants";
+import { Star } from "lucide-react";
+import { Header } from "@/components/marketing/Header";
+import { HeroPromptBox } from "@/components/marketing/HeroPromptBox";
+import { ToolPillSlider } from "@/components/marketing/ToolPillSlider";
+import { FeatureCard } from "@/components/marketing/FeatureCard";
+import { WorkflowTabs } from "@/components/marketing/WorkflowTabs";
+import { TemplateGallery } from "@/components/marketing/TemplateGallery";
+import { PricingCards } from "@/components/marketing/PricingCards";
+import { FAQTabs } from "@/components/marketing/FAQTabs";
+import { FloatingPromptBar } from "@/components/marketing/FloatingPromptBar";
+import { SiteFooter } from "@/components/marketing/SiteFooter";
+import { FEATURE_CARDS } from "@/lib/marketing";
 
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "CreatorForge AI",
+  name: "CreatorForge.io",
   applicationCategory: "MultimediaApplication",
   operatingSystem: "Web",
   url: "https://www.creatorsforge.io",
   description:
-    "AI platform to generate scripts, voiceovers, captions, and faceless videos — then publish them to social platforms and WordPress.",
-  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    "AI-powered content studio for faceless videos, product ads, AI shorts, music videos, image-to-video, and social content.",
+  offers: { "@type": "Offer", price: "19", priceCurrency: "USD" },
 };
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
-      <Navbar />
+      <Header />
 
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 to-background dark:from-brand-900/20" />
-          <div className="mx-auto max-w-4xl px-4 py-24 text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground">
-              <Sparkles className="h-4 w-4 text-brand-600" />
-              AI content creation, end to end
-            </span>
-            <h1 className="mt-6 text-4xl font-extrabold tracking-tight sm:text-6xl">
-              Forge faceless content with{" "}
-              <span className="text-brand-600">AI superpowers</span>
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 to-background" />
+          <div className="mx-auto max-w-4xl px-4 pb-10 pt-16 text-center">
+            <div className="mb-4 flex items-center justify-center gap-1 text-brand-600">
+              {[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+            </div>
+            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight text-ink dark:text-foreground sm:text-6xl">
+              Your AI-Powered<br /><span className="italic">Content Creation Studio</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-              Scripts, voiceovers, captions, thumbnails, and videos — for horror, motivation,
-              anime, business, finance, and more. Go from idea to publish in minutes.
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-soft dark:text-muted-foreground">
+              Create faceless videos, product ads, AI shorts, music videos, and social content in minutes.
             </p>
-            <div className="mt-8 flex items-center justify-center gap-3">
-              <Button asChild size="lg">
-                <Link href="/signup">
-                  Start creating free <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/pricing">View pricing</Link>
-              </Button>
+            <div className="mx-auto mt-8 max-w-2xl">
+              <HeroPromptBox />
             </div>
           </div>
-        </section>
-
-        {/* Features */}
-        <section id="features" className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-center text-3xl font-bold">Everything you need to create</h2>
-          <p className="mt-3 text-center text-muted-foreground">
-            A modular platform that grows with you — Phase 1 ships the foundation.
-          </p>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {[
-              { icon: Wand2, title: "AI Script Generation", desc: "Turn a one-line idea into a structured, ready-to-record script." },
-              { icon: Layers, title: "Project Management", desc: "Organize every piece of content into projects you can revisit." },
-              { icon: ShieldCheck, title: "Flexible Billing", desc: "Credit-based usage with Paddle and crypto payment options." },
-            ].map(({ icon: Icon, title, desc }) => (
-              <Card key={title}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
-              </Card>
-            ))}
+          <div className="mx-auto max-w-6xl px-4 pb-12">
+            <ToolPillSlider />
           </div>
         </section>
 
-        {/* Categories */}
-        <section className="border-t border-border bg-muted/40 py-20">
+        {/* Featured tool cards */}
+        <section id="tools" className="mx-auto max-w-6xl px-4 py-16">
+          <div className="grid gap-6 md:grid-cols-3">
+            {FEATURE_CARDS.map((c) => <FeatureCard key={c.title} {...c} />)}
+          </div>
+        </section>
+
+        {/* Workflow */}
+        <section className="border-y border-border bg-brand-50/60 py-20 dark:bg-brand-900/10">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-center text-3xl font-bold">Built for every niche</h2>
-            <p className="mt-3 text-center text-muted-foreground">
-              Pick a niche to preview its sub-topics and exactly what CreatorForge produces for it.
+            <p className="text-center text-sm font-bold uppercase tracking-wide text-brand-700">Your workflow</p>
+            <h2 className="mt-2 text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">
+              From Solo Creators to Growing Brands
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
+              CreatorForge helps creators and businesses produce content faster, test more ideas, and publish consistently.
             </p>
-            <div className="mt-10">
-              <NicheExplorer categories={CATEGORIES} />
-            </div>
+            <div className="mt-10"><WorkflowTabs /></div>
           </div>
+        </section>
+
+        {/* Templates */}
+        <section id="templates" className="mx-auto max-w-6xl px-4 py-20">
+          <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">Templates for every format</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
+            Start from a proven format and recreate it with your own idea in one click.
+          </p>
+          <div className="mt-10"><TemplateGallery /></div>
+        </section>
+
+        {/* Pricing */}
+        <section id="pricing" className="border-y border-border bg-brand-50/60 py-20 dark:bg-brand-900/10">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">Pick Your Plan</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
+              Scale your content creation with higher limits, premium AI models, and faster rendering.
+            </p>
+            <div className="mt-10"><PricingCards /></div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="mx-auto max-w-6xl px-4 py-20">
+          <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">Frequently asked questions</h2>
+          <div className="mt-10"><FAQTabs /></div>
         </section>
 
         {/* CTA */}
-        <section className="mx-auto max-w-4xl px-4 py-24 text-center">
-          <h2 className="text-3xl font-bold">Ready to forge your next viral video?</h2>
-          <p className="mt-3 text-muted-foreground">Create your free account — no credit card required.</p>
-          <Button asChild size="lg" className="mt-8">
-            <Link href="/signup">
-              Get started <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+        <section className="mx-auto max-w-4xl px-4 pb-28 pt-4 text-center">
+          <div className="rounded-3xl bg-ink p-12">
+            <h2 className="text-3xl font-extrabold text-white">Start creating with CreatorForge today</h2>
+            <p className="mt-3 text-white/70">Your first project is free — no credit card required.</p>
+            <a href="/signup" className="mt-8 inline-flex rounded-full bg-brand-300 px-6 py-3 font-semibold text-brand-900 hover:bg-brand-400">
+              Start Creating Now
+            </a>
+          </div>
         </section>
       </main>
 
-      <Footer />
+      <SiteFooter />
+      <FloatingPromptBar />
     </div>
   );
 }
