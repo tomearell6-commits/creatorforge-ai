@@ -1,20 +1,12 @@
-import { Check, CreditCard, Bitcoin } from "lucide-react";
+import { Check, Bitcoin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { PLANS } from "@/lib/constants";
-import { PaddleScript, UpgradeButton } from "@/components/dashboard/PaddleCheckout";
 import { CryptoButton } from "@/components/dashboard/CryptoButton";
 
 export const metadata = { title: "Billing — CreatorForge AI" };
-
-// Plan → Paddle Price ID (from env). Undefined until configured.
-const PRICE_IDS: Record<string, string | undefined> = {
-  creator: process.env.NEXT_PUBLIC_PADDLE_PRICE_CREATOR,
-  pro: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO,
-  agency: process.env.NEXT_PUBLIC_PADDLE_PRICE_AGENCY,
-};
 
 export default async function BillingPage() {
   const supabase = await createClient();
@@ -34,13 +26,8 @@ export default async function BillingPage() {
     credits = profile?.credits ?? 0;
   }
 
-  // Paddle stays hidden until card verification is approved — flip
-  // NEXT_PUBLIC_ENABLE_PADDLE=true to turn it on. Crypto (NOWPayments) is always available.
-  const paddleEnabled = process.env.NEXT_PUBLIC_ENABLE_PADDLE === "true";
-
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      {paddleEnabled && <PaddleScript />}
       <div>
         <h1 className="text-2xl font-bold">Billing</h1>
         <p className="mt-1 text-muted-foreground">Manage your plan and credits.</p>
@@ -57,29 +44,18 @@ export default async function BillingPage() {
         </div>
       </Card>
 
-      {/* Payment methods */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <div className="flex items-center gap-2">
-            <Bitcoin className="h-5 w-5 text-brand-600" />
-            <CardTitle>Crypto</CardTitle>
-          </div>
-          <CardDescription className="mt-2">
-            Pay with crypto via NOWPayments — use the crypto option on any plan below.
-          </CardDescription>
-        </Card>
-        <Card>
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-muted-foreground" />
-            <CardTitle>Card / Paddle</CardTitle>
-          </div>
-          <CardDescription className="mt-2">
-            {paddleEnabled
-              ? "Subscribe by card via Paddle — pick a plan below and check out securely."
-              : "Card payments are coming soon (pending Paddle verification). Crypto is available now."}
-          </CardDescription>
-        </Card>
-      </div>
+      {/* Payment method — crypto only */}
+      <Card>
+        <div className="flex items-center gap-2">
+          <Bitcoin className="h-5 w-5 text-brand-600" />
+          <CardTitle>Pay with crypto</CardTitle>
+        </div>
+        <CardDescription className="mt-2">
+          CreatorForge accepts crypto payments via NOWPayments (BTC, ETH, USDT, and more).
+          Pick a plan below and check out securely — credits are added automatically once the
+          payment confirms.
+        </CardDescription>
+      </Card>
 
       {/* Plans */}
       <div>
@@ -88,10 +64,7 @@ export default async function BillingPage() {
           {PLANS.map((plan) => {
             const isCurrent = plan.id === currentPlan;
             return (
-              <Card
-                key={plan.id}
-                className={cn("flex flex-col", plan.highlighted && "border-brand-600")}
-              >
+              <Card key={plan.id} className={cn("flex flex-col", plan.highlighted && "border-brand-600")}>
                 <h3 className="font-bold">{plan.name}</h3>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold">${plan.price}</span>
@@ -114,18 +87,7 @@ export default async function BillingPage() {
                     Free
                   </Button>
                 ) : (
-                  <>
-                    {paddleEnabled && (
-                      <UpgradeButton
-                        priceId={PRICE_IDS[plan.id]}
-                        planId={plan.id}
-                        label={`Upgrade to ${plan.name}`}
-                        userId={user?.id ?? ""}
-                        email={user?.email ?? ""}
-                      />
-                    )}
-                    <CryptoButton planId={plan.id} label={`Subscribe — $${plan.price}/mo in crypto`} />
-                  </>
+                  <CryptoButton planId={plan.id} label={`Subscribe — $${plan.price}/mo in crypto`} />
                 )}
               </Card>
             );

@@ -136,9 +136,48 @@ export const FAQ_TABS = [
 
 /** Footer link columns. */
 export const FOOTER_COLUMNS = [
-  { heading: "Popular Tools", links: ["Image to Video AI", "AI UGC Video Generator", "Script to Video AI", "AI YouTube Shorts Generator", "TikTok Ad Maker", "Instagram Video Ad Maker", "Caption Generator"] },
-  { heading: "Video Makers", links: ["Promo Video Maker", "Product Video Maker", "Business Video Maker", "Explainer Video Maker", "Animated Video Maker", "Slideshow Video Maker"] },
-  { heading: "Use Cases", links: ["Anniversary Video Maker", "Birthday Video Maker", "Meme Video Maker", "Wedding Invitation Maker", "Motivational Video Generator"] },
-  { heading: "Education", links: ["Training Video Maker", "Tutorial Video Maker", "Presentation Maker", "Whiteboard Video Maker"] },
-  { heading: "Resources", links: ["Blog", "Affiliate", "Pricing", "Community", "Help Center"] },
+  {
+    heading: "Popular Tools",
+    links: [
+      "Image to Video AI", "AI UGC Video Generator", "Script to Video AI",
+      "AI YouTube Shorts Generator", "AI TikTok Video Generator", "AI Image Generator",
+      "TikTok Ad Maker", "Instagram Video Ad Maker", "AI Shorts Series Maker",
+      "YouTube Caption Generator", "TikTok Caption Generator", "Instagram Caption Generator",
+      "Facebook Caption Generator", "LinkedIn Caption Generator",
+    ],
+  },
+  {
+    heading: "Video Maker by Use Case",
+    links: [
+      "Promo Video Maker", "Product Video Maker", "Business Video Maker",
+      "Marketing Video Maker", "Explainer Video Maker", "Game Video Maker",
+      "Animated Video Maker", "Lyric Video Maker", "Collage Video Maker",
+      "Slideshow Video Maker", "Facebook Ad Video Maker", "Intro Video Maker",
+      "Cartoon Video Maker", "Food Video Maker",
+    ],
+  },
+  {
+    heading: "Special Occasion Makers",
+    links: [
+      "Anniversary Video Maker", "Birthday Video Maker", "Video Meme Maker",
+      "Memorial Video Maker", "Wedding Invitation Maker", "Funny Video Maker",
+      "Animation Generator", "Motivational Video Generator", "Photo to Cartoon AI",
+      "Photo to Anime AI", "Video with Words Generator",
+    ],
+  },
+  {
+    heading: "Education & Training",
+    links: [
+      "Training Video Maker", "Tutorial Video Maker", "Presentation Maker",
+      "Whiteboard Video Maker", "Course Video Maker", "Onboarding Video Maker",
+      "How-To Video Maker", "Demo Video Maker", "Highlight Video Maker",
+    ],
+  },
+  {
+    heading: "Resources",
+    links: [
+      "Blog", "Affiliate Program", "Pricing", "Community", "Help Center",
+      "Templates", "Roadmap", "Status", "Contact", "Terms", "Privacy",
+    ],
+  },
 ];
