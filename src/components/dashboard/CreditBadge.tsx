@@ -9,9 +9,9 @@ export function CreditBadge({ credits, plan }: { credits: number; plan: string }
         {plan} plan
       </span>
       <Link
-        href="/dashboard/billing"
+        href="/dashboard/credits"
         className="inline-flex items-center gap-1.5 rounded-full bg-brand-300 px-3 py-1 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-400"
-        title="Buy more credits"
+        title="Top up credits"
       >
         <Coins className="h-4 w-4" />
         {credits.toLocaleString()} credits

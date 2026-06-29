@@ -291,6 +291,7 @@ export const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
+  { href: "/admin/wallet", label: "Credit Wallet" },
   { href: "/admin/support", label: "Support Tickets" },
   { href: "/admin/monitoring", label: "Platform Health" },
   { href: "/admin/audit", label: "Audit Logs" },
@@ -358,3 +359,86 @@ export const SEO_CREDIT_COSTS = {
 export const SEO_ARTICLE_TYPES = ["How-to guide", "Listicle", "Product review", "Comparison", "Ultimate guide", "Opinion / thought leadership", "News", "Case study"] as const;
 export const SEO_SEARCH_INTENTS = ["Informational", "Commercial", "Transactional", "Navigational"] as const;
 export const SEO_WORD_COUNTS = [800, 1200, 1500, 2000, 3000] as const;
+
+// =====================================================================
+// Credit Wallet & Crypto Top-Up (Phase 8)
+// =====================================================================
+
+export type CreditPackage = {
+  slug: string;
+  name: string;
+  usdPrice: number;
+  credits: number;
+  bonus: number;
+  /** Marketing tag for the UI ("Best value", "Most popular"…). */
+  tag?: string;
+  highlighted?: boolean;
+};
+
+/**
+ * Default top-up catalogue. Mirrors the seed in 0010_credit_wallet.sql — the DB
+ * `credit_packages` table is authoritative at runtime (admins can edit it); this
+ * is the fallback/initial set and keeps the UI working before any DB read.
+ */
+export const CREDIT_PACKAGES: CreditPackage[] = [
+  { slug: "starter",    name: "Starter Pack",    usdPrice: 10,  credits: 1000,  bonus: 0 },
+  { slug: "small",      name: "Small Creator",   usdPrice: 25,  credits: 3000,  bonus: 0, tag: "Popular", highlighted: true },
+  { slug: "creator",    name: "Creator Pack",    usdPrice: 50,  credits: 7000,  bonus: 0 },
+  { slug: "growth",     name: "Growth Pack",     usdPrice: 100, credits: 15000, bonus: 0, tag: "Best value" },
+  { slug: "business",   name: "Business Pack",   usdPrice: 250, credits: 40000, bonus: 0 },
+  { slug: "enterprise", name: "Enterprise Pack", usdPrice: 500, credits: 90000, bonus: 0 },
+];
+
+/** Cryptocurrencies offered at checkout. Provider decides which are settleable. */
+export const SUPPORTED_CRYPTO = [
+  { code: "BTC",  name: "Bitcoin",      emoji: "₿" },
+  { code: "ETH",  name: "Ethereum",     emoji: "Ξ" },
+  { code: "USDT", name: "Tether",       emoji: "₮" },
+  { code: "USDC", name: "USD Coin",     emoji: "$" },
+  { code: "LTC",  name: "Litecoin",     emoji: "Ł" },
+  { code: "SOL",  name: "Solana",       emoji: "◎" },
+] as const;
+export type CryptoCode = (typeof SUPPORTED_CRYPTO)[number]["code"];
+
+/** Custom purchase bounds + conversion (admin-configurable; these are defaults). */
+export const MIN_PURCHASE_USD = 10;
+export const MAX_PURCHASE_USD = 2000;
+/** Base rate for CUSTOM purchases (100 credits per $1 = the Starter rate; named
+ *  packages give better rates by design, so custom is never the cheapest path). */
+export const CREDITS_PER_USD = 100;
+/** Processing fee on credit top-ups. Crypto = 0% (no card fees). */
+export const PROCESSING_FEE_PCT = 0;
+
+/** Low-balance warning thresholds (fraction of the plan's monthly allowance). */
+export const WALLET_WARN_FRACTION = 0.2;  // subtle warning under 20%
+export const WALLET_CRITICAL_FRACTION = 0.1; // stronger warning under 10%
+
+/**
+ * Per-action credit estimates surfaced in the UI before generation. These mirror
+ * the REAL costs charged elsewhere (CREDIT_COSTS / RENDER_TIERS / SEO_CREDIT_COSTS
+ * / CREDITS_PER_SCRIPT) so the estimate matches the actual deduction. Render is a
+ * range because it depends on the chosen AI tier.
+ */
+export type ActionEstimate = { id: string; label: string; credits: number; note?: string };
+export const ACTION_CREDIT_ESTIMATES: ActionEstimate[] = [
+  { id: "script",        label: "Generate Script",      credits: CREDITS_PER_SCRIPT },
+  { id: "voiceover",     label: "Generate Voiceover",   credits: CREDIT_COSTS.voiceover },
+  { id: "image",         label: "Generate Image",       credits: CREDIT_COSTS.image },
+  { id: "thumbnail",     label: "Generate Thumbnail",   credits: CREDIT_COSTS.thumbnail },
+  { id: "seo_article",   label: "Generate SEO Article", credits: SEO_CREDIT_COSTS.article },
+  { id: "publish",       label: "Publish to WordPress", credits: SEO_CREDIT_COSTS.publish },
+  { id: "render_slideshow", label: "Render Slideshow",  credits: RENDER_TIERS[0].credits },
+  { id: "render_ai",     label: "Render AI Video",      credits: RENDER_TIERS[1].credits, note: "Standard tier; Pro/Cinematic cost more" },
+  { id: "tool",          label: "AI Text Tool",         credits: 1 },
+];
+
+export function actionEstimate(id: string): ActionEstimate | undefined {
+  return ACTION_CREDIT_ESTIMATES.find((a) => a.id === id);
+}
+
+/** Ledger entry types (must match the DB CHECK-free text values in 0010). */
+export const LEDGER_ENTRY_TYPES = [
+  "monthly_renewal", "topup_purchase", "refund", "bonus", "promo",
+  "manual_adjustment", "generation", "rendering", "publishing", "admin_adjustment",
+] as const;
+export type LedgerEntryType = (typeof LEDGER_ENTRY_TYPES)[number];

@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
+import { getWalletSummary } from "@/lib/credits/wallet";
+import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard";
 
 export const metadata = { title: "Dashboard — CreatorForge AI" };
 
@@ -23,6 +25,8 @@ export default async function DashboardHome() {
     .from("projects")
     .select("id", { count: "exact", head: true });
 
+  const wallet = await getWalletSummary();
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div>
@@ -31,6 +35,8 @@ export default async function DashboardHome() {
         </h1>
         <p className="mt-1 text-muted-foreground">Here&apos;s what&apos;s happening in your workspace.</p>
       </div>
+
+      {wallet && <DashboardCreditCard summary={wallet} />}
 
       {/* Quick stats */}
       <div className="grid gap-4 sm:grid-cols-3">
@@ -98,13 +104,18 @@ export default async function DashboardHome() {
       <Card className="flex items-center justify-between">
         <div>
           <CardTitle>Need more credits?</CardTitle>
-          <CardDescription>Upgrade your plan to generate more content.</CardDescription>
+          <CardDescription>Top up instantly with crypto, or upgrade your plan.</CardDescription>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/billing">
-            <CreditCard className="h-4 w-4" /> Billing
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="accent">
+            <Link href="/dashboard/credits">
+              <CreditCard className="h-4 w-4" /> Top Up
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/dashboard/billing">Billing</Link>
+          </Button>
+        </div>
       </Card>
     </div>
   );

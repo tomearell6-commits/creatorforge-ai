@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FolderKanban, CreditCard, Settings, Server, Share2, CalendarDays,
   BarChart3, Bell, Users, Workflow, KeyRound, LifeBuoy, Gift, Handshake, Palette,
   Crown, Video, Music, LayoutTemplate, Search, Globe, Library, Megaphone, Image as ImageIcon,
-  LayoutGrid,
+  LayoutGrid, Wallet,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
@@ -40,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/seo/sites", label: "WordPress Sites", icon: Globe },
       { href: "/dashboard/social", label: "Social Accounts", icon: Share2 },
       { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/dashboard/credits", label: "Credit Wallet", icon: Wallet },
       { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ],
