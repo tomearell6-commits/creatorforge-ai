@@ -293,6 +293,7 @@ export const ADMIN_NAV = [
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/wallet", label: "Credit Wallet" },
   { href: "/admin/assistant", label: "AI Assistant" },
+  { href: "/admin/seo-audit", label: "SEO Audit" },
   { href: "/admin/support", label: "Support Tickets" },
   { href: "/admin/monitoring", label: "Platform Health" },
   { href: "/admin/audit", label: "Audit Logs" },
@@ -373,6 +374,21 @@ export const SEO_CREDIT_COSTS = {
   publish: 2,         // WordPress publish
   report: 1,
 } as const;
+
+// SEO Audit tool — audit types + credit pricing.
+export type SeoAuditTypeDef = { id: string; name: string; credits: number; description: string };
+export const SEO_AUDIT_TYPES: SeoAuditTypeDef[] = [
+  { id: "quick",     name: "Quick Audit",         credits: 25,  description: "Title, meta, headings, images, links, sitemap, robots.txt & structure." },
+  { id: "full",      name: "Full Audit",          credits: 100, description: "Complete technical, content, performance & ranking health report." },
+  { id: "wordpress", name: "WordPress Audit",     credits: 75,  description: "WP SEO setup, Rank Math/AIOSEO readiness, permalinks, sitemap, blog." },
+  { id: "ecommerce", name: "Ecommerce SEO Audit", credits: 120, description: "Product/category pages, schema, duplicate content, image alt, conversion SEO." },
+  { id: "blog",      name: "Blog SEO Audit",      credits: 60,  description: "Blog structure, keywords, internal links, readability, topical authority." },
+];
+export const SEO_AUDIT_FIX_PLAN_CREDITS = 25;
+export const SEO_AUDIT_PDF_CREDITS = 5;
+export function seoAuditType(id: string): SeoAuditTypeDef {
+  return SEO_AUDIT_TYPES.find((t) => t.id === id) ?? SEO_AUDIT_TYPES[0];
+}
 
 export const SEO_ARTICLE_TYPES = ["How-to guide", "Listicle", "Product review", "Comparison", "Ultimate guide", "Opinion / thought leadership", "News", "Case study"] as const;
 export const SEO_SEARCH_INTENTS = ["Informational", "Commercial", "Transactional", "Navigational"] as const;

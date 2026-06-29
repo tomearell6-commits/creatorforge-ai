@@ -67,6 +67,7 @@ const GROUP_ITEMS: Record<string, Raw[]> = {
   ],
   seo: [
     { name: "SEO Blog Post Generator", featured: true },
+    { name: "SEO Audit", featured: true, route: "/dashboard/seo/audit" },
     { name: "WordPress Auto Poster", route: "/dashboard/seo/sites" },
     "AI SEO Article Writer",
     { name: "Keyword Content Planner", route: "/dashboard/tools/keyword-planner" },

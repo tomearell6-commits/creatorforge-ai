@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, ArrowLeft, Coins, Check } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -7,8 +8,15 @@ import { WORKFLOWS } from "@/config/contentWorkflows";
 
 export const metadata = { title: "Create — CreatorForge AI" };
 
+// Marketing/footer labels that should jump straight to a dedicated tool page.
+const SLUG_ALIASES: Record<string, string> = {
+  "seo-website-audit-tool": "/dashboard/seo/audit",
+  "seo-audit": "/dashboard/seo/audit",
+};
+
 export default async function CategoryWorkflowPage({ params }: { params: Promise<{ categorySlug: string }> }) {
   const { categorySlug } = await params;
+  if (SLUG_ALIASES[categorySlug]) redirect(SLUG_ALIASES[categorySlug]);
   const category = getCategoryBySlug(categorySlug);
 
   if (!category) {

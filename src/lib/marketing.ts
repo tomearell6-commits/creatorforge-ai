@@ -15,7 +15,7 @@ export const HERO_MODELS = [
 
 /** Horizontal tool/model pills under the hero. */
 export const TOOL_PILLS = [
-  "AI Shorts", "SEO Blog Posts", "WordPress Publishing", "Image to Video", "Text to Image",
+  "AI Shorts", "SEO Blog Posts", "SEO Audit", "WordPress Publishing", "Image to Video", "Text to Image",
   "Script to Video", "AI UGC", "Product Ads", "Music Video", "Talking Avatar",
   "Caption Generator", "YouTube Shorts", "TikTok Ads", "Instagram Reels",
 ];
@@ -160,7 +160,7 @@ export const FOOTER_COLUMNS = [
   {
     heading: "SEO Tools",
     links: [
-      "SEO Blog Post Generator", "WordPress Auto Poster", "AI SEO Article Writer",
+      "SEO Blog Post Generator", "SEO Website Audit Tool", "WordPress Auto Poster", "AI SEO Article Writer",
       "Blog Content Calendar", "Meta Description Generator", "SEO Title Generator",
       "Keyword Content Planner",
     ],
