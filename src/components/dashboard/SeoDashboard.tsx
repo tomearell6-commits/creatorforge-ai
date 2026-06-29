@@ -51,13 +51,17 @@ export function SeoDashboard() {
         {!loading && articles.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No articles yet — create your first SEO article.</p>}
         <div className="mt-3 space-y-2">
           {articles.slice(0, 12).map((a) => (
-            <div key={a.id} className="flex items-center justify-between rounded-lg border border-border p-2 text-sm">
+            <Link
+              key={a.id}
+              href={`/dashboard/seo/new?article=${a.id}`}
+              className="flex items-center justify-between rounded-lg border border-border p-2 text-sm transition-colors hover:border-brand-400 hover:bg-muted/40"
+            >
               <div className="min-w-0">
                 <div className="truncate font-medium">{a.seo_title || a.main_keyword}</div>
                 <div className="text-xs text-muted-foreground">{a.main_keyword} · SEO {a.seo_score ?? "—"}</div>
               </div>
               <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${a.status === "published" ? "bg-green-100 text-green-700" : a.status === "failed" ? "bg-red-100 text-red-700" : a.status === "scheduled" ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground"}`}>{a.status}</span>
-            </div>
+            </Link>
           ))}
         </div>
       </Card>

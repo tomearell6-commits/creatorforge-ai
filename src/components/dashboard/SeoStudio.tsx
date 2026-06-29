@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label, Textarea } from "@/components/ui/Input";
@@ -16,7 +17,7 @@ type Article = {
 };
 type Site = { id: string; site_name: string; site_url: string };
 
-export function SeoStudio() {
+export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = {}) {
   const [form, setForm] = useState({
     mainKeyword: "", secondaryKeywords: "", targetCountry: "", targetAudience: "",
     searchIntent: SEO_SEARCH_INTENTS[0] as string, articleType: SEO_ARTICLE_TYPES[0] as string, tone: "professional",
@@ -34,6 +35,12 @@ export function SeoStudio() {
   useEffect(() => {
     fetch("/api/wordpress/sites").then((r) => r.json()).then((j) => { setSites(j.sites ?? []); if (j.sites?.[0]) setSiteId(j.sites[0].id); });
   }, []);
+
+  // Open an existing article in the editor (from the SEO Dashboard).
+  useEffect(() => {
+    if (!initialArticleId) return;
+    fetch(`/api/seo/articles/${initialArticleId}`).then((r) => r.json()).then((j) => { if (j.article) setArticle(j.article); });
+  }, [initialArticleId]);
 
   async function generate() {
     if (!form.mainKeyword.trim()) { setMsg("Enter a main keyword."); return; }
@@ -147,7 +154,12 @@ export function SeoStudio() {
         <Card className="space-y-3">
           <h3 className="font-semibold">Publish to WordPress</h3>
           {sites.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No sites yet — connect one in <span className="font-medium">WordPress Sites</span>.</p>
+            <div className="rounded-lg border border-dashed border-border p-3 text-center">
+              <p className="text-sm text-muted-foreground">No WordPress site connected yet.</p>
+              <Button asChild size="sm" variant="accent" className="mt-2">
+                <Link href="/dashboard/seo/sites">Connect WordPress</Link>
+              </Button>
+            </div>
           ) : (
             <select className={sel} value={siteId} onChange={(e) => setSiteId(e.target.value)}>
               {sites.map((s) => <option key={s.id} value={s.id}>{s.site_name}</option>)}
