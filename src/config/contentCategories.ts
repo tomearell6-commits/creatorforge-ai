@@ -68,12 +68,14 @@ const GROUP_ITEMS: Record<string, Raw[]> = {
   seo: [
     { name: "SEO Blog Post Generator", featured: true },
     { name: "WordPress Auto Poster", route: "/dashboard/seo/sites" },
-    "AI SEO Article Writer", "Keyword Content Planner",
+    "AI SEO Article Writer",
+    { name: "Keyword Content Planner", route: "/dashboard/tools/keyword-planner" },
     { name: "Meta Title Generator", route: "/dashboard/tools/meta-title-generator" },
     { name: "Meta Description Generator", route: "/dashboard/tools/meta-description-generator" },
     { name: "Blog Content Calendar", route: "/dashboard/seo/calendar" },
     { name: "Product Description Generator", route: "/dashboard/tools/product-description" },
-    "Landing Page Copy Generator", "FAQ Generator", "Schema Markup Assistant",
+    { name: "Landing Page Copy Generator", route: "/dashboard/tools/landing-copy" },
+    { name: "FAQ Generator", route: "/dashboard/tools/faq-generator" }, "Schema Markup Assistant",
   ],
   social: [
     { name: "Social Media Captions", featured: true }, "Instagram Captions", "TikTok Captions",
@@ -81,7 +83,8 @@ const GROUP_ITEMS: Record<string, Raw[]> = {
     "LinkedIn Posts", "Facebook Posts", "X/Twitter Posts",
     { name: "Hashtag Generator", route: "/dashboard/tools/hashtag-generator" },
     { name: "Content Calendar", route: "/dashboard/calendar" },
-    { name: "Viral Hook Generator", route: "/dashboard/tools/viral-hook-generator" }, "Newsletter Summary",
+    { name: "Viral Hook Generator", route: "/dashboard/tools/viral-hook-generator" },
+    { name: "Newsletter Summary", route: "/dashboard/tools/newsletter" },
   ],
   audio: [
     { name: "AI Voiceover", featured: true }, "Podcast Scripts", "Audio Ads",
