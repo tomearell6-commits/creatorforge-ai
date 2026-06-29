@@ -22,7 +22,7 @@ export function TemplateGallery() {
                 </div>
                 <div className="flex items-center justify-between p-3">
                   <span className="text-sm font-medium text-ink dark:text-foreground">{item}</span>
-                  <Link href="/signup" className="text-xs font-semibold text-brand-700 hover:underline">Recreate</Link>
+                  <Link href="/dashboard/templates" className="text-xs font-semibold text-brand-700 hover:underline">Recreate</Link>
                 </div>
               </div>
             ))}
