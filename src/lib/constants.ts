@@ -292,6 +292,7 @@ export const ADMIN_NAV = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/wallet", label: "Credit Wallet" },
+  { href: "/admin/assistant", label: "AI Assistant" },
   { href: "/admin/support", label: "Support Tickets" },
   { href: "/admin/monitoring", label: "Platform Health" },
   { href: "/admin/audit", label: "Audit Logs" },

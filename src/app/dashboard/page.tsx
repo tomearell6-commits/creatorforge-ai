@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { getWalletSummary } from "@/lib/credits/wallet";
 import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard";
+import { AssistantOnboardingCard } from "@/components/dashboard/AssistantOnboardingCard";
 
 export const metadata = { title: "Dashboard — CreatorForge AI" };
 
@@ -37,6 +38,8 @@ export default async function DashboardHome() {
       </div>
 
       {wallet && <DashboardCreditCard summary={wallet} />}
+
+      <AssistantOnboardingCard />
 
       {/* Quick stats */}
       <div className="grid gap-4 sm:grid-cols-3">
