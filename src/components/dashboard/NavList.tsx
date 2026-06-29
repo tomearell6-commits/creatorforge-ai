@@ -1,0 +1,42 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { NAV_GROUPS } from "./nav-config";
+import { cn } from "@/lib/utils";
+
+/** Renders the grouped nav links. Shared by the desktop sidebar + mobile drawer. */
+export function NavList({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+  return (
+    <nav className="flex-1 space-y-4 overflow-y-auto p-4">
+      {NAV_GROUPS.map((group, gi) => (
+        <div key={gi} className="space-y-1">
+          {group.heading && (
+            <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {group.heading}
+            </p>
+          )}
+          {group.items.map(({ href, label, icon: Icon }) => {
+            const base = href.split("?")[0];
+            const active = pathname === base;
+            return (
+              <Link
+                key={`${href}-${label}`}
+                href={href}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  active ? "bg-brand-600 text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
+    </nav>
+  );
+}

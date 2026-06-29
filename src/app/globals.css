@@ -37,3 +37,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .cf-fade { animation: cf-fade-in 0.2s ease-out; }
+
+/* Mobile nav drawer slide-in */
+@keyframes cf-slide-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.cf-slide-in { animation: cf-slide-in 0.18s ease-out; }
