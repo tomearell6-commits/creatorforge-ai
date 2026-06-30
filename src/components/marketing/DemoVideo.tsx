@@ -8,7 +8,7 @@ import { getServerLocale } from "@/lib/i18n-server";
  *  Override the source with NEXT_PUBLIC_DEMO_VIDEO_URL. */
 const VIDEO_URL =
   process.env.NEXT_PUBLIC_DEMO_VIDEO_URL ||
-  "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/marketing/demo.mp4";
+  "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/avatar-overview.mp4";
 
 export async function DemoVideo() {
   const t = getDictionary(await getServerLocale());
