@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Wand2 } from "lucide-react";
+import { Wand2, Star, Sparkles, Clapperboard, Megaphone, Image as ImageIcon, FileText, MessageSquare, Mic, Workflow, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 import { CATEGORY_GROUPS } from "@/config/contentCategories";
 import { WORKFLOWS } from "@/config/contentWorkflows";
 import { CONTENT_TEMPLATES, TEMPLATE_PLATFORMS, TEMPLATE_OUTPUTS } from "@/config/contentTemplates";
+import { BrandIcon, hasBrandIcon } from "@/components/icons/BrandIcon";
 
 const sel = "h-9 rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
+
+// Each template's group maps to one Lucide glyph — replaces ad-hoc emoji on cards.
+const GROUP_ICON: Record<string, LucideIcon> = {
+  video: Clapperboard, ad: Megaphone, image: ImageIcon, seo: FileText,
+  social: MessageSquare, audio: Mic, automation: Workflow,
+};
 
 export function TemplatesGallery({ initialGroup }: { initialGroup?: string }) {
   const [group, setGroup] = useState(initialGroup && CATEGORY_GROUPS.some((g) => g.id === initialGroup) ? initialGroup : "all");
@@ -48,17 +55,29 @@ export function TemplatesGallery({ initialGroup }: { initialGroup?: string }) {
           <option value="all">All outputs</option>
           {TEMPLATE_OUTPUTS.map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
-        <button onClick={() => setPopular((v) => !v)} className={cn("rounded-full border px-3 py-1.5 text-sm", popular ? "border-brand-600 bg-brand-600 text-white" : "border-border")}>★ Popular</button>
-        <button onClick={() => setFresh((v) => !v)} className={cn("rounded-full border px-3 py-1.5 text-sm", fresh ? "border-brand-600 bg-brand-600 text-white" : "border-border")}>✨ New</button>
+        <button onClick={() => setPopular((v) => !v)} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm", popular ? "border-brand-600 bg-brand-600 text-white" : "border-border")}><Star className="h-3.5 w-3.5" /> Popular</button>
+        <button onClick={() => setFresh((v) => !v)} className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm", fresh ? "border-brand-600 bg-brand-600 text-white" : "border-border")}><Sparkles className="h-3.5 w-3.5" /> New</button>
         <span className="ml-auto text-sm text-muted-foreground">{list.length} template{list.length === 1 ? "" : "s"}</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {list.map((t) => (
+        {list.map((t) => {
+          const GroupIcon = GROUP_ICON[t.group] ?? Sparkles;
+          const brandPlatforms = t.platforms.filter((p) => hasBrandIcon(p));
+          return (
           <Link key={t.id} href={t.route}>
             <Card className="group h-full transition-colors hover:border-brand-400">
-              <div className="relative flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-brand-100 to-muted text-4xl">
-                {t.emoji}
+              <div className="relative flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-brand-100 to-muted">
+                <GroupIcon className="h-10 w-10 text-brand-700" aria-hidden />
+                {brandPlatforms.length > 0 && (
+                  <div className="absolute bottom-2 right-2 flex gap-1">
+                    {brandPlatforms.slice(0, 3).map((p) => (
+                      <span key={p} className="flex h-5 w-5 items-center justify-center rounded-full bg-background/90 shadow-sm" title={p}>
+                        <BrandIcon platform={p} className="h-3 w-3" />
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {t.featured && <span className="absolute left-2 top-2 rounded-full bg-brand-300 px-2 py-0.5 text-[10px] font-semibold text-brand-900">Popular</span>}
                 {t.isNew && <span className="absolute right-2 top-2 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold text-background">New</span>}
               </div>
@@ -76,7 +95,8 @@ export function TemplatesGallery({ initialGroup }: { initialGroup?: string }) {
               </div>
             </Card>
           </Link>
-        ))}
+          );
+        })}
         {list.length === 0 && <p className="text-sm text-muted-foreground">No templates match those filters.</p>}
       </div>
     </div>
