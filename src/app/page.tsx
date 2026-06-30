@@ -13,6 +13,8 @@ import { DemoVideo } from "@/components/marketing/DemoVideo";
 import { FloatingPromptBar } from "@/components/marketing/FloatingPromptBar";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { FEATURE_CARDS } from "@/lib/marketing";
+import { getDictionary } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
 
 const JSON_LD = {
   "@context": "https://schema.org",
@@ -26,7 +28,8 @@ const JSON_LD = {
   offers: { "@type": "Offer", price: "19", priceCurrency: "USD" },
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const t = getDictionary(await getServerLocale());
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
@@ -41,10 +44,10 @@ export default function LandingPage() {
               {[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}
             </div>
             <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight text-ink dark:text-foreground sm:text-6xl">
-              Your AI-Powered<br /><span className="italic">Content Creation Studio</span>
+              {t.hero.title1}<br /><span className="italic">{t.hero.title2}</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-soft dark:text-muted-foreground">
-              Create faceless videos, product ads, AI shorts, music videos, and social content in minutes.
+              {t.hero.subtitle}
             </p>
             <div className="mx-auto mt-8 max-w-2xl">
               <HeroPromptBox />

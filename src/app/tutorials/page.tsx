@@ -10,6 +10,12 @@ export const metadata = {
 
 const FALLBACK = [
   {
+    id: "avatar-overview", title: "Meet CreatorForge — guided by your AI host", category: "Getting Started",
+    description: "An AI presenter walks you through what CreatorForge does and how to get started.",
+    video_url: "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/avatar-overview.mp4",
+    duration: "0:45", level: "beginner",
+  },
+  {
     id: "walkthrough", title: "Full walkthrough — how CreatorForge works", category: "Getting Started",
     description: "A guided end-to-end demo of the platform, branded and narrated.",
     video_url: "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/full-walkthrough.mp4",
