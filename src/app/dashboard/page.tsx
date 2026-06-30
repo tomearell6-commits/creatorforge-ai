@@ -8,6 +8,8 @@ import { getWalletSummary } from "@/lib/credits/wallet";
 import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard";
 import { AssistantOnboardingCard } from "@/components/dashboard/AssistantOnboardingCard";
 import { StudioGrid } from "@/components/dashboard/StudioGrid";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
 
 export const metadata = { title: "Dashboard — CreatorForge AI" };
 
@@ -75,17 +77,19 @@ export default async function DashboardHome() {
                     {p.category} · {formatDate(p.created_at)}
                   </p>
                 </div>
-                <span className="rounded-full bg-muted px-3 py-1 text-xs capitalize">{p.status}</span>
+                <Badge variant={p.status === "published" || p.status === "completed" ? "success" : "default"}>{p.status}</Badge>
               </li>
             ))}
           </ul>
         ) : (
-          <div className="mt-6 flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-10 text-center">
-            <FolderKanban className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No projects yet.</p>
-            <Button asChild size="sm">
-              <Link href="/dashboard/projects/new">Create your first project</Link>
-            </Button>
+          <div className="mt-6">
+            <EmptyState
+              icon={FolderKanban}
+              title="No projects yet"
+              description="Create your first project to see it here."
+              actionLabel="Create your first project"
+              href="/dashboard/projects/new"
+            />
           </div>
         )}
       </Card>

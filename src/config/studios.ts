@@ -223,7 +223,6 @@ export const STUDIOS: Studio[] = [
         heading: "Performance & Usage",
         tools: [
           { label: "Analytics Dashboard", href: "/dashboard/analytics", icon: BarChart3 },
-          { label: "Campaign Reports", href: "/dashboard/ads/reports", icon: BarChart3 },
           { label: "Credit Usage", href: "/dashboard/credits", icon: Wallet, tour: "credit-topup" },
           { label: "API Usage", href: "/dashboard/api", icon: KeyRound },
         ],
