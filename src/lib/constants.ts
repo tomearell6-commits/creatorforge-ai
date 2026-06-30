@@ -139,9 +139,9 @@ export const PLANS: Plan[] = [
     id: "free",
     name: "Free Trial",
     price: 0,
-    credits: 20,
+    credits: 50,
     features: [
-      "20 trial credits to explore",
+      "50 trial credits to explore",
       "Access every studio & tool",
       "Scripts, captions & SEO drafts",
       "Slideshow video renders",
