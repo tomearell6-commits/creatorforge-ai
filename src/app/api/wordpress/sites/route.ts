@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { verifyWordPress, normalizeSite } from "@/lib/publishing/providers/wordpress";
 import { encryptSecret } from "@/lib/security/secrets";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
+import { getUserPlan, isFreePlan, FREE_LIMITS } from "@/lib/plan";
 
 /**
  * WordPress sites (SEO Studio). GET lists the user's sites (no credentials).
@@ -36,6 +37,16 @@ export async function POST(request: Request) {
   }
   // Validate URL.
   try { new URL(normalizeSite(siteUrl)); } catch { return NextResponse.json({ error: "Invalid site URL." }, { status: 400 }); }
+
+  // Free Trial: cap connected WordPress sites (updating an existing one is allowed).
+  if (isFreePlan(await getUserPlan(supabase))) {
+    const norm = normalizeSite(siteUrl);
+    const { data: existing } = await supabase.from("wordpress_sites").select("site_url").eq("user_id", user.id);
+    const list = existing ?? [];
+    if (!list.some((s) => s.site_url === norm) && list.length >= FREE_LIMITS.wordpressSites) {
+      return NextResponse.json({ error: `The Free Trial allows ${FREE_LIMITS.wordpressSites} connected WordPress site. Upgrade to connect more.`, code: "upgrade_required" }, { status: 403 });
+    }
+  }
 
   const verified = await verifyWordPress({ siteUrl, username, appPassword });
   if (!verified.ok) return NextResponse.json({ error: verified.error }, { status: 400 });
