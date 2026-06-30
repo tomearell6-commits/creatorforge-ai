@@ -1,4 +1,5 @@
-import { Check, Bitcoin } from "lucide-react";
+import Link from "next/link";
+import { Check, Bitcoin, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -52,9 +53,15 @@ export default async function BillingPage() {
         </div>
         <CardDescription className="mt-2">
           CreatorForge accepts crypto payments via NOWPayments (BTC, ETH, USDT, and more).
-          Pick a plan below and check out securely — credits are added automatically once the
-          payment confirms.
+          Choosing a plan below is a <strong>one-time purchase</strong> that adds that plan&apos;s monthly
+          credits to your wallet as soon as the payment confirms — it does not auto-renew. Buy again
+          (or top up anytime) when you need more credits.
         </CardDescription>
+        <div className="mt-3">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/credits"><Wallet className="h-4 w-4" /> Or top up credits in your Wallet</Link>
+          </Button>
+        </div>
       </Card>
 
       {/* Plans */}
@@ -87,7 +94,7 @@ export default async function BillingPage() {
                     Free
                   </Button>
                 ) : (
-                  <CryptoButton planId={plan.id} label={`Subscribe — $${plan.price}/mo in crypto`} />
+                  <CryptoButton planId={plan.id} label={`Get ${plan.name} — $${plan.price} in crypto`} />
                 )}
               </Card>
             );

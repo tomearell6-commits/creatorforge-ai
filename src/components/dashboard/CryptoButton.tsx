@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Bitcoin } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -19,7 +20,7 @@ export function CryptoButton({ planId, label }: { planId: string; label?: string
         body: JSON.stringify({ plan: planId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not start crypto checkout.");
+      if (!res.ok || !data.url) throw new Error(data.error || "Could not start crypto checkout. Please try again or top up via your Wallet.");
       window.location.href = data.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start crypto checkout.");
@@ -32,7 +33,12 @@ export function CryptoButton({ planId, label }: { planId: string; label?: string
       <Button variant="outline" className="w-full" onClick={pay} disabled={loading}>
         <Bitcoin className="h-4 w-4" /> {loading ? "Starting…" : label ?? "Pay with crypto"}
       </Button>
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="mt-1 text-xs text-red-500">
+          {error}{" "}
+          <Link href="/dashboard/credits" className="underline">Top up via Wallet →</Link>
+        </p>
+      )}
     </div>
   );
 }
