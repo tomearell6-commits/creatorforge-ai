@@ -571,6 +571,35 @@ export const AD_CREDIT_COSTS = {
   analysis: 2,        // AI campaign analysis/recommendations
 } as const;
 
+// =====================================================================
+// CreatorForge Publishing Studio (AI book writing)
+// =====================================================================
+export const BOOK_CATEGORIES = [
+  "Business", "Marketing", "Entrepreneurship", "Self Help", "Personal Development", "Finance", "Investing",
+  "Cryptocurrency", "Artificial Intelligence", "Technology", "Programming", "Health", "Fitness", "Nutrition",
+  "Cookbooks", "Travel", "Biography", "Memoir", "Children's Books", "Fairy Tales", "Educational", "Academic",
+  "Science", "History", "Religion", "Poetry", "Fantasy", "Science Fiction", "Mystery", "Thriller", "Romance",
+  "Horror", "Adventure", "Young Adult", "Graphic Novel Planning", "Comic Script", "Short Stories",
+  "Product Guides", "Training Manuals", "Ebooks", "Lead Magnets", "Workbooks", "Journals", "Prompt Books", "Custom Category",
+] as const;
+
+export const BOOK_WRITING_STYLES = ["Conversational", "Professional", "Academic", "Storytelling", "Instructional", "Inspirational", "Playful"] as const;
+export const BOOK_TONES = ["Friendly", "Authoritative", "Witty", "Empathetic", "Bold", "Calm", "Neutral"] as const;
+export const BOOK_READING_LEVELS = ["Children", "Young Adult", "General", "Professional", "Expert"] as const;
+export const BOOK_EXPORT_FORMATS = ["pdf", "docx", "epub", "md", "txt", "html"] as const;
+
+/** Credits charged per publishing action (real AI/conversion only; viewing free). */
+export const BOOK_CREDIT_COSTS = {
+  concept: 2,
+  outline: 5,
+  chapter: 10,
+  chapterTool: 2,     // rewrite/expand/improve/etc.
+  cover: 3,
+  illustration: 3,
+  marketing: 3,
+  export: 1,
+} as const;
+
 export const LEDGER_ENTRY_TYPES = [
   "monthly_renewal", "topup_purchase", "refund", "bonus", "promo",
   "manual_adjustment", "generation", "rendering", "publishing", "admin_adjustment",

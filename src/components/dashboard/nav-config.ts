@@ -3,6 +3,7 @@ import {
   BarChart3, Bell, Users, Workflow, KeyRound, LifeBuoy, Gift, Handshake, Palette,
   Crown, Video, Music, LayoutTemplate, Search, Globe, Library, Megaphone, Image as ImageIcon,
   LayoutGrid, Wallet, Rocket, ListChecks, History as HistoryIcon,
+  BookOpen, PenLine, FileDown,
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; tour?: string };
@@ -39,6 +40,19 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/autopilot/reports", label: "Reports", icon: BarChart3 },
       { href: "/dashboard/autopilot/history", label: "History", icon: HistoryIcon },
       { href: "/dashboard/autopilot/settings", label: "Settings", icon: Settings },
+    ],
+  },
+  {
+    heading: "Publishing Studio",
+    items: [
+      { href: "/dashboard/books", label: "Dashboard", icon: BookOpen },
+      { href: "/dashboard/books/library", label: "My Books", icon: Library },
+      { href: "/dashboard/books/new", label: "New Book", icon: LayoutGrid },
+      { href: "/dashboard/books/templates", label: "Book Templates", icon: LayoutTemplate },
+      { href: "/dashboard/books/marketing", label: "Book Marketing", icon: Megaphone },
+      { href: "/dashboard/books/cover", label: "Cover Studio", icon: ImageIcon },
+      { href: "/dashboard/books/export", label: "Export Center", icon: FileDown },
+      { href: "/dashboard/books/settings", label: "Settings", icon: PenLine },
     ],
   },
   {
