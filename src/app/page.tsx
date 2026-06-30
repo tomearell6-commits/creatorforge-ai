@@ -68,12 +68,12 @@ export default async function LandingPage() {
         {/* Workflow */}
         <section className="border-y border-border bg-brand-50/60 py-20 dark:bg-brand-900/10">
           <div className="mx-auto max-w-6xl px-4">
-            <p className="text-center text-sm font-bold uppercase tracking-wide text-brand-700">Your workflow</p>
+            <p className="text-center text-sm font-bold uppercase tracking-wide text-brand-700">{t.sections.workflowEyebrow}</p>
             <h2 className="mt-2 text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">
-              From Solo Creators to Growing Brands
+              {t.sections.workflowTitle}
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
-              CreatorForge helps creators and businesses produce content faster, test more ideas, and publish consistently.
+              {t.sections.workflowSubtitle}
             </p>
             <div className="mt-10"><WorkflowTabs /></div>
           </div>
@@ -81,9 +81,9 @@ export default async function LandingPage() {
 
         {/* Templates */}
         <section id="templates" className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">Templates for every format</h2>
+          <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">{t.sections.templatesTitle}</h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
-            Start from a proven format and recreate it with your own idea in one click.
+            {t.sections.templatesSubtitle}
           </p>
           <div className="mt-10"><TemplateGallery /></div>
         </section>
@@ -91,9 +91,9 @@ export default async function LandingPage() {
         {/* Pricing */}
         <section id="pricing" className="border-y border-border bg-brand-50/60 py-20 dark:bg-brand-900/10">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">Pick Your Plan</h2>
+            <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">{t.sections.pricingTitle}</h2>
             <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
-              Scale your content creation with higher limits, premium AI models, and faster rendering.
+              {t.sections.pricingSubtitle}
             </p>
             <div className="mt-10"><PricingCards /></div>
           </div>
@@ -108,10 +108,10 @@ export default async function LandingPage() {
         {/* FAQ */}
         <section className="mx-auto max-w-6xl px-4 py-20">
           <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
-            <h2 className="text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-4xl">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-4xl">{t.sections.faqTitle}</h2>
             <p className="text-sm text-muted-foreground">
-              Can&apos;t find the answer you&apos;re looking for? Reach out to our{" "}
-              <Link href="/dashboard/support" className="font-semibold text-brand-600 hover:text-brand-700">customer support</Link> team.
+              {t.sections.faqSupportPre}
+              <Link href="/dashboard/support" className="font-semibold text-brand-600 hover:text-brand-700">{t.sections.faqSupportLink}</Link>.
             </p>
           </div>
           <div className="mt-10"><FAQTabs /></div>
@@ -120,10 +120,10 @@ export default async function LandingPage() {
         {/* CTA */}
         <section className="mx-auto max-w-4xl px-4 pb-28 pt-4 text-center">
           <div className="rounded-3xl bg-ink p-12">
-            <h2 className="text-3xl font-extrabold text-white">Start creating with CreatorForge today</h2>
-            <p className="mt-3 text-white/70">Your first project is free — no credit card required.</p>
+            <h2 className="text-3xl font-extrabold text-white">{t.sections.ctaTitle}</h2>
+            <p className="mt-3 text-white/70">{t.sections.ctaSubtitle}</p>
             <a href="/signup" className="mt-8 inline-flex rounded-full bg-brand-300 px-6 py-3 font-semibold text-brand-900 hover:bg-brand-400">
-              Start Creating Now
+              {t.sections.ctaButton}
             </a>
           </div>
         </section>

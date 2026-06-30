@@ -43,10 +43,16 @@ select 'Full walkthrough — how CreatorForge works',
        '0:25', 'beginner', 1
 where not exists (select 1 from public.tutorials where title = 'Full walkthrough — how CreatorForge works');
 
+-- AI avatar lesson set (HeyGen-rendered, rehosted to Supabase storage).
 insert into public.tutorials (title, description, category, video_url, duration, level, sort_order)
-select 'How CreatorForge works — overview',
-       'A quick end-to-end tour: from a single prompt to a finished, published video.',
-       'Getting Started',
-       'https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/marketing/demo.mp4',
-       '0:21', 'beginner', 2
-where not exists (select 1 from public.tutorials where title = 'How CreatorForge works — overview');
+select * from (values
+  ('Create your first AI video','From a prompt to script, scenes, voiceover, visuals and a rendered MP4.','Create','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-create-video.mp4','0:30','beginner',3),
+  ('Generate an SEO blog post','Write an optimized article and publish it to WordPress.','SEO','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-seo-blog.mp4','0:25','beginner',4),
+  ('Run an SEO audit','Score your site and get a prioritized fix plan.','SEO','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-seo-audit.mp4','0:25','beginner',5),
+  ('Connect your accounts','Link social platforms and WordPress before publishing.','Publishing','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-connect.mp4','0:20','beginner',6),
+  ('Credits & crypto top-ups','How credits work and how to top up with crypto.','Billing','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-credits.mp4','0:25','beginner',7),
+  ('Set up Autopilot','Plan, schedule and publish content automatically.','Automation','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-autopilot.mp4','0:30','intermediate',8),
+  ('Forge AI Assistant & guided tours','Get instant help and step-by-step guided tours.','Getting Started','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-assistant.mp4','0:20','beginner',9),
+  ('Dark mode & wrap-up','Theme options and where to go next.','Getting Started','https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/lesson-wrap.mp4','0:20','beginner',10)
+) as v(title,description,category,video_url,duration,level,sort_order)
+where not exists (select 1 from public.tutorials t where t.title = v.title);

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { PLATFORMS } from "@/lib/constants";
+import { BrandIcon, hasBrandIcon } from "@/components/icons/BrandIcon";
 import type { SocialAccount, SocialPlatform } from "@/lib/types";
 
 function statusBadge(a: SocialAccount) {
@@ -123,7 +124,8 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
             <Card key={p.id} className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 font-semibold">
-                  <span className="text-xl">{p.emoji}</span> {p.name}
+                  {hasBrandIcon(p.id) ? <BrandIcon platform={p.id} className="h-5 w-5" /> : <span className="text-xl">{p.emoji}</span>}
+                  {p.name}
                 </div>
                 {acc ? statusBadge(acc) : <span className="text-xs text-muted-foreground">Not connected</span>}
               </div>

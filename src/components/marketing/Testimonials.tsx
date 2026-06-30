@@ -1,6 +1,8 @@
 import { Star } from "lucide-react";
 import { TESTIMONIALS, type Testimonial } from "@/lib/marketing";
 import { createClient } from "@/lib/supabase/server";
+import { getDictionary } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/i18n-server";
 
 /** Published testimonials from the DB, or the bundled samples as fallback. */
 async function loadTestimonials(): Promise<{ items: Testimonial[]; isSample: boolean }> {
@@ -42,13 +44,14 @@ function Card({ children }: { children: React.ReactNode }) {
 /** "Loved by creators worldwide" — original testimonials section (masonry grid). */
 export async function Testimonials() {
   const { items, isSample } = await loadTestimonials();
+  const t = getDictionary(await getServerLocale());
   return (
     <section className="mx-auto max-w-6xl px-4 py-20">
       <div className="text-center">
-        <p className="text-sm font-bold uppercase tracking-widest text-brand-600">Testimonials</p>
-        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-5xl">Loved by creators worldwide</h2>
+        <p className="text-sm font-bold uppercase tracking-widest text-brand-600">{t.sections.testimonialsEyebrow}</p>
+        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-5xl">{t.sections.testimonialsTitle}</h2>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-          Join thousands of creators, marketers, and entrepreneurs who trust CreatorForge for their content.
+          {t.sections.testimonialsSubtitle}
         </p>
       </div>
 
