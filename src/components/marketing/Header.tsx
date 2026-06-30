@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { LanguageBadge } from "./LanguageBadge";
 
 const NAV = [
   { label: "Tools", href: "#tools" },
@@ -22,7 +23,7 @@ export function Header() {
               {n.label}
             </Link>
           ))}
-          <span className="text-sm text-muted-foreground">🇬🇧 EN</span>
+          <LanguageBadge />
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />

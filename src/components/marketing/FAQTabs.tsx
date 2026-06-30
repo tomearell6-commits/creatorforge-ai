@@ -10,28 +10,37 @@ export function FAQTabs() {
 
   return (
     <div>
-      <div className="flex flex-wrap justify-center gap-2">
+      {/* Underline tab bar */}
+      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-b border-border">
         {FAQ_TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setActive(t.id)}
             className={cn(
-              "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
-              active === t.id ? "bg-brand-600 text-white" : "border border-border text-ink-soft hover:bg-muted dark:text-muted-foreground"
+              "relative -mb-px pb-3 text-sm font-semibold transition-colors",
+              active === t.id
+                ? "text-ink dark:text-foreground"
+                : "text-muted-foreground hover:text-ink dark:hover:text-foreground"
             )}
           >
             {t.label}
+            {active === t.id && (
+              <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-ink dark:bg-brand-500" />
+            )}
           </button>
         ))}
       </div>
-      <div className="mx-auto mt-6 max-w-3xl space-y-3">
+
+      {/* Two-column answer cards */}
+      <div className="mt-10 grid gap-5 md:grid-cols-2">
         {tab.items.map((item) => (
-          <details key={item.q} className="group rounded-2xl border border-border bg-card p-4">
-            <summary className="cursor-pointer list-none font-medium text-ink marker:hidden dark:text-foreground">
-              {item.q}
-            </summary>
-            <p className="mt-2 text-sm text-muted-foreground">{item.a}</p>
-          </details>
+          <div
+            key={item.q}
+            className="rounded-2xl bg-muted/50 p-6 transition-colors hover:bg-muted dark:bg-card dark:hover:bg-muted/40"
+          >
+            <h3 className="text-lg font-bold text-ink dark:text-foreground">{item.q}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+          </div>
         ))}
       </div>
     </div>

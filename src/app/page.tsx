@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Star } from "lucide-react";
 import { Header } from "@/components/marketing/Header";
 import { HeroPromptBox } from "@/components/marketing/HeroPromptBox";
@@ -7,6 +8,7 @@ import { WorkflowTabs } from "@/components/marketing/WorkflowTabs";
 import { TemplateGallery } from "@/components/marketing/TemplateGallery";
 import { PricingCards } from "@/components/marketing/PricingCards";
 import { FAQTabs } from "@/components/marketing/FAQTabs";
+import { Testimonials } from "@/components/marketing/Testimonials";
 import { FloatingPromptBar } from "@/components/marketing/FloatingPromptBar";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { FEATURE_CARDS } from "@/lib/marketing";
@@ -93,9 +95,18 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Testimonials */}
+        <Testimonials />
+
         {/* FAQ */}
         <section className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">Frequently asked questions</h2>
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
+            <h2 className="text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-4xl">Frequently Asked Questions</h2>
+            <p className="text-sm text-muted-foreground">
+              Can&apos;t find the answer you&apos;re looking for? Reach out to our{" "}
+              <Link href="/dashboard/support" className="font-semibold text-brand-600 hover:text-brand-700">customer support</Link> team.
+            </p>
+          </div>
           <div className="mt-10"><FAQTabs /></div>
         </section>
 

@@ -101,6 +101,21 @@ export const MARKETING_PLANS = [
     features: ["~290 AI shorts / mo", "All premium models", "Bulk + series automation", "Top-priority rendering"] },
 ];
 
+/**
+ * Testimonials (sample/placeholder content — replace with real, consented
+ * customer quotes before relying on them publicly). Avatars are initials, not
+ * photos, so nothing is fabricated as a real person.
+ */
+export type Testimonial = { name: string; role: string; quote: string; rating: number; platform?: string; accent: string };
+export const TESTIMONIALS: Testimonial[] = [
+  { name: "Sophia B.", role: "Faceless channel creator", quote: "Good experience so far. The platform is simple, and the support team replied faster than I expected.", rating: 5, platform: "YouTube Shorts", accent: "pink" },
+  { name: "Marcus T.", role: "Ecommerce marketer", quote: "I went from one video a week to daily shorts. The script-to-video flow is a huge time-saver.", rating: 5, platform: "TikTok", accent: "sky" },
+  { name: "Mia L.", role: "Beginner creator", quote: "Nice platform for beginners. It took me a little time to understand some parts, but after that it was smooth.", rating: 4, platform: "Instagram", accent: "violet" },
+  { name: "Daniel K.", role: "Agency owner", quote: "We run client SEO blogs on autopilot now — generate, schedule, publish to WordPress. Saves us hours every week.", rating: 5, platform: "WordPress", accent: "emerald" },
+  { name: "Aisha R.", role: "Solo founder", quote: "What I like most is the simple process. You just start, follow the steps, and get results pretty fast.", rating: 5, platform: "YouTube", accent: "amber" },
+  { name: "Leo P.", role: "Dropshipper", quote: "The product-ad generator paid for itself in the first week. Crypto top-ups are convenient too.", rating: 5, platform: "Facebook", accent: "rose" },
+];
+
 /** FAQ tabs + cards. */
 export const FAQ_TABS = [
   {
