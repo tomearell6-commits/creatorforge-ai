@@ -137,10 +137,17 @@ export type Plan = {
 export const PLANS: Plan[] = [
   {
     id: "free",
-    name: "Free",
+    name: "Free Trial",
     price: 0,
     credits: 20,
-    features: ["20 credits / month", "Basic script generation", "1 project", "Community support"],
+    features: [
+      "20 trial credits to explore",
+      "Access every studio & tool",
+      "Scripts, captions & SEO drafts",
+      "Slideshow video renders",
+      "Watermarked exports",
+      "Upgrade for AI Video & full quality",
+    ],
   },
   {
     id: "creator",

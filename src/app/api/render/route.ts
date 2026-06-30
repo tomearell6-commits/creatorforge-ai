@@ -100,6 +100,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ job: data });
   }
 
+  // Free Trial: AI Video tiers are a paid (professional) feature. Slideshow stays free.
+  if (tier.model && (await isFreePlan(supabase, user.id))) {
+    return NextResponse.json({
+      error: "AI Video rendering is a paid feature. The Free Trial includes Slideshow renders — upgrade to a paid plan to use the Standard, Pro, and Cinematic AI Video tiers.",
+      code: "upgrade_required",
+    }, { status: 403 });
+  }
+
   // Credits (per tier).
   if ((await getCreditBalance()) < tier.credits) {
     return NextResponse.json({ error: `Not enough credits (${tier.label} costs ${tier.credits}). Upgrade your plan.`, code: "insufficient_credits" }, { status: 402 });
