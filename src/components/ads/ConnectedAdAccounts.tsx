@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { BrandIcon, hasBrandIcon } from "@/components/icons/BrandIcon";
 
 type Row = { id: string; name: string; docsUrl: string; supportsPublish: boolean; supportsReporting: boolean; configured: boolean; account: { id: string; account_name: string; connection_status: string; permission_status: string; last_sync_at: string } | null };
 
@@ -28,7 +29,10 @@ export function ConnectedAdAccounts() {
         {rows.map((p) => (
           <Card key={p.id} className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-semibold">{p.name}</span>
+              <span className="flex items-center gap-2 font-semibold">
+                {hasBrandIcon(p.id) && <BrandIcon platform={p.id} className="h-5 w-5" />}
+                {p.name}
+              </span>
               <Badge variant={p.account ? "success" : "default"}>{p.account ? p.account.connection_status : "Not connected"}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
