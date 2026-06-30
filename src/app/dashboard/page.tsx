@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlusCircle, FolderKanban, Sparkles, CreditCard } from "lucide-react";
+import { FolderKanban, CreditCard } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { getWalletSummary } from "@/lib/credits/wallet";
 import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard";
 import { AssistantOnboardingCard } from "@/components/dashboard/AssistantOnboardingCard";
+import { StudioGrid } from "@/components/dashboard/StudioGrid";
 
 export const metadata = { title: "Dashboard — CreatorForge AI" };
 
@@ -34,36 +35,21 @@ export default async function DashboardHome() {
         <h1 className="text-2xl font-bold">
           Welcome back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ""} 👋
         </h1>
-        <p className="mt-1 text-muted-foreground">Here&apos;s what&apos;s happening in your workspace.</p>
+        <p className="mt-1 text-muted-foreground">Your AI Business Operating System — pick a Studio to get started.</p>
       </div>
 
       {wallet && <DashboardCreditCard summary={wallet} />}
 
-      <AssistantOnboardingCard />
-
-      {/* Quick stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardDescription>Total projects</CardDescription>
-          <p className="mt-2 text-3xl font-bold">{count ?? 0}</p>
-        </Card>
-        <Card>
-          <CardDescription>Quick action</CardDescription>
-          <Button asChild className="mt-3 w-full">
-            <Link href="/dashboard/projects/new">
-              <PlusCircle className="h-4 w-4" /> New project
-            </Link>
-          </Button>
-        </Card>
-        <Card>
-          <CardDescription>Generate</CardDescription>
-          <Button asChild variant="outline" className="mt-3 w-full">
-            <Link href="/dashboard/generate">
-              <Sparkles className="h-4 w-4" /> Script generator
-            </Link>
-          </Button>
-        </Card>
+      {/* Six flagship Studios */}
+      <div className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold">Studios</h2>
+          <span className="text-xs text-muted-foreground">{count ?? 0} projects</span>
+        </div>
+        <StudioGrid />
       </div>
+
+      <AssistantOnboardingCard />
 
       {/* Recent projects */}
       <Card>

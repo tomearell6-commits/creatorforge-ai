@@ -1,103 +1,29 @@
-import {
-  LayoutDashboard, FolderKanban, CreditCard, Settings, Server, Share2, CalendarDays,
-  BarChart3, Bell, Users, Workflow, KeyRound, LifeBuoy, Gift, Handshake, Palette,
-  Crown, Video, Music, LayoutTemplate, Search, Globe, Library, Megaphone, Image as ImageIcon,
-  LayoutGrid, Wallet, Rocket, ListChecks, History as HistoryIcon,
-  BookOpen, PenLine, FileDown,
-} from "lucide-react";
+import { LayoutDashboard, LayoutTemplate, FolderKanban, Settings, LifeBuoy } from "lucide-react";
+import { STUDIOS } from "@/config/studios";
 
 export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; tour?: string };
 export type NavGroup = { heading?: string; items: NavItem[] };
 
 /**
- * Unified content-studio navigation. "Create Content" mirrors the 7 studios from
- * the homepage (via the central category config / Create hub). Nothing the
- * homepage shows is missing here.
+ * Sidebar navigation for the AI Business Operating System. Intentionally lean:
+ * Dashboard → the six flagship Studios → workspace shortcuts. Each Studio link
+ * opens its hub (/dashboard/studio/<id>), where all of that Studio's tools live.
+ * The Studio list is derived from the single STUDIOS source of truth, so adding a
+ * tool there never means editing the sidebar.
  */
 export const NAV_GROUPS: NavGroup[] = [
   { items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }] },
   {
-    heading: "Create Content",
-    items: [
-      { href: "/dashboard/create", label: "Create Hub", icon: LayoutGrid },
-      { href: "/dashboard/create?group=video", label: "AI Video Studio", icon: Video, tour: "ai-video-studio" },
-      { href: "/dashboard/create?group=ad", label: "AI Ad Studio", icon: Megaphone, tour: "ai-ad-studio" },
-      { href: "/dashboard/create?group=image", label: "AI Image Studio", icon: ImageIcon },
-      { href: "/dashboard/create?group=seo", label: "AI SEO Studio", icon: Search },
-      { href: "/dashboard/create?group=social", label: "AI Social Studio", icon: Share2 },
-      { href: "/dashboard/create?group=audio", label: "AI Audio & Music Studio", icon: Music },
-      { href: "/dashboard/create?group=automation", label: "AI Automation Studio", icon: Workflow },
-    ],
+    heading: "Studios",
+    items: STUDIOS.map((s) => ({ href: `/dashboard/studio/${s.id}`, label: s.title, icon: s.icon })),
   },
   {
-    heading: "CreatorForge Autopilot",
+    heading: "Workspace",
     items: [
-      { href: "/dashboard/autopilot", label: "Overview", icon: Rocket },
-      { href: "/dashboard/autopilot/campaigns", label: "Campaigns", icon: Megaphone },
-      { href: "/dashboard/autopilot/planner", label: "Planner", icon: CalendarDays },
-      { href: "/dashboard/autopilot/rules", label: "Automation Rules", icon: Workflow },
-      { href: "/dashboard/autopilot/queue", label: "Publishing Queue", icon: ListChecks },
-      { href: "/dashboard/autopilot/reports", label: "Reports", icon: BarChart3 },
-      { href: "/dashboard/autopilot/history", label: "History", icon: HistoryIcon },
-      { href: "/dashboard/autopilot/settings", label: "Settings", icon: Settings },
-    ],
-  },
-  {
-    heading: "Publishing Studio",
-    items: [
-      { href: "/dashboard/books", label: "Dashboard", icon: BookOpen },
-      { href: "/dashboard/books/library", label: "My Books", icon: Library },
-      { href: "/dashboard/books/new", label: "New Book", icon: LayoutGrid },
-      { href: "/dashboard/books/templates", label: "Book Templates", icon: LayoutTemplate },
-      { href: "/dashboard/books/marketing", label: "Book Marketing", icon: Megaphone },
-      { href: "/dashboard/books/cover", label: "Cover Studio", icon: ImageIcon },
-      { href: "/dashboard/books/export", label: "Export Center", icon: FileDown },
-      { href: "/dashboard/books/settings", label: "Settings", icon: PenLine },
-    ],
-  },
-  {
-    heading: "AI Advertising Studio",
-    items: [
-      { href: "/dashboard/ads", label: "Campaign Dashboard", icon: Megaphone },
-      { href: "/dashboard/ads/create", label: "Create Campaign", icon: LayoutGrid },
-      { href: "/dashboard/ads/creative", label: "Ad Creative Studio", icon: ImageIcon },
-      { href: "/dashboard/ads/library", label: "Creative Library", icon: Library },
-      { href: "/dashboard/ads/accounts", label: "Connected Ad Accounts", icon: Share2 },
-      { href: "/dashboard/ads/calendar", label: "Campaign Calendar", icon: CalendarDays },
-      { href: "/dashboard/ads/reports", label: "Campaign Reports", icon: BarChart3 },
-      { href: "/dashboard/ads/audiences", label: "Audience Library", icon: Users },
-      { href: "/dashboard/ads/settings", label: "Settings", icon: Settings },
-    ],
-  },
-  {
-    heading: "Management",
-    items: [
-      { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
       { href: "/dashboard/templates", label: "Templates", icon: LayoutTemplate, tour: "templates" },
-      { href: "/dashboard/assets", label: "Media Library", icon: Library },
-      { href: "/dashboard/render", label: "Render Queue", icon: Server, tour: "render-queue" },
-      { href: "/dashboard/calendar", label: "Publishing Calendar", icon: CalendarDays, tour: "publishing-calendar" },
-      { href: "/dashboard/seo", label: "SEO Dashboard", icon: Search, tour: "seo-studio" },
-      { href: "/dashboard/seo/sites", label: "WordPress Sites", icon: Globe, tour: "wordpress-connect" },
-      { href: "/dashboard/social", label: "Social Accounts", icon: Share2, tour: "social-accounts" },
-      { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-      { href: "/dashboard/credits", label: "Credit Wallet", icon: Wallet, tour: "credit-topup" },
-      { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
+      { href: "/dashboard/projects", label: "Recent Projects", icon: FolderKanban },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
-    ],
-  },
-  {
-    heading: "More",
-    items: [
-      { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-      { href: "/dashboard/team", label: "Team Workspace", icon: Users },
-      { href: "/dashboard/automation", label: "Automation", icon: Workflow },
-      { href: "/dashboard/api", label: "API Center", icon: KeyRound },
-      { href: "/dashboard/affiliate", label: "Affiliate", icon: Handshake },
-      { href: "/dashboard/referrals", label: "Referrals", icon: Gift },
-      { href: "/dashboard/white-label", label: "White Label", icon: Palette },
-      { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
-      { href: "/admin", label: "Admin Portal", icon: Crown },
+      { href: "/dashboard/support", label: "Help Center", icon: LifeBuoy },
     ],
   },
 ];
