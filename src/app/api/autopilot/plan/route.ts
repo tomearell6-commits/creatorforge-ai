@@ -32,6 +32,12 @@ export async function POST(request: Request) {
   const estimate = estimatePlanCredits(specs);
   const balance = await getCreditBalance();
 
+  // Idempotent: clear this campaign's not-yet-published jobs before re-planning,
+  // so regenerating never creates duplicate content (published/failed are kept).
+  await supabase.from("autopilot_jobs").delete()
+    .eq("campaign_id", campaignId).eq("user_id", user.id)
+    .in("status", ["planned", "queued", "scheduled", "awaiting_approval"]);
+
   const rows = specs.map((s) => ({
     user_id: user.id, campaign_id: campaignId, title: s.title, content_type: s.content_type,
     destination: s.destination, status: statusForMode, scheduled_time: s.scheduled_time,

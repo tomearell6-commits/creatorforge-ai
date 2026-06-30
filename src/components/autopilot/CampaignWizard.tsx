@@ -22,6 +22,12 @@ export function CampaignWizard() {
     publish_windows: ["09:00"] as string[], timezone: "UTC", destinations: [] as string[], mode: "manual",
   });
 
+  function next() {
+    if (step === 2 && f.content_types.length === 0) { setErr("Pick at least one content type."); return; }
+    if (step === 5 && f.destinations.length === 0) { setErr("Pick at least one destination."); return; }
+    setErr(null); setStep(step + 1);
+  }
+
   async function submit() {
     if (!f.name.trim()) { setStep(0); setErr("Enter a business/campaign name."); return; }
     setBusy(true); setErr(null);
@@ -99,7 +105,7 @@ export function CampaignWizard() {
       <div className="flex items-center justify-between">
         <Button variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</Button>
         {step < STEPS.length - 1
-          ? <Button onClick={() => setStep(step + 1)}>Next</Button>
+          ? <Button onClick={next}>Next</Button>
           : <Button variant="accent" onClick={submit} disabled={busy}>{busy ? "Creating…" : "Create campaign"}</Button>}
       </div>
     </Card>
