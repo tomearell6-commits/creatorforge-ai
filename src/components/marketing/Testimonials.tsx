@@ -1,5 +1,20 @@
 import { Star } from "lucide-react";
-import { TESTIMONIALS } from "@/lib/marketing";
+import { TESTIMONIALS, type Testimonial } from "@/lib/marketing";
+import { createClient } from "@/lib/supabase/server";
+
+/** Published testimonials from the DB, or the bundled samples as fallback. */
+async function loadTestimonials(): Promise<{ items: Testimonial[]; isSample: boolean }> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("testimonials")
+      .select("name, role, quote, rating, platform, accent")
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true });
+    if (data && data.length > 0) return { items: data as Testimonial[], isSample: false };
+  } catch { /* table not migrated yet → fall back */ }
+  return { items: TESTIMONIALS, isSample: true };
+}
 
 const ACCENT: Record<string, string> = {
   pink: "bg-pink-100 text-pink-700", sky: "bg-sky-100 text-sky-700", violet: "bg-violet-100 text-violet-700",
@@ -25,7 +40,8 @@ function Card({ children }: { children: React.ReactNode }) {
 }
 
 /** "Loved by creators worldwide" — original testimonials section (masonry grid). */
-export function Testimonials() {
+export async function Testimonials() {
+  const { items, isSample } = await loadTestimonials();
   return (
     <section className="mx-auto max-w-6xl px-4 py-20">
       <div className="text-center">
@@ -57,7 +73,7 @@ export function Testimonials() {
           <p className="mt-4 text-sm text-muted-foreground">Real results from a consistent publishing schedule — powered by CreatorForge Autopilot.</p>
         </Card>
 
-        {TESTIMONIALS.map((t) => (
+        {items.map((t) => (
           <Card key={t.name}>
             <Stars n={t.rating} />
             <p className="mt-3 text-[15px] leading-relaxed text-ink dark:text-foreground">“{t.quote}”</p>
@@ -72,7 +88,9 @@ export function Testimonials() {
         ))}
       </div>
 
-      <p className="mt-6 text-center text-xs text-muted-foreground">Sample testimonials shown for layout. Replace with real, consented customer quotes before launch.</p>
+      {isSample && (
+        <p className="mt-6 text-center text-xs text-muted-foreground">Sample testimonials shown for layout. Add real ones in Admin → Testimonials.</p>
+      )}
     </section>
   );
 }

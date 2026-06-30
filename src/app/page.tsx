@@ -9,6 +9,7 @@ import { TemplateGallery } from "@/components/marketing/TemplateGallery";
 import { PricingCards } from "@/components/marketing/PricingCards";
 import { FAQTabs } from "@/components/marketing/FAQTabs";
 import { Testimonials } from "@/components/marketing/Testimonials";
+import { DemoVideo } from "@/components/marketing/DemoVideo";
 import { FloatingPromptBar } from "@/components/marketing/FloatingPromptBar";
 import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { FEATURE_CARDS } from "@/lib/marketing";
@@ -94,6 +95,9 @@ export default function LandingPage() {
             <div className="mt-10"><PricingCards /></div>
           </div>
         </section>
+
+        {/* Demo video */}
+        <DemoVideo />
 
         {/* Testimonials */}
         <Testimonials />

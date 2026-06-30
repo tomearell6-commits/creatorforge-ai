@@ -7,6 +7,7 @@ import { LanguageBadge } from "./LanguageBadge";
 const NAV = [
   { label: "Tools", href: "#tools" },
   { label: "SEO Studio", href: "/tools/seo-content-studio" },
+  { label: "Tutorials", href: "/tutorials" },
   { label: "Resources", href: "#templates" },
   { label: "Pricing", href: "#pricing" },
   { label: "Affiliate", href: "/signup" },

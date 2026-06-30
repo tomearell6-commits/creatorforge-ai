@@ -294,6 +294,8 @@ export const ADMIN_NAV = [
   { href: "/admin/wallet", label: "Credit Wallet" },
   { href: "/admin/assistant", label: "AI Assistant" },
   { href: "/admin/seo-audit", label: "SEO Audit" },
+  { href: "/admin/testimonials", label: "Testimonials" },
+  { href: "/admin/tutorials", label: "Tutorials" },
   { href: "/admin/support", label: "Support Tickets" },
   { href: "/admin/monitoring", label: "Platform Health" },
   { href: "/admin/audit", label: "Audit Logs" },
