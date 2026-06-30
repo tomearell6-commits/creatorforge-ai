@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./SignOutButton";
 import { CreditBadge } from "./CreditBadge";
 import { MobileNav } from "./MobileNav";
+import { ThemeToggle } from "./ThemeToggle";
 
 /** Dashboard top bar: signed-in user + credit badge + sign-out. */
 export async function Topbar() {
@@ -30,6 +31,7 @@ export async function Topbar() {
       </div>
       <div className="flex items-center gap-3">
         <span className="hidden text-sm text-muted-foreground sm:inline">{user?.email}</span>
+        <ThemeToggle />
         <SignOutButton />
       </div>
     </header>

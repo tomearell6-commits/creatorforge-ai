@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
 
 const NAV = [
   { label: "Tools", href: "#tools" },
@@ -24,6 +25,7 @@ export function Header() {
           <span className="text-sm text-muted-foreground">🇬🇧 EN</span>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button asChild variant="outline" size="sm"><Link href="/login">Log in</Link></Button>
           <Button asChild variant="accent" size="sm"><Link href="/signup">Start Creating Now</Link></Button>
         </div>
