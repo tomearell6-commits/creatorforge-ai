@@ -26,11 +26,19 @@ drop policy if exists "tutorials_public_read" on public.tutorials;
 create policy "tutorials_public_read" on public.tutorials
   for select using (is_published = true);
 
--- Seed the overview explainer (already rendered + hosted in Supabase storage).
+-- Seed the rendered explainer + stitched walkthrough (hosted in Supabase storage).
+insert into public.tutorials (title, description, category, video_url, duration, level, sort_order)
+select 'Full walkthrough — how CreatorForge works',
+       'A guided end-to-end demo of the platform, branded and narrated.',
+       'Getting Started',
+       'https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/full-walkthrough.mp4',
+       '0:25', 'beginner', 1
+where not exists (select 1 from public.tutorials where title = 'Full walkthrough — how CreatorForge works');
+
 insert into public.tutorials (title, description, category, video_url, duration, level, sort_order)
 select 'How CreatorForge works — overview',
        'A quick end-to-end tour: from a single prompt to a finished, published video.',
        'Getting Started',
        'https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/marketing/demo.mp4',
-       '0:21', 'beginner', 1
+       '0:21', 'beginner', 2
 where not exists (select 1 from public.tutorials where title = 'How CreatorForge works — overview');

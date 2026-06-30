@@ -8,12 +8,20 @@ export const metadata = {
   description: "Step-by-step video tutorials showing how to use CreatorForge end to end.",
 };
 
-const FALLBACK = [{
-  id: "overview", title: "How CreatorForge works — overview", category: "Getting Started",
-  description: "A quick end-to-end tour: from a single prompt to a finished, published video.",
-  video_url: "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/marketing/demo.mp4",
-  duration: "0:21", level: "beginner",
-}];
+const FALLBACK = [
+  {
+    id: "walkthrough", title: "Full walkthrough — how CreatorForge works", category: "Getting Started",
+    description: "A guided end-to-end demo of the platform, branded and narrated.",
+    video_url: "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/full-walkthrough.mp4",
+    duration: "0:25", level: "beginner",
+  },
+  {
+    id: "overview", title: "How CreatorForge works — overview", category: "Getting Started",
+    description: "A quick end-to-end tour: from a single prompt to a finished, published video.",
+    video_url: "https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/marketing/demo.mp4",
+    duration: "0:21", level: "beginner",
+  },
+];
 
 export default async function TutorialsPage() {
   let tutorials = FALLBACK;
