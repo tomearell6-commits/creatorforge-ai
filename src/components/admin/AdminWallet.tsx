@@ -110,11 +110,11 @@ function NewPackage({ onAction }: { onAction: (b: Record<string, unknown>) => vo
     <Card className="space-y-3">
       <CardTitle className="text-base">Add a package</CardTitle>
       <div className="grid gap-3 sm:grid-cols-5">
-        <div><Label>Slug</Label><Input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} /></div>
-        <div><Label>Name</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
-        <div><Label>Price ($)</Label><Input type="number" value={f.usd_price} onChange={(e) => setF({ ...f, usd_price: e.target.value })} /></div>
-        <div><Label>Credits</Label><Input type="number" value={f.credits} onChange={(e) => setF({ ...f, credits: e.target.value })} /></div>
-        <div><Label>Bonus</Label><Input type="number" value={f.bonus} onChange={(e) => setF({ ...f, bonus: e.target.value })} /></div>
+        <div><Label htmlFor="aw-slug">Slug</Label><Input id="aw-slug" value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} /></div>
+        <div><Label htmlFor="aw-name">Name</Label><Input id="aw-name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+        <div><Label htmlFor="aw-price">Price ($)</Label><Input id="aw-price" type="number" value={f.usd_price} onChange={(e) => setF({ ...f, usd_price: e.target.value })} /></div>
+        <div><Label htmlFor="aw-credits">Credits</Label><Input id="aw-credits" type="number" value={f.credits} onChange={(e) => setF({ ...f, credits: e.target.value })} /></div>
+        <div><Label htmlFor="aw-bonus">Bonus</Label><Input id="aw-bonus" type="number" value={f.bonus} onChange={(e) => setF({ ...f, bonus: e.target.value })} /></div>
       </div>
       <Button onClick={() => onAction({ action: "create", slug: f.slug, name: f.name, usd_price: Number(f.usd_price), credits: Number(f.credits), bonus: Number(f.bonus) })}>Create package</Button>
     </Card>
@@ -140,16 +140,16 @@ function GrantCredits({ onDone }: { onDone: () => void }) {
       <CardTitle className="text-base">Issue / adjust credits</CardTitle>
       <Card className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-4">
-          <div className="sm:col-span-2"><Label>User ID</Label><Input value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })} placeholder="auth user uuid" /></div>
-          <div><Label>Amount (± credits)</Label><Input type="number" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} placeholder="e.g. 500 or -100" /></div>
+          <div className="sm:col-span-2"><Label htmlFor="aw-user-id">User ID</Label><Input id="aw-user-id" value={f.userId} onChange={(e) => setF({ ...f, userId: e.target.value })} placeholder="auth user uuid" /></div>
+          <div><Label htmlFor="aw-amount-credits">Amount (± credits)</Label><Input id="aw-amount-credits" type="number" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} placeholder="e.g. 500 or -100" /></div>
           <div>
-            <Label>Type</Label>
-            <select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
+            <Label htmlFor="aw-type">Type</Label>
+            <select id="aw-type" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
               {["bonus", "promo", "refund", "manual_adjustment", "admin_adjustment"].map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
         </div>
-        <div><Label>Reason</Label><Input value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} placeholder="Why this adjustment was made" /></div>
+        <div><Label htmlFor="aw-reason">Reason</Label><Input id="aw-reason" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} placeholder="Why this adjustment was made" /></div>
         <Button onClick={submit} disabled={!f.userId || !f.amount}>Apply through ledger</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
         <p className="text-xs text-muted-foreground">Positive grants credits (bonus bucket); negative deducts. Every change is recorded in the immutable ledger and audit log.</p>

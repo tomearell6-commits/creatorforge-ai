@@ -32,15 +32,15 @@ export function AdminTestimonials() {
         <CardTitle className="text-base">Add a testimonial</CardTitle>
         <Card className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div><Label>Name</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
-            <div><Label>Role</Label><Input value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })} /></div>
+            <div><Label htmlFor="atm-name">Name</Label><Input id="atm-name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+            <div><Label htmlFor="atm-role">Role</Label><Input id="atm-role" value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })} /></div>
           </div>
-          <div><Label>Quote</Label><Textarea rows={2} value={f.quote} onChange={(e) => setF({ ...f, quote: e.target.value })} /></div>
+          <div><Label htmlFor="atm-quote">Quote</Label><Textarea id="atm-quote" rows={2} value={f.quote} onChange={(e) => setF({ ...f, quote: e.target.value })} /></div>
           <div className="grid gap-3 sm:grid-cols-4">
-            <div><Label>Rating</Label><Input type="number" min={1} max={5} value={f.rating} onChange={(e) => setF({ ...f, rating: Number(e.target.value) })} /></div>
-            <div><Label>Platform</Label><Input value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} /></div>
-            <div><Label>Accent</Label><select value={f.accent} onChange={(e) => setF({ ...f, accent: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{ACCENTS.map((a) => <option key={a}>{a}</option>)}</select></div>
-            <div><Label>Sort</Label><Input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: Number(e.target.value) })} /></div>
+            <div><Label htmlFor="atm-rating">Rating</Label><Input id="atm-rating" type="number" min={1} max={5} value={f.rating} onChange={(e) => setF({ ...f, rating: Number(e.target.value) })} /></div>
+            <div><Label htmlFor="atm-platform">Platform</Label><Input id="atm-platform" value={f.platform} onChange={(e) => setF({ ...f, platform: e.target.value })} /></div>
+            <div><Label htmlFor="atm-accent">Accent</Label><select id="atm-accent" value={f.accent} onChange={(e) => setF({ ...f, accent: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{ACCENTS.map((a) => <option key={a}>{a}</option>)}</select></div>
+            <div><Label htmlFor="atm-sort">Sort</Label><Input id="atm-sort" type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: Number(e.target.value) })} /></div>
           </div>
           <Button onClick={create} disabled={!f.name || !f.quote}>Add testimonial</Button>
           {msg && <p className="text-sm text-red-600">{msg}</p>}

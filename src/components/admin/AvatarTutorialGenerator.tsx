@@ -48,10 +48,10 @@ export function AvatarTutorialGenerator({ onCreated }: { onCreated?: () => void 
       <CardTitle className="text-base">Generate avatar tutorial (AI presenter)</CardTitle>
       <Card className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
-          <div><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="How to create your first video" /></div>
-          <div><Label>Category</Label><Input value={category} onChange={(e) => setCategory(e.target.value)} /></div>
+          <div><Label htmlFor="avt-title">Title</Label><Input id="avt-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="How to create your first video" /></div>
+          <div><Label htmlFor="avt-category">Category</Label><Input id="avt-category" value={category} onChange={(e) => setCategory(e.target.value)} /></div>
         </div>
-        <div><Label>Narration script (the presenter speaks this)</Label><Textarea rows={5} value={script} onChange={(e) => setScript(e.target.value)} placeholder="Paste a lesson from docs/TUTORIAL-SCRIPT.md…" /></div>
+        <div><Label htmlFor="avt-narration-script-the-presenter-speaks-this">Narration script (the presenter speaks this)</Label><Textarea id="avt-narration-script-the-presenter-speaks-this" rows={5} value={script} onChange={(e) => setScript(e.target.value)} placeholder="Paste a lesson from docs/TUTORIAL-SCRIPT.md…" /></div>
         <Button onClick={start} disabled={stage !== "idle"}>{stage === "idle" ? "Generate avatar video" : stage === "rendering" ? "Rendering…" : "Saving…"}</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
         <p className="text-xs text-muted-foreground">

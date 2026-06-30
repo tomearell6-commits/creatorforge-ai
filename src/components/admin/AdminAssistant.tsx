@@ -80,5 +80,5 @@ function Stat({ label, value }: { label: string; value: number }) {
   return <Card className="p-4"><div className="text-xl font-bold">{value.toLocaleString()}</div><div className="text-xs text-muted-foreground">{label}</div></Card>;
 }
 function Field({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
-  return <div><Label>{label}</Label><Input type="number" value={value} onChange={(e) => onChange(Number(e.target.value))} /></div>;
+  return <div><Label>{label}</Label><Input type="number" aria-label={label} value={value} onChange={(e) => onChange(Number(e.target.value))} /></div>;
 }

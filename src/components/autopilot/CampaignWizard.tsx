@@ -49,12 +49,12 @@ export function CampaignWizard() {
 
       {step === 0 && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2"><Label>Business / campaign name</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Acme Pet Supplies" /></div>
-          <div><Label>Industry</Label><Input value={f.industry} onChange={(e) => setF({ ...f, industry: e.target.value })} placeholder="Ecommerce / Pets" /></div>
-          <div><Label>Country</Label><Input value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} placeholder="United States" /></div>
-          <div><Label>Language</Label><Input value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })} placeholder="en" /></div>
-          <div><Label>Website</Label><Input value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="https://example.com" /></div>
-          <div className="sm:col-span-2"><Label>Brand description</Label><Textarea rows={3} value={f.brand_description} onChange={(e) => setF({ ...f, brand_description: e.target.value })} placeholder="What you sell, your tone, your audience…" /></div>
+          <div className="sm:col-span-2"><Label htmlFor="apcw-business-campaign-name">Business / campaign name</Label><Input id="apcw-business-campaign-name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Acme Pet Supplies" /></div>
+          <div><Label htmlFor="apcw-industry">Industry</Label><Input id="apcw-industry" value={f.industry} onChange={(e) => setF({ ...f, industry: e.target.value })} placeholder="Ecommerce / Pets" /></div>
+          <div><Label htmlFor="apcw-country">Country</Label><Input id="apcw-country" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} placeholder="United States" /></div>
+          <div><Label htmlFor="apcw-language">Language</Label><Input id="apcw-language" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })} placeholder="en" /></div>
+          <div><Label htmlFor="apcw-website">Website</Label><Input id="apcw-website" value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="https://example.com" /></div>
+          <div className="sm:col-span-2"><Label htmlFor="apcw-brand-description">Brand description</Label><Textarea id="apcw-brand-description" rows={3} value={f.brand_description} onChange={(e) => setF({ ...f, brand_description: e.target.value })} placeholder="What you sell, your tone, your audience…" /></div>
         </div>
       )}
 
@@ -74,8 +74,8 @@ export function CampaignWizard() {
 
       {step === 4 && (
         <div className="space-y-3">
-          <div><Label>Publishing windows (24h, comma-separated)</Label><Input value={f.publish_windows.join(", ")} onChange={(e) => setF({ ...f, publish_windows: e.target.value.split(",").map((x) => x.trim()).filter(Boolean) })} placeholder="09:00, 18:00" /></div>
-          <div><Label>Time zone</Label><Input value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })} placeholder="UTC" /></div>
+          <div><Label htmlFor="apcw-publishing-windows">Publishing windows (24h, comma-separated)</Label><Input id="apcw-publishing-windows" value={f.publish_windows.join(", ")} onChange={(e) => setF({ ...f, publish_windows: e.target.value.split(",").map((x) => x.trim()).filter(Boolean) })} placeholder="09:00, 18:00" /></div>
+          <div><Label htmlFor="apcw-time-zone">Time zone</Label><Input id="apcw-time-zone" value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })} placeholder="UTC" /></div>
           <p className="text-xs text-muted-foreground">Scheduling is stored in UTC for reliability; display localizes to your zone.</p>
         </div>
       )}

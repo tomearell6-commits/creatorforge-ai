@@ -26,7 +26,7 @@ export function MetaTitleGenerator() {
   return (
     <div className="space-y-5">
       <Card className="space-y-3">
-        <div><Label>Keyword / topic</Label><Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. best dog food for puppies" onKeyDown={(e) => e.key === "Enter" && go()} /></div>
+        <div><Label htmlFor="mtg-keyword-topic">Keyword / topic</Label><Input id="mtg-keyword-topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. best dog food for puppies" onKeyDown={(e) => e.key === "Enter" && go()} /></div>
         <Button disabled={busy} onClick={go}>{busy ? "Generating…" : "Generate SEO titles"}</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>

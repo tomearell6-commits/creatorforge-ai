@@ -74,12 +74,12 @@ export function AdCampaignWizard() {
             </div>
           )}
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2"><Label>Campaign name</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Spring Sale 2026" /></div>
-            <div><Label>Business</Label><Input value={f.business} onChange={(e) => setF({ ...f, business: e.target.value })} /></div>
-            <div><Label>Website</Label><Input value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="https://…" /></div>
-            <div><Label>Industry</Label><Input value={f.industry} onChange={(e) => setF({ ...f, industry: e.target.value })} /></div>
-            <div><Label>Country</Label><Input value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} /></div>
-            <div><Label>Language</Label><Input value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })} /></div>
+            <div className="sm:col-span-2"><Label htmlFor="adcw-campaign-name">Campaign name</Label><Input id="adcw-campaign-name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Spring Sale 2026" /></div>
+            <div><Label htmlFor="adcw-business">Business</Label><Input id="adcw-business" value={f.business} onChange={(e) => setF({ ...f, business: e.target.value })} /></div>
+            <div><Label htmlFor="adcw-website">Website</Label><Input id="adcw-website" value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} placeholder="https://…" /></div>
+            <div><Label htmlFor="adcw-industry">Industry</Label><Input id="adcw-industry" value={f.industry} onChange={(e) => setF({ ...f, industry: e.target.value })} /></div>
+            <div><Label htmlFor="adcw-country">Country</Label><Input id="adcw-country" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} /></div>
+            <div><Label htmlFor="adcw-language">Language</Label><Input id="adcw-language" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })} /></div>
           </div>
         </div>
       )}
@@ -98,11 +98,11 @@ export function AdCampaignWizard() {
 
       {step === 4 && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <div><Label>Country</Label><Input value={f.audience.country} onChange={(e) => setF({ ...f, audience: { ...f.audience, country: e.target.value } })} /></div>
-          <div><Label>Gender</Label><select value={f.audience.gender} onChange={(e) => setF({ ...f, audience: { ...f.audience, gender: e.target.value } })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"><option value="all">All</option><option value="female">Female</option><option value="male">Male</option></select></div>
-          <div><Label>Age min</Label><Input type="number" value={f.audience.age_min} onChange={(e) => setF({ ...f, audience: { ...f.audience, age_min: Number(e.target.value) } })} /></div>
-          <div><Label>Age max</Label><Input type="number" value={f.audience.age_max} onChange={(e) => setF({ ...f, audience: { ...f.audience, age_max: Number(e.target.value) } })} /></div>
-          <div className="sm:col-span-2"><Label>Interest keywords (comma-separated)</Label><Input value={f.audience.interests} onChange={(e) => setF({ ...f, audience: { ...f.audience, interests: e.target.value } })} placeholder="fitness, nutrition, wellness" /></div>
+          <div><Label htmlFor="adcw-audience-country">Country</Label><Input id="adcw-audience-country" value={f.audience.country} onChange={(e) => setF({ ...f, audience: { ...f.audience, country: e.target.value } })} /></div>
+          <div><Label htmlFor="adcw-audience-gender">Gender</Label><select id="adcw-audience-gender" value={f.audience.gender} onChange={(e) => setF({ ...f, audience: { ...f.audience, gender: e.target.value } })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"><option value="all">All</option><option value="female">Female</option><option value="male">Male</option></select></div>
+          <div><Label htmlFor="adcw-audience-age-min">Age min</Label><Input id="adcw-audience-age-min" type="number" value={f.audience.age_min} onChange={(e) => setF({ ...f, audience: { ...f.audience, age_min: Number(e.target.value) } })} /></div>
+          <div><Label htmlFor="adcw-audience-age-max">Age max</Label><Input id="adcw-audience-age-max" type="number" value={f.audience.age_max} onChange={(e) => setF({ ...f, audience: { ...f.audience, age_max: Number(e.target.value) } })} /></div>
+          <div className="sm:col-span-2"><Label htmlFor="adcw-audience-interests">Interest keywords (comma-separated)</Label><Input id="adcw-audience-interests" value={f.audience.interests} onChange={(e) => setF({ ...f, audience: { ...f.audience, interests: e.target.value } })} placeholder="fitness, nutrition, wellness" /></div>
           <p className="sm:col-span-2 text-xs text-muted-foreground">Custom + lookalike audiences activate once a supported ad account is connected.</p>
         </div>
       )}

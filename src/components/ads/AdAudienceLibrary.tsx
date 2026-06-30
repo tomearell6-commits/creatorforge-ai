@@ -25,12 +25,12 @@ export function AdAudienceLibrary() {
       <Card className="space-y-3">
         <CardTitle className="text-base">Save an audience</CardTitle>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div><Label>Name</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
-          <div><Label>Country</Label><Input value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} /></div>
-          <div><Label>Gender</Label><select value={f.gender} onChange={(e) => setF({ ...f, gender: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"><option value="all">All</option><option value="female">Female</option><option value="male">Male</option></select></div>
-          <div><Label>Age min</Label><Input type="number" value={f.age_min} onChange={(e) => setF({ ...f, age_min: Number(e.target.value) })} /></div>
-          <div><Label>Age max</Label><Input type="number" value={f.age_max} onChange={(e) => setF({ ...f, age_max: Number(e.target.value) })} /></div>
-          <div className="sm:col-span-3"><Label>Interests (comma-separated)</Label><Input value={f.interests} onChange={(e) => setF({ ...f, interests: e.target.value })} /></div>
+          <div><Label htmlFor="aal-name">Name</Label><Input id="aal-name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+          <div><Label htmlFor="aal-country">Country</Label><Input id="aal-country" value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })} /></div>
+          <div><Label htmlFor="aal-gender">Gender</Label><select id="aal-gender" value={f.gender} onChange={(e) => setF({ ...f, gender: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"><option value="all">All</option><option value="female">Female</option><option value="male">Male</option></select></div>
+          <div><Label htmlFor="aal-age-min">Age min</Label><Input id="aal-age-min" type="number" value={f.age_min} onChange={(e) => setF({ ...f, age_min: Number(e.target.value) })} /></div>
+          <div><Label htmlFor="aal-age-max">Age max</Label><Input id="aal-age-max" type="number" value={f.age_max} onChange={(e) => setF({ ...f, age_max: Number(e.target.value) })} /></div>
+          <div className="sm:col-span-3"><Label htmlFor="aal-interests">Interests (comma-separated)</Label><Input id="aal-interests" value={f.interests} onChange={(e) => setF({ ...f, interests: e.target.value })} /></div>
         </div>
         <Button onClick={add} disabled={!f.name.trim()}>Save audience</Button>
       </Card>

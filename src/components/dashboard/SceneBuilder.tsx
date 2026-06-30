@@ -184,21 +184,21 @@ export function SceneBuilder({
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-3">
               <div>
-                <Label>Narration</Label>
-                <Textarea rows={3} value={scene.text ?? ""} onChange={(e) => patchLocal(scene.id, { text: e.target.value })} />
+                <Label htmlFor={`sb-narration-${scene.id}`}>Narration</Label>
+                <Textarea id={`sb-narration-${scene.id}`} rows={3} value={scene.text ?? ""} onChange={(e) => patchLocal(scene.id, { text: e.target.value })} />
               </div>
               <div>
-                <Label>Visual description</Label>
-                <Textarea rows={2} value={scene.visual_description ?? ""} onChange={(e) => patchLocal(scene.id, { visual_description: e.target.value })} />
+                <Label htmlFor={`sb-visual-description-${scene.id}`}>Visual description</Label>
+                <Textarea id={`sb-visual-description-${scene.id}`} rows={2} value={scene.visual_description ?? ""} onChange={(e) => patchLocal(scene.id, { visual_description: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Camera direction</Label>
-                  <Input value={scene.camera_direction ?? ""} onChange={(e) => patchLocal(scene.id, { camera_direction: e.target.value })} />
+                  <Label htmlFor={`sb-camera-direction-${scene.id}`}>Camera direction</Label>
+                  <Input id={`sb-camera-direction-${scene.id}`} value={scene.camera_direction ?? ""} onChange={(e) => patchLocal(scene.id, { camera_direction: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Transition</Label>
-                  <select value={scene.transition ?? "cut"} onChange={(e) => patchLocal(scene.id, { transition: e.target.value })} className={selectClass}>
+                  <Label htmlFor={`sb-transition-${scene.id}`}>Transition</Label>
+                  <select id={`sb-transition-${scene.id}`} value={scene.transition ?? "cut"} onChange={(e) => patchLocal(scene.id, { transition: e.target.value })} className={selectClass}>
                     {TRANSITIONS.map((t) => (
                       <option key={t} value={t}>
                         {t}
@@ -211,12 +211,12 @@ export function SceneBuilder({
 
             <div className="space-y-3">
               <div>
-                <Label>AI image prompt</Label>
-                <Textarea rows={2} value={scene.image_prompt ?? ""} onChange={(e) => patchLocal(scene.id, { image_prompt: e.target.value })} />
+                <Label htmlFor={`sb-ai-image-prompt-${scene.id}`}>AI image prompt</Label>
+                <Textarea id={`sb-ai-image-prompt-${scene.id}`} rows={2} value={scene.image_prompt ?? ""} onChange={(e) => patchLocal(scene.id, { image_prompt: e.target.value })} />
               </div>
               <div>
-                <Label>AI video prompt</Label>
-                <Textarea rows={2} value={scene.video_prompt ?? ""} onChange={(e) => patchLocal(scene.id, { video_prompt: e.target.value })} />
+                <Label htmlFor={`sb-ai-video-prompt-${scene.id}`}>AI video prompt</Label>
+                <Textarea id={`sb-ai-video-prompt-${scene.id}`} rows={2} value={scene.video_prompt ?? ""} onChange={(e) => patchLocal(scene.id, { video_prompt: e.target.value })} />
               </div>
               <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted">
                 {scene.image_url === "loading" ? (

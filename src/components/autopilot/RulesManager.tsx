@@ -35,9 +35,9 @@ export function RulesManager() {
       <Card className="space-y-3">
         <CardTitle className="text-base">Add a rule</CardTitle>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-1"><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="One SEO article every Monday" /></div>
-          <div className="sm:col-span-2"><Label>Type</Label>
-            <select value={type} onChange={(e) => setType(e.target.value)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
+          <div className="sm:col-span-1"><Label htmlFor="rm-name">Name</Label><Input id="rm-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="One SEO article every Monday" /></div>
+          <div className="sm:col-span-2"><Label htmlFor="rm-type">Type</Label>
+            <select id="rm-type" value={type} onChange={(e) => setType(e.target.value)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
               {RULE_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
             </select>
           </div>

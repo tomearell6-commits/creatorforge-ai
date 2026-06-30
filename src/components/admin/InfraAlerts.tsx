@@ -80,7 +80,7 @@ export function InfraAlerts() {
           {t && (
             <div className="grid gap-3 sm:grid-cols-4">
               {THRESHOLD_FIELDS.map((f) => (
-                <div key={f.key}><Label>{f.label}</Label><Input type="number" value={t[f.key] ?? 0} onChange={(e) => setT({ ...t, [f.key]: Number(e.target.value) })} /></div>
+                <div key={f.key}><Label htmlFor={`ia-${f.key}`}>{f.label}</Label><Input id={`ia-${f.key}`} type="number" value={t[f.key] ?? 0} onChange={(e) => setT({ ...t, [f.key]: Number(e.target.value) })} /></div>
               ))}
             </div>
           )}

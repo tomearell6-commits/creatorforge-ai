@@ -35,17 +35,17 @@ export function BookWizard() {
   return (
     <Card className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="sm:col-span-2"><Label>Book title</Label><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="The Lean Founder" /></div>
-        <div><Label>Subtitle</Label><Input value={f.subtitle} onChange={(e) => setF({ ...f, subtitle: e.target.value })} /></div>
-        <div><Label>Author name</Label><Input value={f.author_name} onChange={(e) => setF({ ...f, author_name: e.target.value })} /></div>
-        <div><Label>Category</Label><select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></div>
-        <div><Label>Target audience</Label><Input value={f.audience} onChange={(e) => setF({ ...f, audience: e.target.value })} placeholder="first-time founders" /></div>
-        <div><Label>Writing style</Label><select value={f.writing_style} onChange={(e) => setF({ ...f, writing_style: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_WRITING_STYLES.map((c) => <option key={c}>{c}</option>)}</select></div>
-        <div><Label>Tone</Label><select value={f.tone} onChange={(e) => setF({ ...f, tone: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_TONES.map((c) => <option key={c}>{c}</option>)}</select></div>
-        <div><Label>Reading level</Label><select value={f.reading_level} onChange={(e) => setF({ ...f, reading_level: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_READING_LEVELS.map((c) => <option key={c}>{c}</option>)}</select></div>
-        <div><Label>Language</Label><Input value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })} /></div>
-        <div><Label>Target word count</Label><Input type="number" value={f.target_words} onChange={(e) => setF({ ...f, target_words: Number(e.target.value) })} /></div>
-        <div><Label>Chapters to outline</Label><Input type="number" value={chapters} onChange={(e) => setChapters(Number(e.target.value))} /></div>
+        <div className="sm:col-span-2"><Label htmlFor="bw-book-title">Book title</Label><Input id="bw-book-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="The Lean Founder" /></div>
+        <div><Label htmlFor="bw-subtitle">Subtitle</Label><Input id="bw-subtitle" value={f.subtitle} onChange={(e) => setF({ ...f, subtitle: e.target.value })} /></div>
+        <div><Label htmlFor="bw-author-name">Author name</Label><Input id="bw-author-name" value={f.author_name} onChange={(e) => setF({ ...f, author_name: e.target.value })} /></div>
+        <div><Label htmlFor="bw-category">Category</Label><select id="bw-category" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_CATEGORIES.map((c) => <option key={c}>{c}</option>)}</select></div>
+        <div><Label htmlFor="bw-target-audience">Target audience</Label><Input id="bw-target-audience" value={f.audience} onChange={(e) => setF({ ...f, audience: e.target.value })} placeholder="first-time founders" /></div>
+        <div><Label htmlFor="bw-writing-style">Writing style</Label><select id="bw-writing-style" value={f.writing_style} onChange={(e) => setF({ ...f, writing_style: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_WRITING_STYLES.map((c) => <option key={c}>{c}</option>)}</select></div>
+        <div><Label htmlFor="bw-tone">Tone</Label><select id="bw-tone" value={f.tone} onChange={(e) => setF({ ...f, tone: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_TONES.map((c) => <option key={c}>{c}</option>)}</select></div>
+        <div><Label htmlFor="bw-reading-level">Reading level</Label><select id="bw-reading-level" value={f.reading_level} onChange={(e) => setF({ ...f, reading_level: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{BOOK_READING_LEVELS.map((c) => <option key={c}>{c}</option>)}</select></div>
+        <div><Label htmlFor="bw-language">Language</Label><Input id="bw-language" value={f.language} onChange={(e) => setF({ ...f, language: e.target.value })} /></div>
+        <div><Label htmlFor="bw-target-word-count">Target word count</Label><Input id="bw-target-word-count" type="number" value={f.target_words} onChange={(e) => setF({ ...f, target_words: Number(e.target.value) })} /></div>
+        <div><Label htmlFor="bw-chapters-to-outline">Chapters to outline</Label><Input id="bw-chapters-to-outline" type="number" value={chapters} onChange={(e) => setChapters(Number(e.target.value))} /></div>
       </div>
 
       {err && <p className="text-sm text-red-600">{err}</p>}

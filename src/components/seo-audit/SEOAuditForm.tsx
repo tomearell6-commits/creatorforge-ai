@@ -20,8 +20,8 @@ export function SEOAuditForm({ onStart, busy, error }: { onStart: (url: string, 
   return (
     <Card className="space-y-4">
       <div>
-        <Label>Website URL</Label>
-        <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com" onKeyDown={(e) => e.key === "Enter" && onStart(url, type)} />
+        <Label htmlFor="saf-website-url">Website URL</Label>
+        <Input id="saf-website-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com" onKeyDown={(e) => e.key === "Enter" && onStart(url, type)} />
       </div>
       <div>
         <Label>Audit type</Label>

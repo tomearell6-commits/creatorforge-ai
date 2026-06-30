@@ -40,8 +40,8 @@ export function BookCover() {
       <Card className="space-y-3">
         <CardTitle className="text-sm">Cover Studio</CardTitle>
         <BookPicker value={bookId} onChange={(id) => setBookId(id)} />
-        <div><Label>Cover style</Label><select value={style} onChange={(e) => setStyle(e.target.value)} className="h-10 w-full max-w-sm rounded-lg border border-border bg-background px-3 text-sm">{STYLES.map((s) => <option key={s}>{s}</option>)}</select></div>
-        <div><Label>Describe the cover</Label><Textarea rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="A lone lighthouse at dusk, warm gradient sky, calm and hopeful mood." /></div>
+        <div><Label htmlFor="bc-cover-style">Cover style</Label><select id="bc-cover-style" value={style} onChange={(e) => setStyle(e.target.value)} className="h-10 w-full max-w-sm rounded-lg border border-border bg-background px-3 text-sm">{STYLES.map((s) => <option key={s}>{s}</option>)}</select></div>
+        <div><Label htmlFor="bc-describe-the-cover">Describe the cover</Label><Textarea id="bc-describe-the-cover" rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="A lone lighthouse at dusk, warm gradient sky, calm and hopeful mood." /></div>
         <Button variant="accent" disabled={!bookId || !prompt.trim() || busy} onClick={generate}>{busy ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />} Generate cover (~{BOOK_CREDIT_COSTS.cover} cr)</Button>
         {msg && <p className="text-xs text-brand-700">{msg}</p>}
         <p className="text-xs text-muted-foreground">Covers are generated as original artwork (no text or logos baked in). The newest cover is set on your book automatically.</p>

@@ -233,8 +233,8 @@ function CustomPurchase({ coin, busy, onBuy }: { coin: string; busy: boolean; on
           <button onClick={() => setMode("credits")} className={`rounded-lg border px-3 py-1.5 text-sm ${mode === "credits" ? "border-brand-500 bg-brand-50 font-semibold" : "border-border"}`}>By credits</button>
         </div>
         <div>
-          <Label>{mode === "usd" ? `Amount in USD (min $${MIN_PURCHASE_USD}, max $${MAX_PURCHASE_USD})` : "Number of credits"}</Label>
-          <Input type="number" value={val} onChange={(e) => setVal(e.target.value)} placeholder={mode === "usd" ? "25" : "3000"} />
+          <Label htmlFor="wc-custom-amount">{mode === "usd" ? `Amount in USD (min $${MIN_PURCHASE_USD}, max $${MAX_PURCHASE_USD})` : "Number of credits"}</Label>
+          <Input id="wc-custom-amount" type="number" value={val} onChange={(e) => setVal(e.target.value)} placeholder={mode === "usd" ? "25" : "3000"} />
         </div>
         {quote && (
           <div className="rounded-lg bg-muted/50 p-3 text-sm">
@@ -319,19 +319,19 @@ function AutoTopup({ packages }: { packages: Pkg[] }) {
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label>Trigger when credits fall below</Label>
-            <Input type="number" value={s.threshold_credits} onChange={(e) => setS({ ...s, threshold_credits: Number(e.target.value) })} />
+            <Label htmlFor="wc-trigger-when-credits-fall-below">Trigger when credits fall below</Label>
+            <Input id="wc-trigger-when-credits-fall-below" type="number" value={s.threshold_credits} onChange={(e) => setS({ ...s, threshold_credits: Number(e.target.value) })} />
           </div>
           <div>
-            <Label>Top-up package</Label>
-            <select value={s.package_slug ?? ""} onChange={(e) => setS({ ...s, package_slug: e.target.value || null })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
+            <Label htmlFor="wc-top-up-package">Top-up package</Label>
+            <select id="wc-top-up-package" value={s.package_slug ?? ""} onChange={(e) => setS({ ...s, package_slug: e.target.value || null })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
               <option value="">Select a package</option>
               {packages.map((p) => <option key={p.slug} value={p.slug}>{p.name} — ${p.usdPrice}</option>)}
             </select>
           </div>
           <div>
-            <Label>Preferred currency</Label>
-            <select value={s.preferred_currency} onChange={(e) => setS({ ...s, preferred_currency: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
+            <Label htmlFor="wc-preferred-currency">Preferred currency</Label>
+            <select id="wc-preferred-currency" value={s.preferred_currency} onChange={(e) => setS({ ...s, preferred_currency: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">
               {SUPPORTED_CRYPTO.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
             </select>
           </div>

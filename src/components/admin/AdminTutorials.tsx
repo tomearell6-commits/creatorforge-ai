@@ -31,15 +31,15 @@ export function AdminTutorials() {
         <CardTitle className="text-base">Add a tutorial video</CardTitle>
         <Card className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div><Label>Title</Label><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></div>
-            <div><Label>Category</Label><Input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} placeholder="Getting Started" /></div>
+            <div><Label htmlFor="at-title">Title</Label><Input id="at-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></div>
+            <div><Label htmlFor="at-category">Category</Label><Input id="at-category" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} placeholder="Getting Started" /></div>
           </div>
-          <div><Label>Description</Label><Textarea rows={2} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
-          <div><Label>Video URL (MP4 — upload to Supabase storage or paste any URL)</Label><Input value={f.video_url} onChange={(e) => setF({ ...f, video_url: e.target.value })} placeholder="https://…/video.mp4" /></div>
+          <div><Label htmlFor="at-description">Description</Label><Textarea id="at-description" rows={2} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
+          <div><Label htmlFor="at-video-url-mp4-upload-to-supabase-storage-or-paste-any-url">Video URL (MP4 — upload to Supabase storage or paste any URL)</Label><Input id="at-video-url-mp4-upload-to-supabase-storage-or-paste-any-url" value={f.video_url} onChange={(e) => setF({ ...f, video_url: e.target.value })} placeholder="https://…/video.mp4" /></div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <div><Label>Duration</Label><Input value={f.duration} onChange={(e) => setF({ ...f, duration: e.target.value })} placeholder="2:14" /></div>
-            <div><Label>Level</Label><select value={f.level} onChange={(e) => setF({ ...f, level: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"><option>beginner</option><option>intermediate</option><option>advanced</option></select></div>
-            <div><Label>Sort</Label><Input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: Number(e.target.value) })} /></div>
+            <div><Label htmlFor="at-duration">Duration</Label><Input id="at-duration" value={f.duration} onChange={(e) => setF({ ...f, duration: e.target.value })} placeholder="2:14" /></div>
+            <div><Label htmlFor="at-level">Level</Label><select id="at-level" value={f.level} onChange={(e) => setF({ ...f, level: e.target.value })} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"><option>beginner</option><option>intermediate</option><option>advanced</option></select></div>
+            <div><Label htmlFor="at-sort">Sort</Label><Input id="at-sort" type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: Number(e.target.value) })} /></div>
           </div>
           <Button onClick={create} disabled={!f.title || !f.video_url}>Add tutorial</Button>
           {msg && <p className="text-sm text-red-600">{msg}</p>}

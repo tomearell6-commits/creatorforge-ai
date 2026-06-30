@@ -40,11 +40,11 @@ export function AdCreativeStudio({ campaignId }: { campaignId?: string }) {
   return (
     <div className="space-y-6">
       <Card className="space-y-3">
-        <div><Label>Product / offer to advertise</Label><Textarea rows={2} value={product} onChange={(e) => setProduct(e.target.value)} placeholder="e.g. eco-friendly dog food subscription — 30% off first box" /></div>
+        <div><Label htmlFor="acs-product-offer-to-advertise">Product / offer to advertise</Label><Textarea id="acs-product-offer-to-advertise" rows={2} value={product} onChange={(e) => setProduct(e.target.value)} placeholder="e.g. eco-friendly dog food subscription — 30% off first box" /></div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div><Label>Objective</Label><select value={objective} onChange={(e) => setObjective(e.target.value)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{AD_OBJECTIVES.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select></div>
-          <div><Label>Platform</Label><select value={platform} onChange={(e) => setPlatform(e.target.value)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{AD_PLATFORMS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-          <div><Label>Audience (optional)</Label><Input value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="dog owners, 25-45" /></div>
+          <div><Label htmlFor="acs-objective">Objective</Label><select id="acs-objective" value={objective} onChange={(e) => setObjective(e.target.value)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{AD_OBJECTIVES.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select></div>
+          <div><Label htmlFor="acs-platform">Platform</Label><select id="acs-platform" value={platform} onChange={(e) => setPlatform(e.target.value)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm">{AD_PLATFORMS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+          <div><Label htmlFor="acs-audience-optional">Audience (optional)</Label><Input id="acs-audience-optional" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="dog owners, 25-45" /></div>
         </div>
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Coins className="h-4 w-4" /> ~{AD_CREDIT_COSTS.copy} credits</span>

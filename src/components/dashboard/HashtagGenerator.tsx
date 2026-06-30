@@ -34,8 +34,8 @@ export function HashtagGenerator() {
     <div className="space-y-5">
       <Card className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-2"><Label>Topic / keyword</Label><Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. puppy training tips" onKeyDown={(e) => e.key === "Enter" && go()} /></div>
-          <div><Label>Platform</Label><select className={sel} value={platform} onChange={(e) => setPlatform(e.target.value)}>{PLATFORMS.map((p) => <option key={p}>{p}</option>)}</select></div>
+          <div className="sm:col-span-2"><Label htmlFor="hg-topic-keyword">Topic / keyword</Label><Input id="hg-topic-keyword" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. puppy training tips" onKeyDown={(e) => e.key === "Enter" && go()} /></div>
+          <div><Label htmlFor="hg-platform">Platform</Label><select id="hg-platform" className={sel} value={platform} onChange={(e) => setPlatform(e.target.value)}>{PLATFORMS.map((p) => <option key={p}>{p}</option>)}</select></div>
         </div>
         <Button disabled={busy} onClick={go}>{busy ? "Generating…" : "Generate hashtags"}</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}

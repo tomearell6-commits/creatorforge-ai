@@ -37,7 +37,7 @@ export function TextToolPanel({
   return (
     <div className="space-y-5">
       <Card className="space-y-3">
-        <div><Label>{inputLabel}</Label><Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={placeholder} onKeyDown={(e) => e.key === "Enter" && go()} /></div>
+        <div><Label htmlFor="ttp-input">{inputLabel}</Label><Input id="ttp-input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={placeholder} onKeyDown={(e) => e.key === "Enter" && go()} /></div>
         <Button disabled={busy} onClick={go}>{busy ? "Generating…" : buttonLabel}</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>

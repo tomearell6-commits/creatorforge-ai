@@ -93,18 +93,18 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
     return (
       <Card className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
-          <div><Label>Main keyword *</Label><Input value={form.mainKeyword} onChange={(e) => setForm({ ...form, mainKeyword: e.target.value })} placeholder="e.g. best dog food for puppies" /></div>
-          <div><Label>Secondary keywords (comma-separated)</Label><Input value={form.secondaryKeywords} onChange={(e) => setForm({ ...form, secondaryKeywords: e.target.value })} placeholder="puppy nutrition, grain-free" /></div>
-          <div><Label>Target country</Label><Input value={form.targetCountry} onChange={(e) => setForm({ ...form, targetCountry: e.target.value })} placeholder="United States" /></div>
-          <div><Label>Target audience</Label><Input value={form.targetAudience} onChange={(e) => setForm({ ...form, targetAudience: e.target.value })} placeholder="New pet owners" /></div>
-          <div><Label>Search intent</Label><select className={sel} value={form.searchIntent} onChange={(e) => setForm({ ...form, searchIntent: e.target.value })}>{SEO_SEARCH_INTENTS.map((s) => <option key={s}>{s}</option>)}</select></div>
-          <div><Label>Article type</Label><select className={sel} value={form.articleType} onChange={(e) => setForm({ ...form, articleType: e.target.value })}>{SEO_ARTICLE_TYPES.map((s) => <option key={s}>{s}</option>)}</select></div>
-          <div><Label>Tone</Label><Input value={form.tone} onChange={(e) => setForm({ ...form, tone: e.target.value })} /></div>
-          <div><Label>Word count</Label><select className={sel} value={form.wordCount} onChange={(e) => setForm({ ...form, wordCount: Number(e.target.value) })}>{SEO_WORD_COUNTS.map((w) => <option key={w} value={w}>{w} words</option>)}</select></div>
-          <div><Label>Brand name</Label><Input value={form.brandName} onChange={(e) => setForm({ ...form, brandName: e.target.value })} /></div>
-          <div><Label>Product / service</Label><Input value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} /></div>
+          <div><Label htmlFor="ss-main-keyword">Main keyword *</Label><Input id="ss-main-keyword" value={form.mainKeyword} onChange={(e) => setForm({ ...form, mainKeyword: e.target.value })} placeholder="e.g. best dog food for puppies" /></div>
+          <div><Label htmlFor="ss-secondary-keywords">Secondary keywords (comma-separated)</Label><Input id="ss-secondary-keywords" value={form.secondaryKeywords} onChange={(e) => setForm({ ...form, secondaryKeywords: e.target.value })} placeholder="puppy nutrition, grain-free" /></div>
+          <div><Label htmlFor="ss-target-country">Target country</Label><Input id="ss-target-country" value={form.targetCountry} onChange={(e) => setForm({ ...form, targetCountry: e.target.value })} placeholder="United States" /></div>
+          <div><Label htmlFor="ss-target-audience">Target audience</Label><Input id="ss-target-audience" value={form.targetAudience} onChange={(e) => setForm({ ...form, targetAudience: e.target.value })} placeholder="New pet owners" /></div>
+          <div><Label htmlFor="ss-search-intent">Search intent</Label><select id="ss-search-intent" className={sel} value={form.searchIntent} onChange={(e) => setForm({ ...form, searchIntent: e.target.value })}>{SEO_SEARCH_INTENTS.map((s) => <option key={s}>{s}</option>)}</select></div>
+          <div><Label htmlFor="ss-article-type">Article type</Label><select id="ss-article-type" className={sel} value={form.articleType} onChange={(e) => setForm({ ...form, articleType: e.target.value })}>{SEO_ARTICLE_TYPES.map((s) => <option key={s}>{s}</option>)}</select></div>
+          <div><Label htmlFor="ss-tone">Tone</Label><Input id="ss-tone" value={form.tone} onChange={(e) => setForm({ ...form, tone: e.target.value })} /></div>
+          <div><Label htmlFor="ss-word-count">Word count</Label><select id="ss-word-count" className={sel} value={form.wordCount} onChange={(e) => setForm({ ...form, wordCount: Number(e.target.value) })}>{SEO_WORD_COUNTS.map((w) => <option key={w} value={w}>{w} words</option>)}</select></div>
+          <div><Label htmlFor="ss-brand-name">Brand name</Label><Input id="ss-brand-name" value={form.brandName} onChange={(e) => setForm({ ...form, brandName: e.target.value })} /></div>
+          <div><Label htmlFor="ss-product-service">Product / service</Label><Input id="ss-product-service" value={form.productName} onChange={(e) => setForm({ ...form, productName: e.target.value })} /></div>
         </div>
-        <div><Label>Call to action</Label><Input value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder="Shop now at …" /></div>
+        <div><Label htmlFor="ss-call-to-action">Call to action</Label><Input id="ss-call-to-action" value={form.cta} onChange={(e) => setForm({ ...form, cta: e.target.value })} placeholder="Shop now at …" /></div>
         <div className="flex items-center gap-3">
           <Button disabled={generating} onClick={generate}>{generating ? "Generating full SEO package…" : "Generate SEO article"}</Button>
           <span className="text-xs text-muted-foreground">≈ {SEO_CREDIT_COSTS.article} credits (real AI) · free with placeholder</span>
@@ -123,14 +123,14 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
             <h3 className="font-semibold">Article editor</h3>
             <button className="text-xs text-muted-foreground underline" onClick={() => setArticle(null)}>← New article</button>
           </div>
-          <div><Label>SEO title</Label><Input value={article.seo_title} onChange={(e) => setField("seo_title", e.target.value)} /></div>
-          <div><Label>Meta description</Label><Textarea rows={2} value={article.meta_description} onChange={(e) => setField("meta_description", e.target.value)} /></div>
+          <div><Label htmlFor="ss-seo-title">SEO title</Label><Input id="ss-seo-title" value={article.seo_title} onChange={(e) => setField("seo_title", e.target.value)} /></div>
+          <div><Label htmlFor="ss-meta-description">Meta description</Label><Textarea id="ss-meta-description" rows={2} value={article.meta_description} onChange={(e) => setField("meta_description", e.target.value)} /></div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div><Label>Slug</Label><Input value={article.slug} onChange={(e) => setField("slug", e.target.value)} /></div>
-            <div><Label>Category</Label><Input value={article.category} onChange={(e) => setField("category", e.target.value)} /></div>
+            <div><Label htmlFor="ss-slug">Slug</Label><Input id="ss-slug" value={article.slug} onChange={(e) => setField("slug", e.target.value)} /></div>
+            <div><Label htmlFor="ss-category">Category</Label><Input id="ss-category" value={article.category} onChange={(e) => setField("category", e.target.value)} /></div>
           </div>
-          <div><Label>Tags (comma-separated)</Label><Input value={article.tags.join(", ")} onChange={(e) => setField("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></div>
-          <div><Label>Article body (HTML)</Label><Textarea rows={16} value={article.article_content} onChange={(e) => setField("article_content", e.target.value)} className="font-mono text-xs" /></div>
+          <div><Label htmlFor="ss-tags">Tags (comma-separated)</Label><Input id="ss-tags" value={article.tags.join(", ")} onChange={(e) => setField("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></div>
+          <div><Label htmlFor="ss-article-body">Article body (HTML)</Label><Textarea id="ss-article-body" rows={16} value={article.article_content} onChange={(e) => setField("article_content", e.target.value)} className="font-mono text-xs" /></div>
         </Card>
 
         <Card>
