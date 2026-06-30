@@ -42,6 +42,20 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    heading: "AI Advertising Studio",
+    items: [
+      { href: "/dashboard/ads", label: "Campaign Dashboard", icon: Megaphone },
+      { href: "/dashboard/ads/create", label: "Create Campaign", icon: LayoutGrid },
+      { href: "/dashboard/ads/creative", label: "Ad Creative Studio", icon: ImageIcon },
+      { href: "/dashboard/ads/library", label: "Creative Library", icon: Library },
+      { href: "/dashboard/ads/accounts", label: "Connected Ad Accounts", icon: Share2 },
+      { href: "/dashboard/ads/calendar", label: "Campaign Calendar", icon: CalendarDays },
+      { href: "/dashboard/ads/reports", label: "Campaign Reports", icon: BarChart3 },
+      { href: "/dashboard/ads/audiences", label: "Audience Library", icon: Users },
+      { href: "/dashboard/ads/settings", label: "Settings", icon: Settings },
+    ],
+  },
+  {
     heading: "Management",
     items: [
       { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },

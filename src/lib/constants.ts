@@ -526,6 +526,51 @@ export const AUTOPILOT_JOB_STATUSES = [
   "planned", "queued", "generating", "awaiting_approval", "scheduled", "publishing", "published", "failed",
 ] as const;
 
+// =====================================================================
+// AI Advertising Studio
+// =====================================================================
+export type AdPlatform = {
+  id: string; name: string;
+  /** Env vars that enable real OAuth + API for this platform. */
+  envKeys: string[];
+  formats: string[];           // supported creative types
+  supportsPublish: boolean;    // can we create/publish ads via API (after app review)
+  supportsReporting: boolean;  // does the API expose performance metrics
+  docsUrl: string;
+};
+
+export const AD_PLATFORMS: AdPlatform[] = [
+  { id: "facebook",  name: "Facebook Ads",  envKeys: ["FACEBOOK_CLIENT_ID", "FACEBOOK_CLIENT_SECRET"],  formats: ["image", "video", "carousel", "story", "collection", "lead_form"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://developers.facebook.com/docs/marketing-apis" },
+  { id: "instagram", name: "Instagram Ads", envKeys: ["INSTAGRAM_CLIENT_ID", "INSTAGRAM_CLIENT_SECRET"], formats: ["image", "video", "carousel", "story", "short_video"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://developers.facebook.com/docs/marketing-apis" },
+  { id: "google",    name: "Google Ads",    envKeys: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET"], formats: ["image", "video", "lead_form"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.google.com/google-ads/api/docs/start" },
+  { id: "youtube",   name: "YouTube Ads",   envKeys: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET"], formats: ["video", "short_video"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.google.com/google-ads/api/docs/start" },
+  { id: "linkedin",  name: "LinkedIn Ads",  envKeys: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"],  formats: ["image", "video", "carousel", "lead_form"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://learn.microsoft.com/linkedin/marketing" },
+  { id: "pinterest", name: "Pinterest Ads", envKeys: ["PINTEREST_CLIENT_ID", "PINTEREST_CLIENT_SECRET"], formats: ["image", "video", "carousel", "collection"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.pinterest.com/docs/api/v5" },
+  { id: "tiktok",    name: "TikTok Ads",    envKeys: ["TIKTOK_ADS_CLIENT_ID", "TIKTOK_ADS_CLIENT_SECRET"], formats: ["short_video", "video"], supportsPublish: true, supportsReporting: true, docsUrl: "https://business-api.tiktok.com/portal/docs" },
+];
+export function adPlatform(id: string): AdPlatform | undefined { return AD_PLATFORMS.find((p) => p.id === id); }
+
+export const AD_OBJECTIVES = [
+  { id: "awareness", label: "Brand Awareness" }, { id: "traffic", label: "Traffic" }, { id: "sales", label: "Sales" },
+  { id: "leads", label: "Lead Generation" }, { id: "app", label: "App Promotion" }, { id: "video_views", label: "Video Views" },
+  { id: "engagement", label: "Engagement" },
+] as const;
+
+export const AD_CREATIVE_TYPES = [
+  { id: "image", label: "Image Ad" }, { id: "video", label: "Video Ad" }, { id: "carousel", label: "Carousel Ad" },
+  { id: "story", label: "Story Ad" }, { id: "short_video", label: "Short Video Ad" }, { id: "lead_form", label: "Lead Form Ad" },
+  { id: "collection", label: "Collection Ad" },
+] as const;
+
+/** Credits charged per advertising action (real AI only; viewing is free). */
+export const AD_CREDIT_COSTS = {
+  campaign: 5,        // create + structure a campaign
+  copy: 2,            // AI ad copy pack (headlines/primary/desc/CTA/variations)
+  image: 3,           // AI image creative
+  video: 80,          // AI video creative
+  analysis: 2,        // AI campaign analysis/recommendations
+} as const;
+
 export const LEDGER_ENTRY_TYPES = [
   "monthly_renewal", "topup_purchase", "refund", "bonus", "promo",
   "manual_adjustment", "generation", "rendering", "publishing", "admin_adjustment",
