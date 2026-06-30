@@ -11,7 +11,7 @@ export default function LoginPage() {
       <h1 className="text-2xl font-bold">Welcome back</h1>
       <p className="mt-1 text-sm text-muted-foreground">Log in to your CreatorForge account.</p>
       <div className="mt-6">
-        <GoogleButton />
+        <Suspense><GoogleButton /></Suspense>
         <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
         </div>

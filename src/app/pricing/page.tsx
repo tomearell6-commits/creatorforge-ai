@@ -57,7 +57,7 @@ export default function PricingPage() {
                   variant={plan.highlighted ? "primary" : "outline"}
                   className="mt-6 w-full"
                 >
-                  <Link href="/signup">{plan.price === 0 ? "Start free" : "Choose plan"}</Link>
+                  <Link href={plan.price === 0 ? "/signup" : `/signup?plan=${plan.id}&redirect=%2Fdashboard%2Fbilling`}>{plan.price === 0 ? "Start free" : "Choose plan"}</Link>
                 </Button>
               </Card>
             ))}

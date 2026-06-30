@@ -55,7 +55,9 @@ export function PricingCards() {
                 ))}
               </ul>
               <Button asChild variant={p.highlight ? "accent" : "outline"} className="mt-6">
-                <Link href="/signup">Select Plan</Link>
+                <Link href={p.monthly === 0 ? "/signup" : `/signup?plan=${p.id}&redirect=%2Fdashboard%2Fbilling`}>
+                  {p.monthly === 0 ? "Start free" : "Select Plan"}
+                </Link>
               </Button>
             </div>
           );

@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 
-/** "Continue with Google" — starts the Supabase Google OAuth flow. */
+/** "Continue with Google" — starts the Supabase Google OAuth flow. Honors a
+ *  ?redirect= query param (e.g. a plan CTA sending the user to Billing). */
 export function GoogleButton({ next = "/dashboard" }: { next?: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const dest = searchParams.get("redirect") || next;
 
   async function signIn() {
     setError(null);
@@ -15,7 +19,7 @@ export function GoogleButton({ next = "/dashboard" }: { next?: string }) {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(dest)}` },
     });
     if (error) {
       setError(error.message);
