@@ -41,3 +41,35 @@
 /* Mobile nav drawer slide-in */
 @keyframes cf-slide-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 .cf-slide-in { animation: cf-slide-in 0.18s ease-out; }
+
+/* ── Homepage motion design ───────────────────────────────────────────── */
+
+/* Scroll-reveal: hidden until .is-visible is added by the Reveal observer. */
+.cf-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+.cf-reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* Slow-drifting background gradient blobs in the hero. */
+@keyframes cf-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(3%, -4%) scale(1.08); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+.cf-drift { animation: cf-drift 14s ease-in-out infinite; }
+.cf-drift-slow { animation: cf-drift 22s ease-in-out infinite; }
+
+/* Soft pulsing glow for primary CTAs / live dots. */
+@keyframes cf-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.35); }
+  50%      { box-shadow: 0 0 0 8px rgba(132, 204, 22, 0); }
+}
+.cf-glow { animation: cf-glow 2.4s ease-in-out infinite; }
+
+/* Dashed connector line draw-in for the workflow/ecosystem diagrams. */
+@keyframes cf-dash { to { stroke-dashoffset: 0; } }
+.cf-dash { stroke-dasharray: 6 6; stroke-dashoffset: 200; animation: cf-dash 1.2s ease-out forwards; }
+
+/* Respect reduced-motion preferences across all homepage animations. */
+@media (prefers-reduced-motion: reduce) {
+  .cf-reveal { opacity: 1; transform: none; transition: none; }
+  .cf-drift, .cf-drift-slow, .cf-glow, .cf-dash { animation: none; }
+}

@@ -1,136 +1,159 @@
-import Link from "next/link";
-import { Star } from "lucide-react";
-import { Header } from "@/components/marketing/Header";
-import { HeroPromptBox } from "@/components/marketing/HeroPromptBox";
-import { ToolPillSlider } from "@/components/marketing/ToolPillSlider";
-import { FeatureCard } from "@/components/marketing/FeatureCard";
-import { WorkflowTabs } from "@/components/marketing/WorkflowTabs";
-import { TemplateGallery } from "@/components/marketing/TemplateGallery";
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
 import { PricingCards } from "@/components/marketing/PricingCards";
-import { FAQTabs } from "@/components/marketing/FAQTabs";
-import { Testimonials } from "@/components/marketing/Testimonials";
-import { DemoVideo } from "@/components/marketing/DemoVideo";
-import { FloatingPromptBar } from "@/components/marketing/FloatingPromptBar";
-import { SiteFooter } from "@/components/marketing/SiteFooter";
-import { FEATURE_CARDS } from "@/lib/marketing";
-import { getDictionary } from "@/lib/i18n";
-import { getServerLocale } from "@/lib/i18n-server";
+import { MarketingNav } from "@/components/marketing/home/MarketingNav";
+import { Hero } from "@/components/marketing/home/Hero";
+import { AIDemoFlow } from "@/components/marketing/home/AIDemoFlow";
+import { StudioShowcase } from "@/components/marketing/home/StudioShowcase";
+import { TemplateMarketplace } from "@/components/marketing/home/TemplateMarketplace";
+import { WorkflowTimeline } from "@/components/marketing/home/WorkflowTimeline";
+import { FeatureShowcase } from "@/components/marketing/home/FeatureShowcase";
+import { AutopilotShowcase } from "@/components/marketing/home/AutopilotShowcase";
+import { AssistantDemo } from "@/components/marketing/home/AssistantDemo";
+import { EcosystemSection } from "@/components/marketing/home/EcosystemSection";
+import { TestimonialsComingSoon } from "@/components/marketing/home/TestimonialsComingSoon";
+import { HomeFaq } from "@/components/marketing/home/HomeFaq";
+import { FinalCTA } from "@/components/marketing/home/FinalCTA";
+import { MarketingFooter } from "@/components/marketing/home/MarketingFooter";
+import { Reveal } from "@/components/marketing/home/Reveal";
+
+const TITLE = "CreatorForge.io — The AI Business Operating System";
+const DESCRIPTION =
+  "Build, market, publish, automate and grow your business with AI. CreatorForge.io combines AI content creation, SEO, publishing, automation, analytics, and business tools into one professional platform.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "https://www.creatorsforge.io", siteName: "CreatorForge.io", type: "website" },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+};
 
 const JSON_LD = {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "CreatorForge.io",
-  applicationCategory: "MultimediaApplication",
-  operatingSystem: "Web",
-  url: "https://www.creatorsforge.io",
-  description:
-    "AI-powered content studio for faceless videos, product ads, AI shorts, music videos, image-to-video, and social content.",
-  offers: { "@type": "Offer", price: "19", priceCurrency: "USD" },
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "CreatorForge.io",
+      url: "https://www.creatorsforge.io",
+      description: DESCRIPTION,
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "CreatorForge.io",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: "https://www.creatorsforge.io",
+      description: DESCRIPTION,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free trial with starter credits" },
+    },
+  ],
 };
 
+/** Reusable section header. */
+function SectionHead({ eyebrow, title, subtitle }: { eyebrow?: string; title: string; subtitle?: string }) {
+  return (
+    <Reveal className="mx-auto mb-10 max-w-2xl text-center">
+      {eyebrow && <p className="text-sm font-bold uppercase tracking-wide text-brand-700">{eyebrow}</p>}
+      <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-4xl">{title}</h2>
+      {subtitle && <p className="mx-auto mt-3 text-ink-soft dark:text-muted-foreground">{subtitle}</p>}
+    </Reveal>
+  );
+}
+
 export default async function LandingPage() {
-  const t = getDictionary(await getServerLocale());
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
-      <Header />
+      <MarketingNav isAuthed={!!user} />
 
       <main className="flex-1">
-        {/* Hero */}
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-50 to-background" />
-          <div className="mx-auto max-w-4xl px-4 pb-10 pt-16 text-center">
-            <div className="mb-4 flex items-center justify-center gap-1 text-brand-600">
-              {[0, 1, 2, 3, 4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}
-            </div>
-            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight text-ink dark:text-foreground sm:text-6xl">
-              {t.hero.title1}<br /><span className="italic">{t.hero.title2}</span>
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-soft dark:text-muted-foreground">
-              {t.hero.subtitle}
-            </p>
-            <div className="mx-auto mt-8 max-w-2xl">
-              <HeroPromptBox />
-            </div>
-          </div>
-          <div className="mx-auto max-w-6xl px-4 pb-12">
-            <ToolPillSlider />
-          </div>
-        </section>
+        <Hero />
 
-        {/* Featured tool cards */}
-        <section id="tools" className="mx-auto max-w-6xl px-4 py-16">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURE_CARDS.map((c) => <FeatureCard key={c.title} {...c} />)}
-          </div>
-        </section>
-
-        {/* Workflow */}
-        <section className="border-y border-border bg-brand-50/60 py-20 dark:bg-brand-900/10">
+        {/* Interactive AI demonstration */}
+        <section id="demo" className="border-y border-border bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-4">
-            <p className="text-center text-sm font-bold uppercase tracking-wide text-brand-700">{t.sections.workflowEyebrow}</p>
-            <h2 className="mt-2 text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">
-              {t.sections.workflowTitle}
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
-              {t.sections.workflowSubtitle}
-            </p>
-            <div className="mt-10"><WorkflowTabs /></div>
+            <SectionHead eyebrow="See it in action" title="One prompt. A complete workflow." subtitle="Watch how CreatorForge turns a single idea into finished content, published and measured — automatically." />
+            <AIDemoFlow />
           </div>
         </section>
 
-        {/* Templates */}
-        <section id="templates" className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">{t.sections.templatesTitle}</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
-            {t.sections.templatesSubtitle}
-          </p>
-          <div className="mt-10"><TemplateGallery /></div>
+        {/* Six flagship Studios */}
+        <section id="studios" className="mx-auto max-w-6xl px-4 py-20">
+          <SectionHead eyebrow="Six flagship Studios" title="Professional workspaces for every job" subtitle="Each Studio brings together the tools for one part of your business — all under one roof." />
+          <StudioShowcase />
+        </section>
+
+        {/* Template marketplace */}
+        <section id="templates" className="border-y border-border bg-muted/30 py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <SectionHead eyebrow="AI Template Marketplace" title="Start from a proven template" subtitle="Filter by Studio, platform, and difficulty — then make it yours in seconds." />
+            <TemplateMarketplace />
+          </div>
+        </section>
+
+        {/* Professional workflow */}
+        <section className="mx-auto max-w-6xl px-4 py-20">
+          <SectionHead eyebrow="How it works" title="From idea to growth" subtitle="Every project flows through the same professional pipeline." />
+          <WorkflowTimeline />
+        </section>
+
+        {/* Feature showcase */}
+        <section id="features" className="border-y border-border bg-muted/30 py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <SectionHead eyebrow="Everything included" title="A premium tool for every need" subtitle="Twelve flagship capabilities, one unified platform." />
+            <FeatureShowcase />
+          </div>
+        </section>
+
+        {/* Autopilot */}
+        <section className="mx-auto max-w-6xl px-4 py-20">
+          <AutopilotShowcase />
+        </section>
+
+        {/* Assistant */}
+        <section className="border-y border-border bg-muted/30 py-20">
+          <div className="mx-auto max-w-6xl px-4"><AssistantDemo /></div>
+        </section>
+
+        {/* AI Business OS ecosystem */}
+        <section className="mx-auto max-w-6xl px-4 py-20">
+          <SectionHead eyebrow="One unified ecosystem" title="The AI Business Operating System" subtitle="The six Studios are designed to work together — output from one becomes fuel for the next." />
+          <EcosystemSection />
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="border-y border-border bg-brand-50/60 py-20 dark:bg-brand-900/10">
+        <section id="pricing" className="border-y border-border bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="text-center text-4xl font-extrabold tracking-tight text-ink dark:text-foreground">{t.sections.pricingTitle}</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-center text-ink-soft dark:text-muted-foreground">
-              {t.sections.pricingSubtitle}
-            </p>
-            <div className="mt-10"><PricingCards /></div>
+            <SectionHead eyebrow="Pricing" title="Plans that scale with you" subtitle="Start free. Upgrade when you're ready. Top up credits any time." />
+            <PricingCards />
           </div>
         </section>
-
-        {/* Demo video */}
-        <DemoVideo />
 
         {/* Testimonials */}
-        <Testimonials />
-
-        {/* FAQ */}
         <section className="mx-auto max-w-6xl px-4 py-20">
-          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
-            <h2 className="text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-4xl">{t.sections.faqTitle}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t.sections.faqSupportPre}
-              <Link href="/dashboard/support" className="font-semibold text-brand-600 hover:text-brand-700">{t.sections.faqSupportLink}</Link>.
-            </p>
-          </div>
-          <div className="mt-10"><FAQTabs /></div>
+          <SectionHead eyebrow="Loved by builders" title="Trusted by creators and businesses" subtitle="Real customer stories are on the way." />
+          <TestimonialsComingSoon />
         </section>
 
-        {/* CTA */}
-        <section className="mx-auto max-w-4xl px-4 pb-28 pt-4 text-center">
-          <div className="rounded-3xl bg-ink p-12">
-            <h2 className="text-3xl font-extrabold text-white">{t.sections.ctaTitle}</h2>
-            <p className="mt-3 text-white/70">{t.sections.ctaSubtitle}</p>
-            <a href="/signup" className="mt-8 inline-flex rounded-full bg-brand-300 px-6 py-3 font-semibold text-brand-900 hover:bg-brand-400">
-              {t.sections.ctaButton}
-            </a>
+        {/* FAQ */}
+        <section id="faq" className="border-y border-border bg-muted/30 py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <SectionHead eyebrow="FAQ" title="Questions, answered" subtitle="Search the most common questions about CreatorForge." />
+            <HomeFaq />
           </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="mx-auto max-w-5xl px-4 py-20">
+          <FinalCTA />
         </section>
       </main>
 
-      <SiteFooter />
-      <FloatingPromptBar />
+      <MarketingFooter />
     </div>
   );
 }
