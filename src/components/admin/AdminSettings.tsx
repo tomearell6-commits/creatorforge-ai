@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 type Flag = { key: string; enabled: boolean; description: string | null };
 type Setting = { key: string; value: unknown };
@@ -37,9 +38,8 @@ export function AdminSettings() {
                 <div className="font-medium">{f.key}</div>
                 <div className="text-xs text-muted-foreground">{f.description}</div>
               </div>
-              <button onClick={() => toggle(f.key, !f.enabled)}
-                className={`rounded-full px-3 py-1 text-xs ${f.enabled ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                {f.enabled ? "Enabled" : "Disabled"}
+              <button onClick={() => toggle(f.key, !f.enabled)} className="cursor-pointer">
+                <Badge variant={f.enabled ? "success" : "danger"}>{f.enabled ? "Enabled" : "Disabled"}</Badge>
               </button>
             </div>
           ))}

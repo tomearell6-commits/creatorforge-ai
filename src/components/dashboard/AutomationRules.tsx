@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 import { AUTOMATION_TRIGGERS, AUTOMATION_ACTIONS } from "@/lib/constants";
 import type { AutomationRule } from "@/lib/types";
 
@@ -83,9 +84,8 @@ export function AutomationRules() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => toggle(r)}
-                className={`rounded-full px-2 py-0.5 text-xs ${r.enabled ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                {r.enabled ? "Enabled" : "Disabled"}
+              <button onClick={() => toggle(r)} className="cursor-pointer">
+                <Badge variant={r.enabled ? "success" : "danger"}>{r.enabled ? "Enabled" : "Disabled"}</Badge>
               </button>
               <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => remove(r.id)}>Delete</button>
             </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 
 type Provider = {
@@ -16,14 +17,16 @@ type Provider = {
   health: { latency_ms: number | null; error_rate: number | null; webhook_ok: boolean | null; last_success: string | null; last_failure: string | null } | null;
 };
 
-export const STATUS_STYLE: Record<string, string> = {
-  healthy: "bg-brand-100 text-brand-800", warning: "bg-amber-100 text-amber-800",
-  critical: "bg-red-100 text-red-700", offline: "bg-red-200 text-red-800",
-  not_configured: "bg-muted text-muted-foreground",
-};
+export const STATUS_VARIANT = {
+  healthy: "success",
+  warning: "warning",
+  critical: "danger",
+  offline: "danger",
+  not_configured: "default",
+} as const;
 
 export function StatusPill({ status }: { status: string }) {
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[status] ?? "bg-muted"}`}>{status.replace("_", " ")}</span>;
+  return <Badge variant={STATUS_VARIANT[status as keyof typeof STATUS_VARIANT] ?? "default"}>{status.replace("_", " ")}</Badge>;
 }
 
 function fmtDate(d: string | null | undefined) { return d ? new Date(d).toLocaleDateString() : "—"; }

@@ -34,11 +34,11 @@ export function WordPressSites() {
           In WordPress: <strong>Users → Profile → Application Passwords</strong> → create one named “CreatorForge”, then paste it below.
           We verify via the REST API and store the password <strong>encrypted</strong> (never raw).
         </p>
-        <div><Label>Site name</Label><Input value={form.siteName} onChange={(e) => setForm({ ...form, siteName: e.target.value })} placeholder="My Blog" /></div>
-        <div><Label>Site URL</Label><Input value={form.siteUrl} onChange={(e) => setForm({ ...form, siteUrl: e.target.value })} placeholder="https://yourblog.com" /></div>
-        <div><Label>Username</Label><Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></div>
-        <div><Label>Application password</Label><Input value={form.appPassword} onChange={(e) => setForm({ ...form, appPassword: e.target.value })} placeholder="xxxx xxxx xxxx xxxx" /></div>
-        <div><Label>Default category (optional)</Label><Input value={form.defaultCategory} onChange={(e) => setForm({ ...form, defaultCategory: e.target.value })} /></div>
+        <div><Label htmlFor="wp-site-name">Site name</Label><Input id="wp-site-name" value={form.siteName} onChange={(e) => setForm({ ...form, siteName: e.target.value })} placeholder="My Blog" /></div>
+        <div><Label htmlFor="wp-site-url">Site URL</Label><Input id="wp-site-url" value={form.siteUrl} onChange={(e) => setForm({ ...form, siteUrl: e.target.value })} placeholder="https://yourblog.com" /></div>
+        <div><Label htmlFor="wp-username">Username</Label><Input id="wp-username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></div>
+        <div><Label htmlFor="wp-app-password">Application password</Label><Input id="wp-app-password" value={form.appPassword} onChange={(e) => setForm({ ...form, appPassword: e.target.value })} placeholder="xxxx xxxx xxxx xxxx" /></div>
+        <div><Label htmlFor="wp-default-category">Default category (optional)</Label><Input id="wp-default-category" value={form.defaultCategory} onChange={(e) => setForm({ ...form, defaultCategory: e.target.value })} /></div>
         <Button disabled={busy} onClick={connect}>{busy ? "Verifying…" : "Connect & test"}</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>

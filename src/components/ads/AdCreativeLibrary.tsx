@@ -20,7 +20,7 @@ export function AdCreativeLibrary() {
 
   return (
     <div className="space-y-4">
-      <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search creatives…" className="max-w-sm" />
+      <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search creatives…" aria-label="Search creatives" className="max-w-sm" />
       {filtered.length === 0 ? (
         <Card className="py-10 text-center text-sm text-muted-foreground">No creatives yet. Generate some in the Ad Creative Studio.</Card>
       ) : (

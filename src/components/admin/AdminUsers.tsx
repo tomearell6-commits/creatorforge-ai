@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 
 type Row = { user_id: string; full_name: string | null; plan: string; credits: number; status: string; created_at: string };
+
+const USER_STATUS_VARIANT = {
+  active: "success",
+  suspended: "danger",
+} as const;
 
 export function AdminUsers() {
   const [users, setUsers] = useState<Row[]>([]);
@@ -34,7 +40,7 @@ export function AdminUsers() {
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name…" onKeyDown={(e) => e.key === "Enter" && load()} />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name…" aria-label="Search users by name" onKeyDown={(e) => e.key === "Enter" && load()} />
         <Button onClick={load}>Search</Button>
       </div>
       <Card className="overflow-x-auto p-0">
@@ -52,7 +58,7 @@ export function AdminUsers() {
                 <td className="p-3 capitalize">{u.plan}</td>
                 <td className="p-3">{u.credits}</td>
                 <td className="p-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${u.status === "suspended" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>{u.status}</span>
+                  <Badge variant={USER_STATUS_VARIANT[u.status as keyof typeof USER_STATUS_VARIANT] ?? "default"}>{u.status}</Badge>
                 </td>
                 <td className="p-3">
                   <div className="flex flex-wrap gap-2 text-xs">

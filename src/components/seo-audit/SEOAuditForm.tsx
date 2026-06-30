@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Coins, Search, Loader2 } from "lucide-react";
+import { Coins, Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import { Input, Label } from "@/components/ui/Input";
 import { SEOAuditTypeSelector } from "./SEOAuditTypeSelector";
 import { seoAuditType } from "@/lib/constants";
@@ -29,7 +30,7 @@ export function SEOAuditForm({ onStart, busy, error }: { onStart: (url: string, 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Coins className="h-4 w-4" /> Estimated cost: <b className="text-foreground">{cost} credits</b></span>
         <Button onClick={() => onStart(url, type)} disabled={busy || !url.trim()}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Start Audit
+          {busy ? <Spinner size="sm" className="text-current" /> : <Search className="h-4 w-4" />} Start Audit
         </Button>
       </div>
       {error && (

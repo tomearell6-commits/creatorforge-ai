@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Play, Pause, CalendarPlus, Trash2 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
 export function CampaignsList() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -47,7 +48,7 @@ export function CampaignsList() {
             </div>
             <div className="flex items-center gap-2">
               <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${c.mode === "full" ? "bg-brand-100 text-brand-800" : c.mode === "assisted" ? "bg-sky-100 text-sky-800" : "bg-muted text-muted-foreground"}`}>{c.mode}</span>
-              <span className={`rounded-full px-2 py-0.5 text-xs ${c.status === "active" ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"}`}>{c.status}</span>
+              <Badge variant={c.status === "active" ? "success" : "warning"}>{c.status}</Badge>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">

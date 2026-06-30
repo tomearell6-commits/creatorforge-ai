@@ -5,16 +5,17 @@ import Link from "next/link";
 import { Play, RotateCcw, Server, Download } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { cn, formatDate } from "@/lib/utils";
 import { RENDER_TIERS } from "@/lib/constants";
 import type { RenderJob } from "@/lib/types";
 
-const STATUS_STYLES: Record<RenderJob["status"], string> = {
-  queued: "bg-muted text-foreground",
-  processing: "bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-  failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-};
+const STATUS_VARIANT = {
+  queued: "warning",
+  processing: "warning",
+  done: "success",
+  failed: "danger",
+} as const;
 
 export function RenderQueue({
   projectId,
@@ -167,9 +168,7 @@ export function RenderQueue({
             <Card key={job.id} className="space-y-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Render · {formatDate(job.created_at)}</CardTitle>
-                <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium capitalize", STATUS_STYLES[job.status])}>
-                  {job.status}
-                </span>
+                <Badge variant={STATUS_VARIANT[job.status] ?? "default"}>{job.status}</Badge>
               </div>
 
               {job.status !== "done" && (

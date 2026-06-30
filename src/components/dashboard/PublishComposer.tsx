@@ -5,10 +5,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 import { CATEGORIES, PLATFORMS, VISIBILITY_OPTIONS } from "@/lib/constants";
 import type { PublishJob, PublishMode, SocialAccount, SocialPlatform, Visibility } from "@/lib/types";
 
 type VideoAsset = { id: string; name: string; url: string; project_id: string | null };
+
+const PUBLISH_STATUS_VARIANT = {
+  published: "success",
+  failed: "danger",
+} as const;
 
 export function PublishComposer() {
   const [videos, setVideos] = useState<VideoAsset[]>([]);
@@ -208,7 +214,7 @@ export function PublishComposer() {
               <div key={j.id} className="rounded-lg border border-border p-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="truncate font-medium">{j.title || "Untitled"}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${j.status === "published" ? "bg-green-100 text-green-700" : j.status === "failed" ? "bg-red-100 text-red-700" : "bg-muted text-muted-foreground"}`}>{j.status}</span>
+                  <Badge variant={PUBLISH_STATUS_VARIANT[j.status as keyof typeof PUBLISH_STATUS_VARIANT] ?? "default"}>{j.status}</Badge>
                 </div>
                 {j.status === "failed" && (
                   <button className="mt-1 text-xs text-brand-600 underline" onClick={() => retry(j.id)}>Retry</button>

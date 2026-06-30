@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
-const ACTION_STYLE: Record<string, string> = {
-  published: "bg-brand-100 text-brand-800", generated: "bg-sky-100 text-sky-800", scheduled: "bg-violet-100 text-violet-800",
-  approved: "bg-brand-100 text-brand-800", paused: "bg-amber-100 text-amber-800", resumed: "bg-brand-100 text-brand-800", failed: "bg-red-100 text-red-700",
+const ACTION_VARIANT: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
+  published: "success", generated: "warning", scheduled: "warning",
+  approved: "success", paused: "warning", resumed: "success", failed: "danger",
 };
 
 export function HistoryView() {
@@ -20,7 +21,7 @@ export function HistoryView() {
         {history.map((h) => (
           <li key={h.id} className="flex items-center justify-between gap-3 p-3 text-sm">
             <div className="flex items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${ACTION_STYLE[h.action] ?? "bg-muted"}`}>{h.action}</span>
+              <Badge variant={ACTION_VARIANT[h.action] ?? "default"}>{h.action}</Badge>
               <span className="text-muted-foreground">{h.detail}</span>
             </div>
             <span className="shrink-0 text-xs text-muted-foreground">{new Date(h.created_at).toLocaleString()}</span>

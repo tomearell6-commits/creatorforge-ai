@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Loader2, FileText } from "lucide-react";
+import { Sparkles, FileText } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import { SEOAuditScoreCard } from "./SEOAuditScoreCard";
 import { SEOIssueTable } from "./SEOIssueTable";
 import { SEORecommendationCard } from "./SEORecommendationCard";
@@ -100,7 +101,7 @@ export function SEOAuditReport({ auditId, report, issues, fixPlan, onGenerateFix
       {fixPlan ? <SEOFixPlan plan={fixPlan} /> : (
         <Card className="flex flex-wrap items-center justify-between gap-3">
           <div><CardTitle className="text-base">Need a step-by-step plan?</CardTitle><p className="text-sm text-muted-foreground">Generate a prioritized SEO fix plan with WordPress, content, linking and metadata recommendations.</p></div>
-          <Button onClick={onGenerateFixPlan} disabled={fixBusy}>{fixBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} Generate Fix Plan (25 cr)</Button>
+          <Button onClick={onGenerateFixPlan} disabled={fixBusy}>{fixBusy ? <Spinner size="sm" className="text-current" /> : <FileText className="h-4 w-4" />} Generate Fix Plan (25 cr)</Button>
         </Card>
       )}
     </div>

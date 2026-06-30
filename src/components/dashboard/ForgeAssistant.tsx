@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Sparkles, X, Minus, Send, Coins, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Sparkles, X, Minus, Send, Coins, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 
 type Msg = { id?: string; role: "user" | "assistant"; content: string; cost?: number; failed?: boolean };
 
@@ -156,7 +157,7 @@ export function ForgeAssistant() {
                 </div>
               </div>
             ))}
-            {busy && <div className="flex justify-start"><div className="rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div></div>}
+            {busy && <div className="flex justify-start"><div className="rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground"><Spinner size="sm" className="text-current" /></div></div>}
 
             {/* Quick actions + guided tours (only before the first user message) */}
             {messages.length === 1 && (

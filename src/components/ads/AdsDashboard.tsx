@@ -5,11 +5,12 @@ import Link from "next/link";
 import { Plus, Megaphone } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
-const STATUS: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground", scheduled: "bg-violet-100 text-violet-800",
-  publishing: "bg-sky-100 text-sky-800", running: "bg-brand-100 text-brand-800",
-  paused: "bg-amber-100 text-amber-800", completed: "bg-brand-100 text-brand-800", failed: "bg-red-100 text-red-700",
+const STATUS: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
+  draft: "warning", scheduled: "warning",
+  publishing: "warning", running: "success",
+  paused: "warning", completed: "success", failed: "danger",
 };
 
 export function AdsDashboard() {
@@ -41,7 +42,7 @@ export function AdsDashboard() {
             <p className="text-xs capitalize text-muted-foreground">{c.objective} · {(c.platforms ?? []).join(", ") || "no platform"}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${STATUS[c.status] ?? "bg-muted"}`}>{c.status}</span>
+            <Badge variant={STATUS[c.status] ?? "default"}>{c.status}</Badge>
             {c.status === "draft" && <Button size="sm" variant="outline" onClick={() => patch(c.id, "scheduled")}>Schedule</Button>}
             {c.status === "running" && <Button size="sm" variant="ghost" onClick={() => patch(c.id, "paused")}>Pause</Button>}
             {c.status === "paused" && <Button size="sm" variant="ghost" onClick={() => patch(c.id, "running")}>Resume</Button>}

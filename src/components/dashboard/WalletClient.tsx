@@ -3,11 +3,13 @@
 import { useCallbackQuote, useWallet } from "./wallet-hooks";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Wallet, Plus, Gift, ShoppingBag, RefreshCw, Check, Clock, ExternalLink, Loader2, Settings2,
+  Wallet, Plus, Gift, ShoppingBag, RefreshCw, Check, Clock, ExternalLink, Settings2,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import { Input, Label } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 import { SUPPORTED_CRYPTO, MIN_PURCHASE_USD, MAX_PURCHASE_USD } from "@/lib/constants";
 
 type Pkg = { slug: string; name: string; usdPrice: number; credits: number; bonus: number; tag?: string };
@@ -114,7 +116,7 @@ export function WalletClient() {
                 {p.bonus ? <span className="text-brand-700"> (incl. {p.bonus.toLocaleString()} bonus)</span> : null}
               </p>
               <Button disabled={busy} onClick={() => buy({ packageSlug: p.slug })} className="mt-auto">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Buy with {coin}
+                {busy ? <Spinner size="sm" className="text-current" /> : <Plus className="h-4 w-4" />} Buy with {coin}
               </Button>
             </Card>
           ))}
@@ -177,7 +179,7 @@ export function WalletClient() {
 }
 
 function WalletSummaryCard({ summary }: { summary: ReturnType<typeof useWallet>["summary"] }) {
-  if (!summary) return <Card><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></Card>;
+  if (!summary) return <Card><Spinner size="md" className="text-muted-foreground" /></Card>;
   const pct = Math.round(summary.remainingFraction * 100);
   return (
     <Card className="space-y-4">
@@ -351,9 +353,12 @@ function AutoTopup({ packages }: { packages: Pkg[] }) {
 }
 
 function StatusPill({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    completed: "bg-brand-100 text-brand-800", pending: "bg-amber-100 text-amber-800",
-    confirming: "bg-sky-100 text-sky-800", failed: "bg-red-100 text-red-700", refunded: "bg-muted text-muted-foreground",
-  };
-  return <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${map[status] ?? "bg-muted"}`}>{status}</span>;
+  const map = {
+    completed: "success",
+    pending: "warning",
+    confirming: "info",
+    failed: "danger",
+    refunded: "default",
+  } as const;
+  return <Badge variant={map[status as keyof typeof map] ?? "default"}>{status}</Badge>;
 }

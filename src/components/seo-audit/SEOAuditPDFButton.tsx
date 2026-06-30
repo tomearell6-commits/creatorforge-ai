@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import { SEO_AUDIT_PDF_CREDITS } from "@/lib/constants";
 
 /**
@@ -26,7 +27,7 @@ export function SEOAuditPDFButton({ auditId }: { auditId: string }) {
   return (
     <div className="flex items-center gap-2">
       <Button variant="outline" onClick={go} disabled={busy}>
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PDF ({SEO_AUDIT_PDF_CREDITS} cr)
+        {busy ? <Spinner size="sm" className="text-current" /> : <Download className="h-4 w-4" />} Download PDF ({SEO_AUDIT_PDF_CREDITS} cr)
       </Button>
       {needCredits && <span className="text-xs text-amber-700">Not enough credits. <Link href="/dashboard/credits" className="underline">Top up</Link></span>}
     </div>

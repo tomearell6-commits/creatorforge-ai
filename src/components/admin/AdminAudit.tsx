@@ -31,8 +31,8 @@ export function AdminAudit() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <Input className="flex-1" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search actor email…" />
-        <Input value={action} onChange={(e) => setAction(e.target.value)} placeholder="action (e.g. apikey.created)" />
+        <Input className="flex-1" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search actor email…" aria-label="Search by actor email" />
+        <Input value={action} onChange={(e) => setAction(e.target.value)} placeholder="action (e.g. apikey.created)" aria-label="Filter by action" />
         <Button onClick={load}>Filter</Button>
         <Button variant="outline" onClick={exportCsv}>Export CSV</Button>
       </div>

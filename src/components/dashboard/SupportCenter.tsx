@@ -4,8 +4,15 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 import { TICKET_CATEGORIES, TICKET_PRIORITIES } from "@/lib/constants";
 import type { SupportMessage, SupportTicket } from "@/lib/types";
+
+const TICKET_STATUS_VARIANT = {
+  open: "warning",
+  resolved: "success",
+  closed: "danger",
+} as const;
 
 export function SupportCenter() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -82,7 +89,7 @@ export function SupportCenter() {
                 <div className="font-medium">{t.subject}</div>
                 <div className="text-xs text-muted-foreground">{t.category} · {t.priority} · {new Date(t.created_at).toLocaleDateString()}</div>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-xs ${t.status === "open" ? "bg-green-100 text-green-700" : t.status === "resolved" || t.status === "closed" ? "bg-muted text-muted-foreground" : "bg-amber-100 text-amber-700"}`}>{t.status}</span>
+              <Badge variant={TICKET_STATUS_VARIANT[t.status as keyof typeof TICKET_STATUS_VARIANT] ?? "default"}>{t.status}</Badge>
             </button>
             {open === t.id && (
               <div className="mt-3 space-y-2 border-t border-border pt-3">

@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Loader2, Plus, Save, History, Wand2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Plus, Save, History, Wand2 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Spinner } from "@/components/ui/Spinner";
 import { BOOK_CREDIT_COSTS } from "@/lib/constants";
 
 type Book = { id: string; title: string; subtitle: string | null; status: string };
@@ -130,8 +131,8 @@ export function BookEditor({ bookId }: { bookId: string }) {
           <Card className="space-y-3">
             <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-lg font-semibold" />
             <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" variant="accent" disabled={!!busy} onClick={() => runTool()}>{busy === "Drafting chapter…" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Draft chapter (~{BOOK_CREDIT_COSTS.chapter} cr)</Button>
-              {TOOLS.map((t) => <button key={t.action} disabled={!!busy} onClick={() => runTool(t.action)} className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs hover:bg-muted disabled:opacity-50">{busy === t.action ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}{t.label}</button>)}
+              <Button size="sm" variant="accent" disabled={!!busy} onClick={() => runTool()}>{busy === "Drafting chapter…" ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />} Draft chapter (~{BOOK_CREDIT_COSTS.chapter} cr)</Button>
+              {TOOLS.map((t) => <button key={t.action} disabled={!!busy} onClick={() => runTool(t.action)} className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs hover:bg-muted disabled:opacity-50">{busy === t.action ? <Spinner size="sm" className="text-current" /> : <Wand2 className="h-3 w-3" />}{t.label}</button>)}
             </div>
             {msg && <p className="text-xs text-brand-700">{msg}</p>}
             <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={22} className="w-full resize-y rounded-lg border border-border bg-background p-3 font-serif text-[15px] leading-relaxed" placeholder="Write here, or click Draft chapter to let AI write the first draft from your outline notes." />

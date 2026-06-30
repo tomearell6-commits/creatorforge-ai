@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles, Copy } from "lucide-react";
+import { Sparkles, Copy } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import { BookPicker } from "./BookPicker";
 import { BOOK_CREDIT_COSTS } from "@/lib/constants";
 
@@ -46,7 +47,7 @@ export function BookMarketing() {
         <CardTitle className="text-sm">Choose a book</CardTitle>
         <BookPicker value={bookId} onChange={(id) => setBookId(id)} />
         <div className="flex flex-wrap gap-2">
-          {TYPES.map((t) => <Button key={t.type} size="sm" variant="outline" disabled={!bookId || !!busy} onClick={() => gen(t.type)}>{busy === t.type ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}{t.label}</Button>)}
+          {TYPES.map((t) => <Button key={t.type} size="sm" variant="outline" disabled={!bookId || !!busy} onClick={() => gen(t.type)}>{busy === t.type ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />}{t.label}</Button>)}
         </div>
         <p className="text-xs text-muted-foreground">Each asset costs ~{BOOK_CREDIT_COSTS.marketing} credits when AI is enabled. {msg && <span className="text-brand-700">{msg}</span>}</p>
       </Card>

@@ -4,8 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
 type Article = { id: string; main_keyword: string; seo_title: string; status: string; category: string; scheduled_at: string | null; published_at: string | null; seo_score: number; created_at: string };
+
+const ARTICLE_STATUS_VARIANT = {
+  published: "success",
+  failed: "danger",
+  scheduled: "warning",
+  draft: "warning",
+} as const;
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <Card className="p-4"><div className="text-2xl font-bold">{value}</div><div className="text-xs text-muted-foreground">{label}</div></Card>;
@@ -60,7 +68,7 @@ export function SeoDashboard() {
                 <div className="truncate font-medium">{a.seo_title || a.main_keyword}</div>
                 <div className="text-xs text-muted-foreground">{a.main_keyword} · SEO {a.seo_score ?? "—"}</div>
               </div>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${a.status === "published" ? "bg-green-100 text-green-700" : a.status === "failed" ? "bg-red-100 text-red-700" : a.status === "scheduled" ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground"}`}>{a.status}</span>
+              <Badge variant={ARTICLE_STATUS_VARIANT[a.status as keyof typeof ARTICLE_STATUS_VARIANT] ?? "default"} className="shrink-0">{a.status}</Badge>
             </Link>
           ))}
         </div>

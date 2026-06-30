@@ -5,7 +5,8 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
 import { AD_OBJECTIVES, AD_PLATFORMS, AD_CREDIT_COSTS } from "@/lib/constants";
-import { Coins, Loader2, Sparkles } from "lucide-react";
+import { Coins, Sparkles } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 
 type Pack = {
   headlines: string[]; primaryTexts: string[]; descriptions: string[]; ctas: string[];
@@ -47,7 +48,7 @@ export function AdCreativeStudio({ campaignId }: { campaignId?: string }) {
         </div>
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Coins className="h-4 w-4" /> ~{AD_CREDIT_COSTS.copy} credits</span>
-          <Button onClick={go} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Generate ad copy</Button>
+          <Button onClick={go} disabled={busy}>{busy ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />} Generate ad copy</Button>
         </div>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>

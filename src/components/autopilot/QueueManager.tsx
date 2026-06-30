@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
-const STATUS_STYLE: Record<string, string> = {
-  planned: "bg-muted text-muted-foreground", queued: "bg-muted text-muted-foreground",
-  generating: "bg-sky-100 text-sky-800", awaiting_approval: "bg-amber-100 text-amber-800",
-  scheduled: "bg-violet-100 text-violet-800", publishing: "bg-sky-100 text-sky-800",
-  published: "bg-brand-100 text-brand-800", failed: "bg-red-100 text-red-700",
+const STATUS_VARIANT: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
+  planned: "default", queued: "warning",
+  generating: "warning", awaiting_approval: "warning",
+  scheduled: "warning", publishing: "warning",
+  published: "success", failed: "danger",
 };
 
 export function QueueManager() {
@@ -35,7 +36,7 @@ export function QueueManager() {
               <td className="p-3"><div className="font-medium">{j.title}</div><div className="text-xs capitalize text-muted-foreground">{j.content_type?.replace(/_/g, " ")} · {j.estimated_credits} cr</div></td>
               <td className="p-3 capitalize">{(j.destination ?? "—").replace(/_/g, " ")}</td>
               <td className="p-3 text-xs">{j.scheduled_time ? new Date(j.scheduled_time).toLocaleString() : "—"}{j.error_message && <div className="text-red-600">{j.error_message}</div>}</td>
-              <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-xs capitalize ${STATUS_STYLE[j.status] ?? "bg-muted"}`}>{j.status?.replace(/_/g, " ")}</span></td>
+              <td className="p-3"><Badge variant={STATUS_VARIANT[j.status] ?? "default"}>{j.status?.replace(/_/g, " ")}</Badge></td>
               <td className="p-3">
                 <div className="flex flex-wrap gap-1">
                   {j.status === "awaiting_approval" && <Button size="sm" onClick={() => action(j.id, "approve")}>Approve</Button>}

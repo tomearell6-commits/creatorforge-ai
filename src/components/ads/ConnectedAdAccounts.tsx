@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 
 type Row = { id: string; name: string; docsUrl: string; supportsPublish: boolean; supportsReporting: boolean; configured: boolean; account: { id: string; account_name: string; connection_status: string; permission_status: string; last_sync_at: string } | null };
 
@@ -28,7 +29,7 @@ export function ConnectedAdAccounts() {
           <Card key={p.id} className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-semibold">{p.name}</span>
-              <span className={`rounded-full px-2 py-0.5 text-xs ${p.account ? "bg-brand-100 text-brand-700" : "bg-muted text-muted-foreground"}`}>{p.account ? p.account.connection_status : "Not connected"}</span>
+              <Badge variant={p.account ? "success" : "default"}>{p.account ? p.account.connection_status : "Not connected"}</Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               {p.account ? <>{p.account.account_name} · synced {p.account.last_sync_at ? new Date(p.account.last_sync_at).toLocaleDateString() : "—"}</> : (p.configured ? "Ready to connect via official OAuth." : "Requires the platform's Ads API app (not enabled yet).")}
