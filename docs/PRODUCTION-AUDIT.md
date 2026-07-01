@@ -173,4 +173,16 @@ _All additive → safe to ship as a new migration `0026`._
 
 ---
 
-_Generated during the Final Production Polish phase. Fixes committed; remaining items tracked above for follow-up batches._
+---
+
+## 14. Follow-up batches completed (post-audit)
+
+**Batch A — Reliability (commit `1407f71`):** new `src/lib/http.ts` `fetchWithTimeout`; all external fetches in 16 provider/integration modules now time out (30s media, 15s else); `uploadFromUrl` rejects >100 MB. Lead/email graceful degradation preserved.
+
+**Batch C — Migration `0026_indexes_constraints.sql` (commit `1407f71`):** 28 covering indexes (`IF NOT EXISTS`), 6 missing FKs (`NOT VALID`, `ON DELETE SET NULL`), 5 CHECK constraints (`NOT VALID`). Additive + idempotent; safe on live data. **Action:** run it in the Supabase SQL editor; optionally `VALIDATE CONSTRAINT` later during low traffic.
+
+**Batch B — UX confidence + accessibility (commit `a836773`):** new accessible `ConfirmDialog` primitive + `useConfirm()`; confirmation + `Alert` feedback on every destructive/money action (disconnect, delete rule/campaign/book, affiliate payout, admin suspend/set-credits/set-plan, publish, publish-now); all native `prompt()/alert()/confirm()` removed from those flows; form-label associations (PublishComposer, WhiteLabelSettings) + aria-labels across assistant/wallet/tours/prompt-bar; `Alert` adopted in RenderQueue/VoiceStudio/SceneBuilder/ForgeAssistant/WalletClient.
+
+**Updated readiness: ~88/100.** Remaining top debt: test coverage (still 14 tests), API error-envelope + zod standardization, `Alert` adoption across the ~10 tool-generator components, 2 residual native calls (`QueueManager` reschedule prompt, `SceneBuilder` rebuild confirm), 5 dead files, homepage social links.
+
+_Generated during the Final Production Polish phase._
