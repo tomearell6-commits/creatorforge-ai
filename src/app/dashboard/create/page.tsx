@@ -1,5 +1,5 @@
 import { CreateHub } from "@/components/dashboard/CreateHub";
-export const metadata = { title: "Create — CreatorForge AI" };
+export const metadata = { title: "Create — CreatorsForge AI" };
 export default async function CreatePage({ searchParams }: { searchParams: Promise<{ group?: string }> }) {
   const { group } = await searchParams;
   return (

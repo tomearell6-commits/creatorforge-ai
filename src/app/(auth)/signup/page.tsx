@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 
-export const metadata = { title: "Sign up — CreatorForge AI" };
+export const metadata = { title: "Sign up — CreatorsForge AI" };
 
 export default function SignupPage() {
   return (

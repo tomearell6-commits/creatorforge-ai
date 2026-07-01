@@ -1,5 +1,5 @@
 import { BookCover } from "@/components/books/BookCover";
-export const metadata = { title: "Cover Studio — CreatorForge AI" };
+export const metadata = { title: "Cover Studio — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">

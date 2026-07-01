@@ -25,15 +25,15 @@ export async function POST() {
 
   const result = await sendEmail({
     to,
-    subject: "CreatorForge — Brevo test email ✅",
+    subject: "CreatorsForge — Brevo test email ✅",
     html: `<div style="font-family:sans-serif;line-height:1.5">
       <h2>Brevo is working 🎉</h2>
-      <p>This is a live test email sent from your CreatorForge app through Brevo,
+      <p>This is a live test email sent from your CreatorsForge app through Brevo,
       using the authenticated sender <strong>${sender}</strong>.</p>
       <p>If you're reading this in your inbox (not spam), your domain authentication
       and Brevo integration are fully operational.</p>
     </div>`,
-    text: `Brevo is working. Test email from ${sender} via CreatorForge.`,
+    text: `Brevo is working. Test email from ${sender} via CreatorsForge.`,
   });
 
   return NextResponse.json({

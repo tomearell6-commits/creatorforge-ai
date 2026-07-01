@@ -1,5 +1,5 @@
 import { AdSettings } from "@/components/ads/AdSettings";
-export const metadata = { title: "Advertising Settings — CreatorForge AI" };
+export const metadata = { title: "Advertising Settings — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

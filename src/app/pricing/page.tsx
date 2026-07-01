@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 import { PLANS } from "@/lib/constants";
 
-export const metadata = { title: "Pricing — CreatorForge AI" };
+export const metadata = { title: "Pricing — CreatorsForge AI" };
 
 export default function PricingPage() {
   return (

@@ -8,7 +8,7 @@ import "server-only";
 import type { ScanResult } from "./types";
 import { validateAuditUrl } from "./ssrf";
 
-const UA = "Mozilla/5.0 (compatible; CreatorForgeSEOAudit/1.0; +https://www.creatorsforge.io)";
+const UA = "Mozilla/5.0 (compatible; CreatorsForgeSEOAudit/1.0; +https://www.creatorsforge.io)";
 const MAX_BYTES = 1_500_000;
 const TIMEOUT_MS = 12_000;
 const MAX_REDIRECTS = 5;

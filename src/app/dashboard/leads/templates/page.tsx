@@ -1,7 +1,7 @@
 import { OutreachTemplateEditor } from "@/components/leads/OutreachTemplateEditor";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
-export const metadata = { title: "Outreach Templates — CreatorForge AI" };
+export const metadata = { title: "Outreach Templates — CreatorsForge AI" };
 
 export default function Page() {
   return (

@@ -11,7 +11,7 @@ type Provider = {
 };
 
 /**
- * Key inventory. CreatorForge stores provider secrets in environment variables
+ * Key inventory. CreatorsForge stores provider secrets in environment variables
  * (and per-user WordPress passwords encrypted at rest), so this view never has —
  * and never shows — the actual key. It reports which providers are configured,
  * their auth type, and links to rotate at the source.

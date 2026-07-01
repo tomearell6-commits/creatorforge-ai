@@ -18,7 +18,7 @@ export async function sendEmail({ to, subject, html, text }: SendArgs): Promise<
     return { sent: false };
   }
   const senderEmail = process.env.BREVO_SENDER_EMAIL || "no-reply@creatorsforge.io";
-  const senderName = process.env.BREVO_SENDER_NAME || "CreatorForge.io";
+  const senderName = process.env.BREVO_SENDER_NAME || "CreatorsForge.io";
 
   try {
     const res = await fetchWithTimeout("https://api.brevo.com/v3/smtp/email", {

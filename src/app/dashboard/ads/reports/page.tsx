@@ -1,5 +1,5 @@
 import { AdCampaignReports } from "@/components/ads/AdCampaignReports";
-export const metadata = { title: "Campaign Reports — CreatorForge AI" };
+export const metadata = { title: "Campaign Reports — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

@@ -1,6 +1,6 @@
 import { TemplatesGallery } from "@/components/dashboard/TemplatesGallery";
 
-export const metadata = { title: "Templates — CreatorForge AI" };
+export const metadata = { title: "Templates — CreatorsForge AI" };
 
 export default async function TemplatesPage({
   searchParams,

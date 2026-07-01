@@ -10,7 +10,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const studio = getStudio(slug);
-  return { title: studio ? `${studio.title} — CreatorForge AI` : "Studio — CreatorForge AI" };
+  return { title: studio ? `${studio.title} — CreatorsForge AI` : "Studio — CreatorsForge AI" };
 }
 
 export default async function StudioPage({ params }: { params: Promise<{ slug: string }> }) {

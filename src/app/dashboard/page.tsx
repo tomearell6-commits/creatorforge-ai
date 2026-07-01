@@ -12,7 +12,7 @@ import { StudioGrid } from "@/components/dashboard/StudioGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 
-export const metadata = { title: "Dashboard — CreatorForge AI" };
+export const metadata = { title: "Dashboard — CreatorsForge AI" };
 
 export default async function DashboardHome() {
   const supabase = await createClient();

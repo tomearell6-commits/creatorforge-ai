@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ProjectPicker } from "@/components/dashboard/ProjectPicker";
 import { RenderQueue } from "@/components/dashboard/RenderQueue";
 
-export const metadata = { title: "Render Queue — CreatorForge AI" };
+export const metadata = { title: "Render Queue — CreatorsForge AI" };
 
 export default async function RenderPage({
   searchParams,

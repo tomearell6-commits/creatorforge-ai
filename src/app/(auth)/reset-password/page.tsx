@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 
-export const metadata = { title: "Reset password — CreatorForge AI" };
+export const metadata = { title: "Reset password — CreatorsForge AI" };
 
 export default function ResetPasswordPage() {
   return (

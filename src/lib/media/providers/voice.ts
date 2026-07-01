@@ -19,7 +19,7 @@ function estimateSeconds(text: string, speed: number): number {
  */
 const placeholderVoiceProvider: VoiceProvider = {
   id: "placeholder",
-  name: "CreatorForge Placeholder Voice",
+  name: "CreatorsForge Placeholder Voice",
   async synthesize(input: VoiceSynthesisInput) {
     const fullSeconds = estimateSeconds(input.text, input.speed);
     const seconds = input.preview ? 2 : Math.min(8, fullSeconds);

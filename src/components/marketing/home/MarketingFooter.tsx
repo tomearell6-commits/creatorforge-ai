@@ -23,7 +23,7 @@ export function MarketingFooter() {
           <div>
             <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight text-ink dark:text-foreground">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white"><Sparkles className="h-5 w-5" /></span>
-              CreatorForge<span className="text-brand-600">.io</span>
+              <span>CreatorsForge<span className="text-brand-600">.io</span></span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">The AI Business Operating System — create, market, publish, automate, analyze, and grow.</p>
           </div>
@@ -53,7 +53,7 @@ export function MarketingFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row">
-          <p>© {2026} CreatorForge.io. All rights reserved.</p>
+          <p>© {2026} CreatorsForge.io. All rights reserved.</p>
           <p>Build · Market · Publish · Automate · Grow</p>
         </div>
       </div>

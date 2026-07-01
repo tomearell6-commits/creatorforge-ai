@@ -131,7 +131,7 @@ export function ForgeAssistant() {
       <div className="flex items-center justify-between bg-brand-600 px-4 py-3 text-white">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5" />
-          <div><p className="text-sm font-semibold leading-tight">Forge AI Assistant</p><p className="text-xs text-white/80">Your CreatorForge guide</p></div>
+          <div><p className="text-sm font-semibold leading-tight">Forge AI Assistant</p><p className="text-xs text-white/80">Your CreatorsForge guide</p></div>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => setMin(!min)} className="rounded p-1 hover:bg-white/20" title="Minimize"><Minus className="h-4 w-4" /></button>

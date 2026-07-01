@@ -1,6 +1,6 @@
 import { WalletClient } from "@/components/dashboard/WalletClient";
 
-export const metadata = { title: "Credit Wallet — CreatorForge AI" };
+export const metadata = { title: "Credit Wallet — CreatorsForge AI" };
 
 export default function CreditsPage() {
   return (

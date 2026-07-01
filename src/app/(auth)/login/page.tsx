@@ -4,14 +4,14 @@ import { AuthForm } from "@/components/auth/AuthForm";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { Alert } from "@/components/ui/Alert";
 
-export const metadata = { title: "Log in — CreatorForge AI" };
+export const metadata = { title: "Log in — CreatorsForge AI" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reset?: string }> }) {
   const { reset } = await searchParams;
   return (
     <>
       <h1 className="text-2xl font-bold">Welcome back</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Log in to your CreatorForge account.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Log in to your CreatorsForge account.</p>
       {reset === "success" && (
         <div className="mt-4"><Alert variant="success" title="Password updated">You can now log in with your new password.</Alert></div>
       )}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ProjectPicker } from "@/components/dashboard/ProjectPicker";
 import { SceneBuilder } from "@/components/dashboard/SceneBuilder";
 
-export const metadata = { title: "Scene Builder — CreatorForge AI" };
+export const metadata = { title: "Scene Builder — CreatorsForge AI" };
 
 export default async function ScenesPage({
   searchParams,

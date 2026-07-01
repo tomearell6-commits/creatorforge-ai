@@ -8,7 +8,7 @@ type QA = { category: string; q: string; a: string };
 const CATEGORIES = ["General", "Pricing", "Credits", "Automation", "SEO", "Publishing", "Marketing", "Books", "Security", "Billing"];
 
 const FAQS: QA[] = [
-  { category: "General", q: "What is CreatorForge.io?", a: "An AI Business Operating System with six Studios — Content, Marketing, Publishing, Automation, Analytics, and Business — so you can create, market, publish, automate, analyze, and grow without leaving the platform." },
+  { category: "General", q: "What is CreatorsForge.io?", a: "An AI Business Operating System with six Studios — Content, Marketing, Publishing, Automation, Analytics, and Business — so you can create, market, publish, automate, analyze, and grow without leaving the platform." },
   { category: "General", q: "Who is it for?", a: "Creators, businesses, agencies, ecommerce stores, authors, marketers, educators, and entrepreneurs who want to build and grow with AI." },
   { category: "General", q: "Do I need any technical skills?", a: "No. Describe what you want in plain language and the Forge Assistant guides you through every workflow." },
   { category: "Pricing", q: "Is there a free plan?", a: "Yes — start free with trial credits, no credit card required. Upgrade any time for more credits and capabilities." },
@@ -17,7 +17,7 @@ const FAQS: QA[] = [
   { category: "Credits", q: "Can I top up credits?", a: "Yes. Top up instantly from the Credit Wallet — credits never expire while your account is active." },
   { category: "Automation", q: "What is Autopilot?", a: "Configure your content strategy once and Autopilot plans, schedules, and publishes on a recurring basis — with an approval step so you stay in control." },
   { category: "Automation", q: "Can I approve content before it publishes?", a: "Yes. The approval workflow lets you review every item in the publishing queue before it goes live." },
-  { category: "SEO", q: "Can CreatorForge run an SEO audit?", a: "Yes. The Analytics Studio scans any page and returns a prioritized list of fixes, plus full-site website audits." },
+  { category: "SEO", q: "Can CreatorsForge run an SEO audit?", a: "Yes. The Analytics Studio scans any page and returns a prioritized list of fixes, plus full-site website audits." },
   { category: "SEO", q: "Does it write SEO content?", a: "Yes — long-form, ranking-ready articles with optimized titles and meta descriptions." },
   { category: "Publishing", q: "Can I publish to WordPress?", a: "Yes. Connect your WordPress sites and auto-publish content on your schedule from the Automation Studio." },
   { category: "Marketing", q: "Which ad platforms are supported?", a: "Facebook, Instagram, Google, YouTube, LinkedIn, Pinterest, and TikTok — generate campaigns and creatives for each." },

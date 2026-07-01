@@ -20,7 +20,7 @@ export const TOURS: Tour[] = [
     steps: [
       { target: "ai-video-studio", href: "/dashboard", title: "Open AI Video Studio", body: "Click here to open the AI Video Studio, where faceless and short-form videos are made." },
       { target: "create-first-video", href: "/dashboard/create?group=video", title: "Pick a video type", body: "Choose a category like AI Shorts or Faceless Videos to start a new project." },
-      { href: "/dashboard/projects/new", title: "Generate your content", body: "Enter your idea — CreatorForge generates the script, scenes, voiceover and images. Then render to MP4 in the Render Queue." },
+      { href: "/dashboard/projects/new", title: "Generate your content", body: "Enter your idea — CreatorsForge generates the script, scenes, voiceover and images. Then render to MP4 in the Render Queue." },
     ],
   },
   {

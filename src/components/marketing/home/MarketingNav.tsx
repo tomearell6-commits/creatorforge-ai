@@ -29,7 +29,7 @@ export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4" aria-label="Primary">
         <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight text-ink dark:text-foreground">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white"><Sparkles className="h-5 w-5" /></span>
-          CreatorForge<span className="text-brand-600">.io</span>
+          <span>CreatorsForge<span className="text-brand-600">.io</span></span>
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">

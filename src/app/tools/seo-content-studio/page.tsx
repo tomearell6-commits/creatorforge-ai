@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "AI SEO Content Studio for Blogs and WordPress",
   description:
-    "Generate complete SEO blog packages, optimize your articles, and schedule posts directly to WordPress — all from CreatorForge.io.",
+    "Generate complete SEO blog packages, optimize your articles, and schedule posts directly to WordPress — all from CreatorsForge.io.",
 };
 
 const PACKAGE = [
@@ -22,11 +22,11 @@ const WORKFLOW = [
   "Generate a full SEO article package from one keyword.",
   "Edit the title, meta, headings, and body.",
   "Choose draft, publish now, or schedule.",
-  "CreatorForge posts it to WordPress via the REST API.",
+  "CreatorsForge posts it to WordPress via the REST API.",
   "Track status + history in your blog calendar.",
 ];
 const FAQ = [
-  { q: "Does it publish straight to WordPress?", a: "Yes — connect your site with a WordPress Application Password and CreatorForge posts via the official REST API (draft, publish, or schedule)." },
+  { q: "Does it publish straight to WordPress?", a: "Yes — connect your site with a WordPress Application Password and CreatorsForge posts via the official REST API (draft, publish, or schedule)." },
   { q: "Are my credentials safe?", a: "We never store raw passwords. Application Passwords are encrypted at rest and are revocable from WordPress at any time." },
   { q: "Can I schedule a content calendar?", a: "Yes — schedule articles ahead and view them on the blog calendar (daily / weekly / monthly)." },
   { q: "How are credits used?", a: "Credits cover article generation, image prompts, and publishing. You'll see the estimate before you generate." },

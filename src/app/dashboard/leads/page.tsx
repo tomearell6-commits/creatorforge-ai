@@ -2,7 +2,7 @@ import { LeadCampaignDashboard } from "@/components/leads/LeadCampaignDashboard"
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 import { ComplianceDashboard } from "@/components/leads/ComplianceDashboard";
 
-export const metadata = { title: "Lead Generator — CreatorForge AI" };
+export const metadata = { title: "Lead Generator — CreatorsForge AI" };
 
 export default function Page() {
   return (

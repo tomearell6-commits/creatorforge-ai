@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { getCategoryBySlug } from "@/config/contentCategories";
 import { WORKFLOWS } from "@/config/contentWorkflows";
 
-export const metadata = { title: "Create — CreatorForge AI" };
+export const metadata = { title: "Create — CreatorsForge AI" };
 
 // Marketing/footer labels that should jump straight to a dedicated tool page.
 const SLUG_ALIASES: Record<string, string> = {

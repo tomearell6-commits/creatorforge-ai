@@ -23,7 +23,7 @@ export function isShotstackConfigured(): boolean {
 type Clip = Record<string, unknown>;
 
 /**
- * A CreatorForge brand watermark overlay (HTML asset) for the whole timeline.
+ * A CreatorsForge brand watermark overlay (HTML asset) for the whole timeline.
  * Applied to free-plan renders so unpaid videos carry the brand; paid plans
  * render clean. Sits on the top-most track, bottom-right corner.
  */
@@ -31,7 +31,7 @@ function brandWatermarkClip(totalLength: number): Clip {
   return {
     asset: {
       type: "html",
-      html: "<div class='cf'><span class='dot'>&#9650;</span>CreatorForge&nbsp;AI</div>",
+      html: "<div class='cf'><span class='dot'>&#9650;</span>CreatorsForge&nbsp;AI</div>",
       css:
         ".cf{ display:flex; align-items:center; gap:8px; color:#ffffff; " +
         "font-family:'Open Sans',sans-serif; font-size:22px; font-weight:700; " +

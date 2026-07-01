@@ -1,4 +1,4 @@
-/** CreatorForge Autopilot shared types. */
+/** CreatorsForge Autopilot shared types. */
 
 export type AutopilotMode = "manual" | "assisted" | "full";
 

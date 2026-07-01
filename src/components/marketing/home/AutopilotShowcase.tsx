@@ -15,9 +15,9 @@ export function AutopilotShowcase() {
     <div className="grid items-center gap-10 lg:grid-cols-2">
       <Reveal>
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-700">CreatorForge Autopilot</p>
+          <p className="text-sm font-bold uppercase tracking-wide text-brand-700">CreatorsForge Autopilot</p>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink dark:text-foreground sm:text-4xl">
-            Configure once. CreatorForge works every day.
+            Configure once. CreatorsForge works every day.
           </h2>
           <p className="mt-4 max-w-md text-ink-soft dark:text-muted-foreground">
             Set your strategy, approve your plan, and let Autopilot generate, schedule, and publish your content on a recurring basis — with you in control.

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { AssetLibrary } from "@/components/dashboard/AssetLibrary";
 
-export const metadata = { title: "Asset Library — CreatorForge AI" };
+export const metadata = { title: "Asset Library — CreatorsForge AI" };
 
 export default async function AssetsPage() {
   const supabase = await createClient();

@@ -1,6 +1,6 @@
 import { WeeklyReport } from "@/components/dashboard/WeeklyReport";
 
-export const metadata = { title: "Weekly Report — CreatorForge AI" };
+export const metadata = { title: "Weekly Report — CreatorsForge AI" };
 
 export default function WeeklyReportPage() {
   return (

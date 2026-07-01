@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ProjectPicker } from "@/components/dashboard/ProjectPicker";
 import { ThumbnailGenerator } from "@/components/dashboard/ThumbnailGenerator";
 
-export const metadata = { title: "Thumbnail Generator — CreatorForge AI" };
+export const metadata = { title: "Thumbnail Generator — CreatorsForge AI" };
 
 export default async function ThumbnailsPage({
   searchParams,

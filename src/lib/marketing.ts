@@ -1,11 +1,11 @@
 /**
- * Marketing site content (CreatorForge.io redesign). All original copy — drives
+ * Marketing site content (CreatorsForge.io redesign). All original copy — drives
  * the homepage sections + footer. Kept data-only so components stay reusable.
  */
 
 /** Hero model selector options. */
 export const HERO_MODELS = [
-  "CreatorForge Video Pro",
+  "CreatorsForge Video Pro",
   "Image to Video",
   "AI Shorts",
   "AI Ads",
@@ -121,8 +121,8 @@ export const FAQ_TABS = [
   {
     id: "series", label: "Series",
     items: [
-      { q: "What is a Series?", a: "A Series is a collection of related videos around one topic. CreatorForge can help generate and schedule videos automatically." },
-      { q: "How do I set up a Series?", a: "Choose a topic, select a style, set posting frequency, and CreatorForge prepares the content workflow." },
+      { q: "What is a Series?", a: "A Series is a collection of related videos around one topic. CreatorsForge can help generate and schedule videos automatically." },
+      { q: "How do I set up a Series?", a: "Choose a topic, select a style, set posting frequency, and CreatorsForge prepares the content workflow." },
       { q: "Which platforms can I publish to?", a: "YouTube Shorts, TikTok, Instagram Reels, Facebook Reels, and more." },
     ],
   },
@@ -142,7 +142,7 @@ export const FAQ_TABS = [
   {
     id: "i2v", label: "Image to Video",
     items: [
-      { q: "How does image-to-video work?", a: "Upload an image or use a generated one, and CreatorForge animates it into a short clip." },
+      { q: "How does image-to-video work?", a: "Upload an image or use a generated one, and CreatorsForge animates it into a short clip." },
     ],
   },
   {

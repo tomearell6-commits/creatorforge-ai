@@ -78,7 +78,7 @@ function placeholder(input: SeoArticleInput): SeoPackage {
           o.h3.map((h) => `<h3>${h}</h3>\n<p>Details about ${h.toLowerCase()}.</p>`).join("\n")
       )
       .join("\n") +
-    `\n<p>${input.cta || `Ready to get started? Try ${input.productName || input.brandName || "CreatorForge"} today.`}</p>`;
+    `\n<p>${input.cta || `Ready to get started? Try ${input.productName || input.brandName || "CreatorsForge"} today.`}</p>`;
 
   return {
     seoTitle: `${kwTitle}: The Complete ${new Date().getFullYear()} Guide`,
@@ -108,7 +108,7 @@ function placeholder(input: SeoArticleInput): SeoPackage {
       { platform: "linkedin", text: `Just published a deep dive on ${kw}. Here's what you need to know 👇` },
     ],
     newsletterSummary: `This week: our complete guide to ${kw} — what it is, why it matters, and how to start.`,
-    cta: input.cta || `Try ${input.productName || input.brandName || "CreatorForge"} today.`,
+    cta: input.cta || `Try ${input.productName || input.brandName || "CreatorsForge"} today.`,
     internalLinks: [`/blog/${slugify(secondary[0] || kw)}`],
     externalLinks: ["https://example.com/authoritative-source"],
     seoScore: 78,

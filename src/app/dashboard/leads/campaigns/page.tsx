@@ -1,7 +1,7 @@
 import { BrevoCampaigns } from "@/components/leads/BrevoCampaigns";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
-export const metadata = { title: "Email Campaigns — CreatorForge AI" };
+export const metadata = { title: "Email Campaigns — CreatorsForge AI" };
 
 export default function Page() {
   return (

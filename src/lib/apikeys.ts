@@ -7,7 +7,7 @@
  */
 import { createHash, randomBytes } from "crypto";
 
-const PREFIX = "cfk_"; // CreatorForge key
+const PREFIX = "cfk_"; // CreatorsForge key
 
 export function hashKey(plaintext: string): string {
   return createHash("sha256").update(plaintext).digest("hex");

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const { url } = await createCryptoInvoice({
       amount: planObj.price,
       orderId: `${user.id}|${plan}`,
-      description: `CreatorForge AI — ${planObj.name} plan`,
+      description: `CreatorsForge AI — ${planObj.name} plan`,
       ipnCallbackUrl: `${baseUrl}/api/webhooks/crypto`,
       successUrl: `${baseUrl}/dashboard/billing?crypto=success`,
       cancelUrl: `${baseUrl}/dashboard/billing?crypto=cancel`,

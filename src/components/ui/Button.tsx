@@ -7,7 +7,7 @@ type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary: "bg-brand-600 text-white hover:bg-brand-700",
-  // Bright lime CTA with dark ink text (CreatorForge signature button).
+  // Bright lime CTA with dark ink text (CreatorsForge signature button).
   accent: "bg-brand-300 text-brand-900 hover:bg-brand-400 font-semibold",
   secondary: "bg-card text-foreground border border-border hover:bg-muted",
   outline: "border border-border text-foreground hover:bg-muted",

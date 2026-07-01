@@ -1,7 +1,7 @@
 /**
  * Paddle Billing integration helpers (Track D).
  *
- * - `priceToPlan` maps a Paddle Price ID (from env) to a CreatorForge plan id.
+ * - `priceToPlan` maps a Paddle Price ID (from env) to a CreatorsForge plan id.
  * - `verifyPaddleWebhook` validates the `Paddle-Signature` header: HMAC-SHA256
  *   of `${ts}:${rawBody}` keyed by the endpoint secret, timing-safe compared to
  *   `h1`, with a freshness window to deter replay.

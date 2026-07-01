@@ -1,5 +1,5 @@
 import { AdCreativeLibrary } from "@/components/ads/AdCreativeLibrary";
-export const metadata = { title: "Creative Library — CreatorForge AI" };
+export const metadata = { title: "Creative Library — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

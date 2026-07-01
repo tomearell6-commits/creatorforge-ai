@@ -1,5 +1,5 @@
 import { CampaignWizard } from "@/components/autopilot/CampaignWizard";
-export const metadata = { title: "New Campaign — CreatorForge AI" };
+export const metadata = { title: "New Campaign — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">

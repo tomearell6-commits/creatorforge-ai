@@ -7,23 +7,23 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.creatorsforge.io"),
   title: {
-    default: "CreatorForge AI — AI Content Creation Platform",
-    template: "%s · CreatorForge AI",
+    default: "CreatorsForge AI — AI Content Creation Platform",
+    template: "%s · CreatorsForge AI",
   },
   description:
     "Generate scripts, voiceovers, captions, and faceless videos for any niche. Built for creators, marketers, and agencies.",
-  applicationName: "CreatorForge AI",
+  applicationName: "CreatorsForge AI",
   openGraph: {
-    title: "CreatorForge AI — AI Content Creation Platform",
+    title: "CreatorsForge AI — AI Content Creation Platform",
     description:
       "Generate scripts, voiceovers, captions, and faceless videos for any niche.",
     url: "https://www.creatorsforge.io",
-    siteName: "CreatorForge AI",
+    siteName: "CreatorsForge AI",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "CreatorForge AI",
+    title: "CreatorsForge AI",
     description: "AI scripts, voiceovers, captions, and faceless videos for any niche.",
   },
 };

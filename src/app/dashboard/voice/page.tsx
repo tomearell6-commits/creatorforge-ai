@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ProjectPicker } from "@/components/dashboard/ProjectPicker";
 import { VoiceStudio } from "@/components/dashboard/VoiceStudio";
 
-export const metadata = { title: "Voice Studio — CreatorForge AI" };
+export const metadata = { title: "Voice Studio — CreatorsForge AI" };
 
 export default async function VoicePage({
   searchParams,

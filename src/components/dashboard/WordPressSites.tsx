@@ -52,7 +52,7 @@ export function WordPressSites() {
       <Card className="space-y-3">
         <h3 className="font-semibold">Connect a WordPress site</h3>
         <p className="text-xs text-muted-foreground">
-          In WordPress: <strong>Users → Profile → Application Passwords</strong> → create one named “CreatorForge”, then paste it below.
+          In WordPress: <strong>Users → Profile → Application Passwords</strong> → create one named “CreatorsForge”, then paste it below.
           We verify via the REST API and store the password <strong>encrypted</strong> (never raw).
         </p>
         <div><Label htmlFor="wp-site-name">Site name</Label><Input id="wp-site-name" value={form.siteName} onChange={(e) => setForm({ ...form, siteName: e.target.value })} placeholder="My Blog" /></div>

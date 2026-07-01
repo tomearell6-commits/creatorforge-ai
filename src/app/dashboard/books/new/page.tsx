@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { BookWizard } from "@/components/books/BookWizard";
-export const metadata = { title: "New Book — CreatorForge AI" };
+export const metadata = { title: "New Book — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">

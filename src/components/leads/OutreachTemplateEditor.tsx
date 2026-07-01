@@ -146,11 +146,11 @@ export function OutreachTemplateEditor() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="tpl-sender">Sender name</Label>
-              <Input id="tpl-sender" value={form.sender_name} onChange={(e) => set("sender_name", e.target.value)} placeholder="Alex from CreatorForge" />
+              <Input id="tpl-sender" value={form.sender_name} onChange={(e) => set("sender_name", e.target.value)} placeholder="Alex from CreatorsForge" />
             </div>
             <div>
               <Label htmlFor="tpl-sig">Business signature</Label>
-              <Input id="tpl-sig" value={form.signature} onChange={(e) => set("signature", e.target.value)} placeholder="CreatorForge AI · Sydney" />
+              <Input id="tpl-sig" value={form.signature} onChange={(e) => set("signature", e.target.value)} placeholder="CreatorsForge AI · Sydney" />
             </div>
           </div>
 

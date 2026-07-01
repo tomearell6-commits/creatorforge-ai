@@ -1,5 +1,5 @@
 import { BookExport } from "@/components/books/BookExport";
-export const metadata = { title: "Export Center — CreatorForge AI" };
+export const metadata = { title: "Export Center — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">

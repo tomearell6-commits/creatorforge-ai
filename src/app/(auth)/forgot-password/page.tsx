@@ -1,6 +1,6 @@
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 
-export const metadata = { title: "Forgot password — CreatorForge AI" };
+export const metadata = { title: "Forgot password — CreatorsForge AI" };
 
 export default function ForgotPasswordPage() {
   return (

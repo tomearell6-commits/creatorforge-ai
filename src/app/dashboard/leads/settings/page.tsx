@@ -2,7 +2,7 @@ import { LeadSettings } from "@/components/leads/LeadSettings";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 import { SenderProfileForm } from "@/components/leads/SenderProfileForm";
 
-export const metadata = { title: "Lead Generator Settings — CreatorForge AI" };
+export const metadata = { title: "Lead Generator Settings — CreatorsForge AI" };
 
 export default function Page() {
   return (

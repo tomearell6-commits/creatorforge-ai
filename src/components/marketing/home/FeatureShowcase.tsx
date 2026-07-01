@@ -17,7 +17,7 @@ const FEATURES = [
   { icon: ScanSearch, title: "Website Audit", desc: "Full-site technical and content health checks.", href: "/signup?redirect=%2Fdashboard%2Fseo" },
   { icon: Wallet, title: "Credit Wallet", desc: "One transparent credit balance across every Studio.", href: "/signup?redirect=%2Fdashboard%2Fcredits" },
   { icon: BarChart3, title: "Analytics", desc: "Track content, campaigns, and growth in one place.", href: "/signup?redirect=%2Fdashboard%2Fanalytics" },
-  { icon: Rocket, title: "Autopilot", desc: "Plan once and let CreatorForge publish on schedule.", href: "/signup?redirect=%2Fdashboard%2Fautopilot" },
+  { icon: Rocket, title: "Autopilot", desc: "Plan once and let CreatorsForge publish on schedule.", href: "/signup?redirect=%2Fdashboard%2Fautopilot" },
 ];
 
 export function FeatureShowcase() {

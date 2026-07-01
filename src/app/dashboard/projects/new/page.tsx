@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
 import { CATEGORIES } from "@/lib/constants";
 
-export const metadata = { title: "New Project — CreatorForge AI" };
+export const metadata = { title: "New Project — CreatorsForge AI" };
 
 export default async function NewProjectPage({
   searchParams,

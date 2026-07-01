@@ -1,7 +1,7 @@
 import { LeadCampaignForm } from "@/components/leads/LeadCampaignForm";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
-export const metadata = { title: "New Lead Search — CreatorForge AI" };
+export const metadata = { title: "New Lead Search — CreatorsForge AI" };
 
 export default function Page() {
   return (

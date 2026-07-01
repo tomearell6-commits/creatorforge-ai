@@ -1,5 +1,5 @@
 import { AdCreativeStudio } from "@/components/ads/AdCreativeStudio";
-export const metadata = { title: "Ad Creative Studio — CreatorForge AI" };
+export const metadata = { title: "Ad Creative Studio — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

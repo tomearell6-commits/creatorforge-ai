@@ -1,5 +1,5 @@
 /**
- * Official platform brand marks for CreatorForge.
+ * Official platform brand marks for CreatorsForge.
  *
  * SVG path data is from the Simple Icons project (https://simpleicons.org).
  * Trademarks belong to their respective owners; marks are used functionally to

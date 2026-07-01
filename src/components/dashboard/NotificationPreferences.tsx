@@ -46,7 +46,7 @@ const ROWS: Row[] = [
   { key: "inapp_subscription", label: "In-app subscription alerts", desc: "Renewal reminders inside the app." },
 ];
 
-/** Toggle switch styled to the CreatorForge design system. */
+/** Toggle switch styled to the CreatorsForge design system. */
 function Toggle({
   checked,
   disabled,

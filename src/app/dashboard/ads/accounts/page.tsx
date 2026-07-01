@@ -1,5 +1,5 @@
 import { ConnectedAdAccounts } from "@/components/ads/ConnectedAdAccounts";
-export const metadata = { title: "Connected Ad Accounts — CreatorForge AI" };
+export const metadata = { title: "Connected Ad Accounts — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

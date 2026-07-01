@@ -1,5 +1,5 @@
 import { BookTemplates } from "@/components/books/BookTemplates";
-export const metadata = { title: "Book Templates — CreatorForge AI" };
+export const metadata = { title: "Book Templates — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

@@ -1,5 +1,5 @@
 import { AdCampaignCalendar } from "@/components/ads/AdCampaignCalendar";
-export const metadata = { title: "Campaign Calendar — CreatorForge AI" };
+export const metadata = { title: "Campaign Calendar — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">

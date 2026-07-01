@@ -17,15 +17,15 @@ import { FinalCTA } from "@/components/marketing/home/FinalCTA";
 import { MarketingFooter } from "@/components/marketing/home/MarketingFooter";
 import { Reveal } from "@/components/marketing/home/Reveal";
 
-const TITLE = "CreatorForge.io — The AI Business Operating System";
+const TITLE = "CreatorsForge.io — The AI Business Operating System";
 const DESCRIPTION =
-  "Build, market, publish, automate and grow your business with AI. CreatorForge.io combines AI content creation, SEO, publishing, automation, analytics, and business tools into one professional platform.";
+  "Build, market, publish, automate and grow your business with AI. CreatorsForge.io combines AI content creation, SEO, publishing, automation, analytics, and business tools into one professional platform.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/" },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: "https://www.creatorsforge.io", siteName: "CreatorForge.io", type: "website" },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "https://www.creatorsforge.io", siteName: "CreatorsForge.io", type: "website" },
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
@@ -34,13 +34,13 @@ const JSON_LD = {
   "@graph": [
     {
       "@type": "Organization",
-      name: "CreatorForge.io",
+      name: "CreatorsForge.io",
       url: "https://www.creatorsforge.io",
       description: DESCRIPTION,
     },
     {
       "@type": "SoftwareApplication",
-      name: "CreatorForge.io",
+      name: "CreatorsForge.io",
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: "https://www.creatorsforge.io",
@@ -76,7 +76,7 @@ export default async function LandingPage() {
         {/* Interactive AI demonstration */}
         <section id="demo" className="border-y border-border bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-4">
-            <SectionHead eyebrow="See it in action" title="One prompt. A complete workflow." subtitle="Watch how CreatorForge turns a single idea into finished content, published and measured — automatically." />
+            <SectionHead eyebrow="See it in action" title="One prompt. A complete workflow." subtitle="Watch how CreatorsForge turns a single idea into finished content, published and measured — automatically." />
             <AIDemoFlow />
           </div>
         </section>
@@ -142,7 +142,7 @@ export default async function LandingPage() {
         {/* FAQ */}
         <section id="faq" className="border-y border-border bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-4">
-            <SectionHead eyebrow="FAQ" title="Questions, answered" subtitle="Search the most common questions about CreatorForge." />
+            <SectionHead eyebrow="FAQ" title="Questions, answered" subtitle="Search the most common questions about CreatorsForge." />
             <HomeFaq />
           </div>
         </section>

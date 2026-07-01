@@ -58,7 +58,7 @@ export function Hero() {
           Build, Market, Publish, Automate and Grow Your Business with AI
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-ink-soft dark:text-muted-foreground">
-          CreatorForge.io combines AI content creation, SEO, publishing, automation, analytics, and business tools into one professional platform.
+          CreatorsForge.io combines AI content creation, SEO, publishing, automation, analytics, and business tools into one professional platform.
         </p>
 
         {/* Live AI prompt input with rotating examples */}

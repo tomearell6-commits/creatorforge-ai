@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       const res = await provider.createPayment({
         amountUsd: total,
         orderReference,
-        description: `CreatorForge AI — ${credits.toLocaleString()} credits`,
+        description: `CreatorsForge AI — ${credits.toLocaleString()} credits`,
         currency: body.currency,
         ipnCallbackUrl: `${baseUrl}/api/webhooks/crypto`,
         successUrl: `${baseUrl}/dashboard/credits?topup=success`,

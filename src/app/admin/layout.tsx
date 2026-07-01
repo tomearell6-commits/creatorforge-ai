@@ -2,7 +2,7 @@ import Link from "next/link";
 import { isPlatformAdmin } from "@/lib/admin";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
-export const metadata = { title: "Admin Portal — CreatorForge AI" };
+export const metadata = { title: "Admin Portal — CreatorsForge AI" };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { ok } = await isPlatformAdmin();

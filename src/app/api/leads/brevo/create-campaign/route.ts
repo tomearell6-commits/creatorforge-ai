@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     subject: (template.subject as string) ?? "",
     htmlContent,
     listId: Number(b.brevoListId) || 0,
-    senderName: (template.sender_name as string) || "CreatorForge",
+    senderName: (template.sender_name as string) || "CreatorsForge",
     senderEmail: process.env.BREVO_SENDER_EMAIL || "no-reply@creatorsforge.io",
   });
 

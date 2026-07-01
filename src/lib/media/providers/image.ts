@@ -7,7 +7,7 @@ import { fetchWithTimeout } from "@/lib/http";
  */
 const placeholderImageProvider: ImageProvider = {
   id: "placeholder",
-  name: "CreatorForge Placeholder Images",
+  name: "CreatorsForge Placeholder Images",
   async generate(input: ImageGenInput) {
     const width = input.width ?? 1280;
     const height = input.height ?? 720;

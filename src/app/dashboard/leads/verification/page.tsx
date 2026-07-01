@@ -1,7 +1,7 @@
 import { EmailVerificationPanel } from "@/components/leads/EmailVerificationPanel";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
-export const metadata = { title: "Email Verification — CreatorForge AI" };
+export const metadata = { title: "Email Verification — CreatorsForge AI" };
 
 export default function Page() {
   return (

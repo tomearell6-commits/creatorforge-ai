@@ -1,5 +1,5 @@
 import { AdCampaignWizard } from "@/components/ads/AdCampaignWizard";
-export const metadata = { title: "Create Campaign — CreatorForge AI" };
+export const metadata = { title: "Create Campaign — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">

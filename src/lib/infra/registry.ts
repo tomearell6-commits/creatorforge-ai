@@ -1,5 +1,5 @@
 /**
- * Provider Registry — the single catalogue of every external service CreatorForge
+ * Provider Registry — the single catalogue of every external service CreatorsForge
  * depends on. This is static metadata (safe to import on the client). Whether a
  * provider is actually *configured* (its env keys are present) is resolved
  * server-side in status.ts, never here.

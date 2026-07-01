@@ -1,6 +1,6 @@
 import { SeoAudit } from "@/components/seo-audit/SeoAudit";
 
-export const metadata = { title: "SEO Audit — CreatorForge AI" };
+export const metadata = { title: "SEO Audit — CreatorsForge AI" };
 
 export default function SeoAuditPage() {
   return (

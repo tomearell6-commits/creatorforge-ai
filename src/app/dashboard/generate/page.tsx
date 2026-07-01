@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ScriptGenerator } from "@/components/dashboard/ScriptGenerator";
 
-export const metadata = { title: "Script Generator — CreatorForge AI" };
+export const metadata = { title: "Script Generator — CreatorsForge AI" };
 
 export default async function GeneratePage({
   searchParams,

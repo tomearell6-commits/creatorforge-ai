@@ -9,7 +9,7 @@ import type { WhiteLabelConfig } from "@/lib/types";
  * authenticated user's own key — never another user's). Falls back to the
  * platform default in "white_label_default".
  */
-const DEFAULT: WhiteLabelConfig = { brandName: "CreatorForge AI", brandColor: "#7c3aed", logoUrl: null };
+const DEFAULT: WhiteLabelConfig = { brandName: "CreatorsForge AI", brandColor: "#7c3aed", logoUrl: null };
 
 export async function GET() {
   const supabase = await createClient();

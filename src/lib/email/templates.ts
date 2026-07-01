@@ -1,5 +1,5 @@
 /**
- * Branded transactional email templates (CreatorForge design language).
+ * Branded transactional email templates (CreatorsForge design language).
  * Pure string builders — no secrets, no tokens are ever embedded beyond the
  * one-time action URL the caller passes in.
  */
@@ -18,13 +18,13 @@ function layout(opts: { heading: string; body: string; buttonLabel?: string; but
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
       <tr><td align="center">
         <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e6e8e3;border-radius:16px;padding:32px">
-          <tr><td style="font-size:20px;font-weight:800;padding-bottom:16px">CreatorForge<span style="color:${BRAND}">.io</span></td></tr>
+          <tr><td style="font-size:20px;font-weight:800;padding-bottom:16px">CreatorsForge<span style="color:${BRAND}">.io</span></td></tr>
           <tr><td style="font-size:18px;font-weight:700;padding-bottom:12px">${opts.heading}</td></tr>
           <tr><td style="font-size:14px;line-height:1.6;color:#3f4b39;padding-bottom:20px">${opts.body}</td></tr>
           ${button}
           ${opts.footnote ? `<tr><td style="font-size:12px;line-height:1.5;color:#8a9382;border-top:1px solid #eee;padding-top:16px">${opts.footnote}</td></tr>` : ""}
         </table>
-        <div style="font-size:11px;color:#9aa398;padding-top:16px">© CreatorForge.io · The AI Business Operating System</div>
+        <div style="font-size:11px;color:#9aa398;padding-top:16px">© CreatorsForge.io · The AI Business Operating System</div>
       </td></tr>
     </table>
   </body></html>`;
@@ -32,7 +32,7 @@ function layout(opts: { heading: string; body: string; buttonLabel?: string; but
 
 export function passwordResetEmail(resetUrl: string) {
   return {
-    subject: "Reset your CreatorForge.io password",
+    subject: "Reset your CreatorsForge.io password",
     html: layout({
       heading: "Reset your password",
       body: "We received a request to reset your password. Click the secure link below to create a new password. If you did not request this, you can safely ignore this email — your password will stay the same.",
@@ -40,35 +40,35 @@ export function passwordResetEmail(resetUrl: string) {
       buttonUrl: resetUrl,
       footnote: "This link expires shortly for your security. If the button doesn't work, copy and paste the link into your browser.",
     }),
-    text: `Reset your CreatorForge.io password\n\nWe received a request to reset your password. Open this secure link to create a new password:\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email.`,
+    text: `Reset your CreatorsForge.io password\n\nWe received a request to reset your password. Open this secure link to create a new password:\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email.`,
   };
 }
 
 export function passwordChangedEmail() {
   const securityUrl = `${APP_URL}/dashboard/settings`;
   return {
-    subject: "Your CreatorForge.io password was changed",
+    subject: "Your CreatorsForge.io password was changed",
     html: layout({
       heading: "Your password was changed",
-      body: "Your CreatorForge.io account password was changed successfully. If you made this change, no further action is needed. If you did not make this change, please secure your account immediately.",
+      body: "Your CreatorsForge.io account password was changed successfully. If you made this change, no further action is needed. If you did not make this change, please secure your account immediately.",
       buttonLabel: "Review Account Security",
       buttonUrl: securityUrl,
     }),
-    text: `Your CreatorForge.io password was changed successfully. If this wasn't you, secure your account now: ${securityUrl}`,
+    text: `Your CreatorsForge.io password was changed successfully. If this wasn't you, secure your account now: ${securityUrl}`,
   };
 }
 
 export function suspiciousActivityEmail(details: string) {
   const securityUrl = `${APP_URL}/dashboard/settings`;
   return {
-    subject: "Security alert on your CreatorForge.io account",
+    subject: "Security alert on your CreatorsForge.io account",
     html: layout({
       heading: "Unusual activity detected",
       body: `We noticed activity that may need your attention: ${details}. If this was you, no action is needed. If not, review your account security right away.`,
       buttonLabel: "Review Account Security",
       buttonUrl: securityUrl,
     }),
-    text: `Security alert on your CreatorForge.io account: ${details}. Review your security: ${securityUrl}`,
+    text: `Security alert on your CreatorsForge.io account: ${details}. Review your security: ${securityUrl}`,
   };
 }
 
@@ -91,68 +91,68 @@ function creditBody(ctx: CreditEmailCtx, lead: string): string {
 
 export function creditLowEmail(ctx: CreditEmailCtx) {
   return {
-    subject: "Your CreatorForge.io credits are running low",
+    subject: "Your CreatorsForge.io credits are running low",
     html: layout({ heading: "Your credits are running low", body: creditBody(ctx, `Hi ${ctx.name || "there"}, you've used about 75% of your credits.`), buttonLabel: "Top Up Credits", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io credits are running low. Plan ${ctx.planName}, ${ctx.remaining} remaining. Top up: ${CREDITS_URL}`,
+    text: `Your CreatorsForge.io credits are running low. Plan ${ctx.planName}, ${ctx.remaining} remaining. Top up: ${CREDITS_URL}`,
   };
 }
 export function creditCriticalEmail(ctx: CreditEmailCtx) {
   return {
-    subject: "Your CreatorForge.io credits are almost finished",
+    subject: "Your CreatorsForge.io credits are almost finished",
     html: layout({ heading: "Your credits are almost finished", body: creditBody(ctx, `Hi ${ctx.name || "there"}, you have under 10% of your credits left. Top up now to avoid interruption.`), buttonLabel: "Top Up Credits", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io credits are almost finished (${ctx.remaining} left). Top up: ${CREDITS_URL}`,
+    text: `Your CreatorsForge.io credits are almost finished (${ctx.remaining} left). Top up: ${CREDITS_URL}`,
   };
 }
 export function creditExhaustedEmail(ctx: CreditEmailCtx) {
   return {
-    subject: "Your CreatorForge.io credits are exhausted",
+    subject: "Your CreatorsForge.io credits are exhausted",
     html: layout({ heading: "You're out of credits", body: creditBody(ctx, `Hi ${ctx.name || "there"}, you've used all your credits. Generation is paused until you top up — editing and browsing stay available.`), buttonLabel: "Top Up Credits", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io credits are exhausted. Top up to continue: ${CREDITS_URL}`,
+    text: `Your CreatorsForge.io credits are exhausted. Top up to continue: ${CREDITS_URL}`,
   };
 }
 
 export function topupSuccessEmail(credits: number) {
   return {
-    subject: "Your CreatorForge.io credit top-up was successful",
+    subject: "Your CreatorsForge.io credit top-up was successful",
     html: layout({ heading: "Credits added", body: `${credits.toLocaleString()} credits were added to your wallet and are ready to use. Thank you!`, buttonLabel: "Open Credit Wallet", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
-    text: `${credits} credits were added to your CreatorForge.io wallet: ${CREDITS_URL}`,
+    text: `${credits} credits were added to your CreatorsForge.io wallet: ${CREDITS_URL}`,
   };
 }
 
 const REMINDER_SUBJECTS: Record<number, string> = {
-  14: "Your CreatorForge.io subscription renews soon",
-  7: "Your CreatorForge.io subscription renewal is coming up",
-  3: "Your CreatorForge.io subscription renews in 3 days",
-  1: "Your CreatorForge.io subscription renews tomorrow",
+  14: "Your CreatorsForge.io subscription renews soon",
+  7: "Your CreatorsForge.io subscription renewal is coming up",
+  3: "Your CreatorsForge.io subscription renews in 3 days",
+  1: "Your CreatorsForge.io subscription renews tomorrow",
 };
 export function subscriptionReminderEmail(opts: { planName: string; days: number; renewalDate: string }) {
-  const subject = REMINDER_SUBJECTS[opts.days] || "Your CreatorForge.io subscription renews soon";
+  const subject = REMINDER_SUBJECTS[opts.days] || "Your CreatorsForge.io subscription renews soon";
   const when = opts.days === 1 ? "tomorrow" : `in ${opts.days} days`;
   return {
     subject,
     html: layout({ heading: subject, body: `Your <b>${opts.planName}</b> plan renews ${when} (${opts.renewalDate}). No action is needed if your payment details are up to date.`, buttonLabel: "Manage Billing", buttonUrl: BILLING_URL, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io ${opts.planName} subscription renews ${when} (${opts.renewalDate}). Manage: ${BILLING_URL}`,
+    text: `Your CreatorsForge.io ${opts.planName} subscription renews ${when} (${opts.renewalDate}). Manage: ${BILLING_URL}`,
   };
 }
 export function paymentFailedEmail(planName: string) {
   return {
-    subject: "There was a problem with your CreatorForge.io payment",
+    subject: "There was a problem with your CreatorsForge.io payment",
     html: layout({ heading: "Your payment didn't go through", body: `We couldn't process the payment for your <b>${planName}</b> plan. Please update your payment method to keep your subscription active.`, buttonLabel: "Update Payment Method", buttonUrl: BILLING_URL, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io payment for ${planName} failed. Update payment: ${BILLING_URL}`,
+    text: `Your CreatorsForge.io payment for ${planName} failed. Update payment: ${BILLING_URL}`,
   };
 }
 export function subscriptionExpiredEmail(planName: string) {
   return {
-    subject: "Your CreatorForge.io subscription has expired",
+    subject: "Your CreatorsForge.io subscription has expired",
     html: layout({ heading: "Your subscription has expired", body: `Your <b>${planName}</b> subscription has ended. Renew any time to restore your plan's monthly credits and features.`, buttonLabel: "Renew Subscription", buttonUrl: BILLING_URL, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io ${planName} subscription has expired. Renew: ${BILLING_URL}`,
+    text: `Your CreatorsForge.io ${planName} subscription has expired. Renew: ${BILLING_URL}`,
   };
 }
 export function subscriptionRenewedEmail(planName: string) {
   return {
-    subject: "Your CreatorForge.io subscription was renewed",
-    html: layout({ heading: "Subscription renewed", body: `Your <b>${planName}</b> subscription renewed successfully and your monthly credits have been refreshed. Thank you for being with CreatorForge.io!`, buttonLabel: "Open Dashboard", buttonUrl: `${APP_URL}/dashboard`, footnote: SUPPORT_FOOT }),
-    text: `Your CreatorForge.io ${planName} subscription renewed. ${APP_URL}/dashboard`,
+    subject: "Your CreatorsForge.io subscription was renewed",
+    html: layout({ heading: "Subscription renewed", body: `Your <b>${planName}</b> subscription renewed successfully and your monthly credits have been refreshed. Thank you for being with CreatorsForge.io!`, buttonLabel: "Open Dashboard", buttonUrl: `${APP_URL}/dashboard`, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorsForge.io ${planName} subscription renewed. ${APP_URL}/dashboard`,
   };
 }
 
@@ -177,7 +177,7 @@ function section(title: string, rows: string): string {
 
 export function weeklySummaryEmail(name: string | null, r: WeeklyEmailReport) {
   const recs = r.recommendations.map((x) => `<li style="margin:4px 0">${x}</li>`).join("");
-  const body = `Hi ${name || "there"}, here's your CreatorForge.io activity for <b>${r.weekStart} → ${r.weekEnd}</b>.
+  const body = `Hi ${name || "there"}, here's your CreatorsForge.io activity for <b>${r.weekStart} → ${r.weekEnd}</b>.
     <table role="presentation" width="100%" style="margin-top:8px">
       ${section("Credit Summary", [
         statRow("Credits used this week", r.creditsUsed.toLocaleString()),
@@ -214,8 +214,8 @@ export function weeklySummaryEmail(name: string | null, r: WeeklyEmailReport) {
       ${link(`${APP_URL}/dashboard/calendar`, "Publishing Calendar")}
     </div>`;
   return {
-    subject: "Your weekly CreatorForge.io usage summary",
-    html: layout({ heading: "CreatorForge.io Weekly Summary", body, buttonLabel: "View Full Weekly Report", buttonUrl: `${APP_URL}/dashboard/reports/weekly`, footnote: SUPPORT_FOOT }),
-    text: `Your weekly CreatorForge.io summary (${r.weekStart}–${r.weekEnd}): ${r.creditsUsed} credits used, ${r.creditsRemaining} remaining, ${r.videosCreated} videos, ${r.postsPublished} posts published. Full report: ${APP_URL}/dashboard/reports/weekly`,
+    subject: "Your weekly CreatorsForge.io usage summary",
+    html: layout({ heading: "CreatorsForge.io Weekly Summary", body, buttonLabel: "View Full Weekly Report", buttonUrl: `${APP_URL}/dashboard/reports/weekly`, footnote: SUPPORT_FOOT }),
+    text: `Your weekly CreatorsForge.io summary (${r.weekStart}–${r.weekEnd}): ${r.creditsUsed} credits used, ${r.creditsRemaining} remaining, ${r.videosCreated} videos, ${r.postsPublished} posts published. Full report: ${APP_URL}/dashboard/reports/weekly`,
   };
 }

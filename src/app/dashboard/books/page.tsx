@@ -1,5 +1,5 @@
 import { BooksList } from "@/components/books/BooksList";
-export const metadata = { title: "Publishing Studio — CreatorForge AI" };
+export const metadata = { title: "Publishing Studio — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">

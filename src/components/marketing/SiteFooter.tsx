@@ -26,7 +26,7 @@ export function SiteFooter() {
           <p className="text-center text-sm text-muted-foreground">
             Making content creation faster, easier, and more powerful with AI.
           </p>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} CreatorForge.io</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} CreatorsForge.io</p>
         </div>
       </div>
     </footer>

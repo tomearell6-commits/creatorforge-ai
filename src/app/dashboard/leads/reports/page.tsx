@@ -1,7 +1,7 @@
 import { CampaignReportCards } from "@/components/leads/CampaignReportCards";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
-export const metadata = { title: "Lead Reports — CreatorForge AI" };
+export const metadata = { title: "Lead Reports — CreatorsForge AI" };
 
 export default function Page() {
   return (

@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/constants";
 import { CategoryIcon } from "@/components/icons/CategoryIcon";
 
-export const metadata = { title: "Projects — CreatorForge AI" };
+export const metadata = { title: "Projects — CreatorsForge AI" };
 
 export default async function ProjectsPage() {
   const supabase = await createClient();

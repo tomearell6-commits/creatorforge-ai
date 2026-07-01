@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** CreatorForge wordmark — dark ink tile with a lime "play/spark" mark. */
+/** CreatorsForge wordmark — dark ink tile with a lime "play/spark" mark. */
 export function Logo({ className, href = "/" }: { className?: string; href?: string }) {
   return (
     <Link href={href} className={cn("inline-flex items-center gap-2 font-bold", className)}>
@@ -11,7 +11,7 @@ export function Logo({ className, href = "/" }: { className?: string; href?: str
         </svg>
       </span>
       <span className="text-lg tracking-tight text-ink dark:text-foreground">
-        CreatorForge<span className="text-brand-500">.io</span>
+        CreatorsForge<span className="text-brand-500">.io</span>
       </span>
     </Link>
   );

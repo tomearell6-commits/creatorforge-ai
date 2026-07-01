@@ -4,7 +4,7 @@ import { SettingsForm } from "@/components/dashboard/SettingsForm";
 import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
 import { NotificationPreferences } from "@/components/dashboard/NotificationPreferences";
 
-export const metadata = { title: "Settings — CreatorForge AI" };
+export const metadata = { title: "Settings — CreatorsForge AI" };
 
 export default async function SettingsPage() {
   const supabase = await createClient();

@@ -1,5 +1,5 @@
 /**
- * Six flagship Studios — the master information architecture for CreatorForge.
+ * Six flagship Studios — the master information architecture for CreatorsForge.
  *
  * Every existing dashboard route belongs to exactly one Studio. This is the single
  * source of truth consumed by the sidebar (nav-config), the Master Dashboard, and
@@ -232,7 +232,7 @@ export const STUDIOS: Studio[] = [
   {
     id: "business",
     title: "Business Studio",
-    tagline: "Manage the business behind CreatorForge.",
+    tagline: "Manage the business behind CreatorsForge.",
     purpose: "Brand, team, billing, integrations, and infrastructure in one place.",
     icon: Briefcase,
     accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",

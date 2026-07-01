@@ -483,7 +483,7 @@ export function actionEstimate(id: string): ActionEstimate | undefined {
 
 /** Ledger entry types (must match the DB CHECK-free text values in 0010). */
 // =====================================================================
-// CreatorForge Autopilot — campaign automation
+// CreatorsForge Autopilot — campaign automation
 // =====================================================================
 export const AUTOPILOT_MODES = [
   { id: "manual",   name: "Manual",        desc: "AI creates content. You review and publish manually." },
@@ -574,7 +574,7 @@ export const AD_CREDIT_COSTS = {
 } as const;
 
 // =====================================================================
-// CreatorForge Publishing Studio (AI book writing)
+// CreatorsForge Publishing Studio (AI book writing)
 // =====================================================================
 export const BOOK_CATEGORIES = [
   "Business", "Marketing", "Entrepreneurship", "Self Help", "Personal Development", "Finance", "Investing",

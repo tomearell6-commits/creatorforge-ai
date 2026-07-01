@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not enough credits to publish.", code: "insufficient_credits" }, { status: 402 });
   }
 
-  // Schedule = CreatorForge-managed: mark scheduled, the cron publishes it when due.
+  // Schedule = CreatorsForge-managed: mark scheduled, the cron publishes it when due.
   if (mode === "schedule") {
     await supabase.from("seo_articles").update({
       status: "scheduled", wordpress_site_id: siteId, scheduled_at: scheduledAt, updated_at: new Date().toISOString(),

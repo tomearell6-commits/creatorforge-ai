@@ -1,7 +1,7 @@
 import { LeadLists } from "@/components/leads/LeadLists";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
-export const metadata = { title: "Lead Lists — CreatorForge AI" };
+export const metadata = { title: "Lead Lists — CreatorsForge AI" };
 
 export default function Page() {
   return (

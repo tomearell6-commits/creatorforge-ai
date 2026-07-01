@@ -7,7 +7,7 @@ import { falVideoProvider } from "./fal";
  */
 const placeholderVideoProvider: VideoProvider = {
   id: "placeholder",
-  name: "CreatorForge Placeholder Video",
+  name: "CreatorsForge Placeholder Video",
   async generate() {
     return { url: null, status: "placeholder", provider: "placeholder" };
   },

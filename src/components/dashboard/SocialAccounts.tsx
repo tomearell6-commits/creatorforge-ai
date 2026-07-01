@@ -177,7 +177,7 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
               {!acc && p.connectType === "credentials" && wpOpen && (
                 <div className="mt-3 space-y-2 border-t border-border pt-3">
                   <p className="text-xs text-muted-foreground">
-                    In WordPress: <strong>Users → Profile → Application Passwords</strong> → add one named “CreatorForge”, then paste it below.
+                    In WordPress: <strong>Users → Profile → Application Passwords</strong> → add one named “CreatorsForge”, then paste it below.
                   </p>
                   <Input value={wp.siteUrl} onChange={(e) => setWp({ ...wp, siteUrl: e.target.value })} placeholder="https://yourblog.com" />
                   <Input value={wp.username} onChange={(e) => setWp({ ...wp, username: e.target.value })} placeholder="WordPress username" />

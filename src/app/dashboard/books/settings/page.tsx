@@ -1,5 +1,5 @@
 import { BookSettings } from "@/components/books/BookSettings";
-export const metadata = { title: "Publishing Settings — CreatorForge AI" };
+export const metadata = { title: "Publishing Settings — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">

@@ -39,7 +39,7 @@ export function AdSettings() {
             </tbody>
           </table>
         </Card>
-        <p className="text-xs text-muted-foreground">Publishing/reporting features activate per platform once its official Ads API app is approved and configured. CreatorForge only uses supported APIs and permissions.</p>
+        <p className="text-xs text-muted-foreground">Publishing/reporting features activate per platform once its official Ads API app is approved and configured. CreatorsForge only uses supported APIs and permissions.</p>
       </section>
     </div>
   );

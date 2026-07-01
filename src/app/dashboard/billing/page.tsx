@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { PLANS } from "@/lib/constants";
 import { CryptoButton } from "@/components/dashboard/CryptoButton";
 
-export const metadata = { title: "Billing — CreatorForge AI" };
+export const metadata = { title: "Billing — CreatorsForge AI" };
 
 export default async function BillingPage() {
   const supabase = await createClient();
@@ -52,7 +52,7 @@ export default async function BillingPage() {
           <CardTitle>Pay with crypto</CardTitle>
         </div>
         <CardDescription className="mt-2">
-          CreatorForge accepts crypto payments via NOWPayments (BTC, ETH, USDT, and more).
+          CreatorsForge accepts crypto payments via NOWPayments (BTC, ETH, USDT, and more).
           Choosing a plan below is a <strong>one-time purchase</strong> that adds that plan&apos;s monthly
           credits to your wallet as soon as the payment confirms — it does not auto-renew. Buy again
           (or top up anytime) when you need more credits.

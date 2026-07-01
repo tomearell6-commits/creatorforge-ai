@@ -1,5 +1,5 @@
 import { AdsDashboard } from "@/components/ads/AdsDashboard";
-export const metadata = { title: "AI Advertising Studio — CreatorForge AI" };
+export const metadata = { title: "AI Advertising Studio — CreatorsForge AI" };
 export default function Page() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
