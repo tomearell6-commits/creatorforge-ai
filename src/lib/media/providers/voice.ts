@@ -1,5 +1,6 @@
 import type { VoiceProvider, VoiceSynthesisInput } from "../types";
 import { makeToneWavBuffer } from "../audio";
+import { fetchWithTimeout } from "@/lib/http";
 
 function hash(s: string): number {
   let h = 0;
@@ -61,7 +62,7 @@ const elevenLabsVoiceProvider: VoiceProvider = {
       "JBFqnCBsd6RMkjVDRZzb";
     const speed = Math.min(1.2, Math.max(0.7, input.speed || 1));
 
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
       {
         method: "POST",
@@ -71,7 +72,8 @@ const elevenLabsVoiceProvider: VoiceProvider = {
           model_id: "eleven_multilingual_v2",
           voice_settings: { stability: 0.5, similarity_boost: 0.75, speed },
         }),
-      }
+      },
+      30_000
     );
     if (!res.ok) {
       throw new Error(`ElevenLabs error ${res.status}: ${await res.text()}`);

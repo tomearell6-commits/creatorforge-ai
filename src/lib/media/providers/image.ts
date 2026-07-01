@@ -1,4 +1,5 @@
 import type { ImageProvider, ImageGenInput } from "../types";
+import { fetchWithTimeout } from "@/lib/http";
 
 /**
  * Placeholder image provider — deterministic stock image (picsum) fetched to
@@ -11,7 +12,7 @@ const placeholderImageProvider: ImageProvider = {
     const width = input.width ?? 1280;
     const height = input.height ?? 720;
     const seed = encodeURIComponent(input.seed || input.prompt.slice(0, 40) || "creatorforge");
-    const res = await fetch(`https://picsum.photos/seed/${seed}/${width}/${height}`);
+    const res = await fetchWithTimeout(`https://picsum.photos/seed/${seed}/${width}/${height}`, {}, 30_000);
     if (!res.ok) throw new Error(`Placeholder image fetch failed (${res.status})`);
     return {
       data: new Uint8Array(await res.arrayBuffer()),
@@ -38,7 +39,7 @@ const openAIImageProvider: ImageProvider = {
     const wantLandscape = (input.width ?? 1280) >= (input.height ?? 720);
     const size = wantLandscape ? "1536x1024" : "1024x1024";
 
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
+    const res = await fetchWithTimeout("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -49,7 +50,7 @@ const openAIImageProvider: ImageProvider = {
         quality: "high",
         output_format: "jpeg",
       }),
-    });
+    }, 30_000);
     if (!res.ok) {
       throw new Error(`OpenAI image error ${res.status}: ${await res.text()}`);
     }
@@ -93,11 +94,11 @@ const geminiImageProvider: ImageProvider = {
 
     // Imagen models use the :predict endpoint (aspectRatio param).
     if (model.startsWith("imagen")) {
-      const res = await fetch(`${base}/${model}:predict?key=${apiKey}`, {
+      const res = await fetchWithTimeout(`${base}/${model}:predict?key=${apiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ instances: [{ prompt: input.prompt }], parameters: { sampleCount: 1, aspectRatio } }),
-      });
+      }, 30_000);
       if (!res.ok) throw new Error(`Gemini (Imagen) error ${res.status}: ${await res.text()}`);
       const json = (await res.json()) as { predictions?: { bytesBase64Encoded?: string; mimeType?: string }[] };
       const pred = json.predictions?.[0];
@@ -106,14 +107,14 @@ const geminiImageProvider: ImageProvider = {
     }
 
     // Gemini image models use :generateContent (image returned as inlineData).
-    const res = await fetch(`${base}/${model}:generateContent?key=${apiKey}`, {
+    const res = await fetchWithTimeout(`${base}/${model}:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `${input.prompt}\n\nGenerate a ${aspectRatio} widescreen, high-quality, photorealistic image.` }] }],
         generationConfig: { responseModalities: ["IMAGE"] },
       }),
-    });
+    }, 30_000);
     if (!res.ok) throw new Error(`Gemini image error ${res.status}: ${await res.text()}`);
     const json = (await res.json()) as {
       candidates?: { content?: { parts?: { inlineData?: { data?: string; mimeType?: string } }[] } }[];

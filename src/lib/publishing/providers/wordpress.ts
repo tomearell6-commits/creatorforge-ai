@@ -11,6 +11,7 @@
  */
 import type { PublishProvider, PublishInput, PublishResult } from "../types";
 import { CATEGORIES } from "@/lib/constants";
+import { fetchWithTimeout } from "@/lib/http";
 
 // Some managed hosts (LiteSpeed/WAF) block REST requests without a browser-like
 // User-Agent. Send one on every WordPress call for compatibility.
@@ -42,7 +43,7 @@ export async function verifyWordPress(input: { siteUrl: string; username: string
 > {
   const site = normalizeSite(input.siteUrl);
   try {
-    const me = await fetch(`${site}/wp-json/wp/v2/users/me?context=edit`, {
+    const me = await fetchWithTimeout(`${site}/wp-json/wp/v2/users/me?context=edit`, {
       headers: { Authorization: basicAuth(input.username, input.appPassword), "User-Agent": UA },
     });
     if (me.status === 401 || me.status === 403) return { ok: false, error: "Invalid username or application password (or the host is blocking the Authorization header — see WordPress setup notes)." };
@@ -50,7 +51,7 @@ export async function verifyWordPress(input: { siteUrl: string; username: string
     const user = await me.json();
     let siteName = site;
     try {
-      const root = await fetch(`${site}/wp-json`, { headers: { "User-Agent": UA } });
+      const root = await fetchWithTimeout(`${site}/wp-json`, { headers: { "User-Agent": UA } });
       if (root.ok) siteName = (await root.json())?.name || site;
     } catch { /* non-fatal */ }
     return { ok: true, siteName, userName: user?.name || input.username };
@@ -62,7 +63,7 @@ export async function verifyWordPress(input: { siteUrl: string; username: string
 /** Resolve a taxonomy term by name, creating it if it doesn't exist. Returns id or null. */
 async function resolveTerm(site: string, auth: string, taxonomy: "categories" | "tags", name: string): Promise<number | null> {
   try {
-    const found = await fetch(`${site}/wp-json/wp/v2/${taxonomy}?search=${encodeURIComponent(name)}`, {
+    const found = await fetchWithTimeout(`${site}/wp-json/wp/v2/${taxonomy}?search=${encodeURIComponent(name)}`, {
       headers: { Authorization: auth, "User-Agent": UA },
     });
     if (found.ok) {
@@ -70,7 +71,7 @@ async function resolveTerm(site: string, auth: string, taxonomy: "categories" | 
       const exact = Array.isArray(list) && list.find((t: { name?: string }) => t.name?.toLowerCase() === name.toLowerCase());
       if (exact) return exact.id;
     }
-    const created = await fetch(`${site}/wp-json/wp/v2/${taxonomy}`, {
+    const created = await fetchWithTimeout(`${site}/wp-json/wp/v2/${taxonomy}`, {
       method: "POST",
       headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
       body: JSON.stringify({ name }),
@@ -83,12 +84,12 @@ async function resolveTerm(site: string, auth: string, taxonomy: "categories" | 
 /** Upload an image URL to the WP media library; returns the attachment id or null. */
 async function uploadFeaturedImage(site: string, auth: string, imageUrl: string): Promise<number | null> {
   try {
-    const img = await fetch(imageUrl);
+    const img = await fetchWithTimeout(imageUrl, {}, 30_000);
     if (!img.ok) return null;
     const contentType = img.headers.get("content-type") || "image/jpeg";
     const ext = contentType.includes("png") ? "png" : "jpg";
     const bytes = Buffer.from(await img.arrayBuffer());
-    const res = await fetch(`${site}/wp-json/wp/v2/media`, {
+    const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/media`, {
       method: "POST",
       headers: {
         Authorization: auth,
@@ -97,7 +98,7 @@ async function uploadFeaturedImage(site: string, auth: string, imageUrl: string)
         "User-Agent": UA,
       },
       body: bytes,
-    });
+    }, 30_000);
     if (res.ok) return (await res.json()).id;
   } catch { /* best-effort */ }
   return null;
@@ -157,7 +158,7 @@ export function wordpressProvider(): PublishProvider {
       if (tagIds.length) post.tags = tagIds;
 
       try {
-        const res = await fetch(`${site}/wp-json/wp/v2/posts`, {
+        const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/posts`, {
           method: "POST",
           headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
           body: JSON.stringify(post),

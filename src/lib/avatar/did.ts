@@ -5,6 +5,7 @@
  * Docs: https://docs.d-id.com/
  */
 import type { AvatarProvider, AvatarCreateInput, AvatarJob, AvatarStatus } from "./types";
+import { fetchWithTimeout } from "@/lib/http";
 
 const API = "https://api.d-id.com";
 
@@ -20,21 +21,21 @@ export const didProvider: AvatarProvider = {
 
   async createVideo(input: AvatarCreateInput): Promise<AvatarJob> {
     if (!process.env.DID_API_KEY) throw new Error("DID_API_KEY is not set");
-    const res = await fetch(`${API}/talks`, {
+    const res = await fetchWithTimeout(`${API}/talks`, {
       method: "POST",
       headers: { Authorization: authHeader(), "Content-Type": "application/json" },
       body: JSON.stringify({
         source_url: input.avatarId || process.env.DID_PRESENTER_IMAGE_URL,
         script: { type: "text", input: input.script, provider: { type: "microsoft", voice_id: input.voiceId || process.env.DID_VOICE_ID || "en-US-JennyNeural" } },
       }),
-    });
+    }, 30_000);
     const json = await res.json();
     if (!res.ok || !json?.id) throw new Error(`D-ID create failed: ${res.status} ${JSON.stringify(json)}`);
     return { provider: "did", jobId: json.id };
   },
 
   async getStatus(jobId: string): Promise<AvatarStatus> {
-    const res = await fetch(`${API}/talks/${encodeURIComponent(jobId)}`, { headers: { Authorization: authHeader() } });
+    const res = await fetchWithTimeout(`${API}/talks/${encodeURIComponent(jobId)}`, { headers: { Authorization: authHeader() } }, 30_000);
     const json = await res.json();
     if (json?.status === "done") return { status: "completed", url: json.result_url };
     if (json?.status === "error") return { status: "failed", error: JSON.stringify(json?.error || json) };

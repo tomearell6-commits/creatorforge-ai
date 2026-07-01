@@ -11,6 +11,11 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
+import { fetchWithTimeout } from "@/lib/http";
+
+/** Hard cap on remote media pulled into the media bucket (100 MB) — guards the
+ *  serverless function from OOMing on a huge/hostile upstream. */
+const MAX_UPLOAD_BYTES = 100_000_000;
 
 export const MEDIA_BUCKET = "media";
 
@@ -53,8 +58,12 @@ export async function uploadFromUrl(
   supabase: SupabaseClient,
   { userId, type, sourceUrl, ext, contentType }: UploadFromUrlInput
 ): Promise<UploadResult> {
-  const res = await fetch(sourceUrl);
+  const res = await fetchWithTimeout(sourceUrl, {}, 30_000);
   if (!res.ok) throw new Error(`Failed to fetch source media (${res.status})`);
+  const declaredSize = Number(res.headers.get("content-length"));
+  if (Number.isFinite(declaredSize) && declaredSize > MAX_UPLOAD_BYTES) {
+    throw new Error(`Source media too large (${declaredSize} bytes > ${MAX_UPLOAD_BYTES} limit)`);
+  }
   const bytes = Buffer.from(await res.arrayBuffer());
   const ct = contentType || res.headers.get("content-type") || "application/octet-stream";
   return uploadMedia(supabase, { userId, type, bytes, contentType: ct, ext });

@@ -5,6 +5,7 @@
  * site normalization; credentials are decrypted by the caller (never stored raw).
  */
 import { normalizeSite } from "@/lib/publishing/providers/wordpress";
+import { fetchWithTimeout } from "@/lib/http";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
@@ -14,13 +15,13 @@ function basicAuth(username: string, appPassword: string) {
 
 async function resolveTerm(site: string, auth: string, taxonomy: "categories" | "tags", name: string): Promise<number | null> {
   try {
-    const found = await fetch(`${site}/wp-json/wp/v2/${taxonomy}?search=${encodeURIComponent(name)}`, { headers: { Authorization: auth, "User-Agent": UA } });
+    const found = await fetchWithTimeout(`${site}/wp-json/wp/v2/${taxonomy}?search=${encodeURIComponent(name)}`, { headers: { Authorization: auth, "User-Agent": UA } });
     if (found.ok) {
       const list = await found.json();
       const exact = Array.isArray(list) && list.find((t: { name?: string }) => t.name?.toLowerCase() === name.toLowerCase());
       if (exact) return exact.id;
     }
-    const created = await fetch(`${site}/wp-json/wp/v2/${taxonomy}`, { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA }, body: JSON.stringify({ name }) });
+    const created = await fetchWithTimeout(`${site}/wp-json/wp/v2/${taxonomy}`, { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA }, body: JSON.stringify({ name }) });
     if (created.ok) return (await created.json()).id;
   } catch { /* best-effort */ }
   return null;
@@ -64,7 +65,7 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
   if (input.featuredImage) {
     try {
       const ext = input.featuredImage.contentType.includes("png") ? "png" : "jpg";
-      const res = await fetch(`${site}/wp-json/wp/v2/media`, {
+      const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/media`, {
         method: "POST",
         headers: {
           Authorization: auth,
@@ -73,7 +74,7 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
           "User-Agent": UA,
         },
         body: Buffer.from(input.featuredImage.data),
-      });
+      }, 30_000);
       if (res.ok) featuredMediaId = (await res.json()).id;
     } catch { /* best-effort */ }
   }
@@ -99,7 +100,7 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
   if (featuredMediaId) post.featured_media = featuredMediaId;
 
   try {
-    const res = await fetch(`${site}/wp-json/wp/v2/posts`, {
+    const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/posts`, {
       method: "POST",
       headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
       body: JSON.stringify(post),

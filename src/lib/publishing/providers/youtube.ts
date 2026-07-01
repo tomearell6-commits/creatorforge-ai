@@ -10,6 +10,7 @@
  *   verification (or test users while unverified).
  */
 import type { PublishProvider, PublishInput, PublishResult } from "../types";
+import { fetchWithTimeout } from "@/lib/http";
 
 const AUTH = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN = "https://oauth2.googleapis.com/token";
@@ -35,7 +36,7 @@ export function youtubeAuthorizeUrl(state: string): string {
 export async function youtubeExchangeCode(code: string): Promise<{
   accessToken: string; refreshToken: string | null; expiresIn: number;
 }> {
-  const res = await fetch(TOKEN, {
+  const res = await fetchWithTimeout(TOKEN, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -52,7 +53,7 @@ export async function youtubeExchangeCode(code: string): Promise<{
 }
 
 async function refreshAccessToken(refreshToken: string): Promise<string> {
-  const res = await fetch(TOKEN, {
+  const res = await fetchWithTimeout(TOKEN, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -67,7 +68,7 @@ async function refreshAccessToken(refreshToken: string): Promise<string> {
 }
 
 export async function youtubeChannel(accessToken: string): Promise<{ id: string; title: string }> {
-  const res = await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", {
+  const res = await fetchWithTimeout("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error(`YouTube channel fetch failed: ${res.status}`);
@@ -91,7 +92,7 @@ export function youtubeProvider(): PublishProvider {
       try {
         const accessToken = await refreshAccessToken(refresh);
 
-        const video = await fetch(input.videoUrl);
+        const video = await fetchWithTimeout(input.videoUrl, {}, 30_000);
         if (!video.ok) return { status: "failed", error: "Could not fetch the rendered video." };
         const bytes = Buffer.from(await video.arrayBuffer());
 
@@ -115,13 +116,14 @@ export function youtubeProvider(): PublishProvider {
           Buffer.from(`\r\n--${boundary}--\r\n`),
         ]);
 
-        const up = await fetch(
+        const up = await fetchWithTimeout(
           "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status",
           {
             method: "POST",
             headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": `multipart/related; boundary=${boundary}` },
             body,
-          }
+          },
+          30_000
         );
         if (!up.ok) return { status: "failed", error: `YouTube upload error ${up.status}: ${(await up.text()).slice(0, 200)}` };
         const created = await up.json();

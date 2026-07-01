@@ -4,6 +4,7 @@
  * Docs: https://docs.heygen.com/
  */
 import type { AvatarProvider, AvatarCreateInput, AvatarJob, AvatarStatus } from "./types";
+import { fetchWithTimeout } from "@/lib/http";
 
 const API = "https://api.heygen.com";
 
@@ -14,7 +15,7 @@ export const heygenProvider: AvatarProvider = {
   async createVideo(input: AvatarCreateInput): Promise<AvatarJob> {
     const key = process.env.HEYGEN_API_KEY;
     if (!key) throw new Error("HEYGEN_API_KEY is not set");
-    const res = await fetch(`${API}/v2/video/generate`, {
+    const res = await fetchWithTimeout(`${API}/v2/video/generate`, {
       method: "POST",
       headers: { "X-Api-Key": key, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -24,7 +25,7 @@ export const heygenProvider: AvatarProvider = {
         }],
         dimension: { width: 1280, height: 720 },
       }),
-    });
+    }, 30_000);
     const json = await res.json();
     const id = json?.data?.video_id;
     if (!res.ok || !id) throw new Error(`HeyGen generate failed: ${res.status} ${JSON.stringify(json)}`);
@@ -33,7 +34,7 @@ export const heygenProvider: AvatarProvider = {
 
   async getStatus(jobId: string): Promise<AvatarStatus> {
     const key = process.env.HEYGEN_API_KEY!;
-    const res = await fetch(`${API}/v1/video_status.get?video_id=${encodeURIComponent(jobId)}`, { headers: { "X-Api-Key": key } });
+    const res = await fetchWithTimeout(`${API}/v1/video_status.get?video_id=${encodeURIComponent(jobId)}`, { headers: { "X-Api-Key": key } }, 30_000);
     const json = await res.json();
     const s = json?.data?.status;
     if (s === "completed") return { status: "completed", url: json.data.video_url };

@@ -3,6 +3,8 @@
  * no-op otherwise so flows work in dev without a provider. Never logs API keys,
  * tokens, or message bodies.
  */
+import { fetchWithTimeout } from "@/lib/http";
+
 type SendArgs = { to: string; subject: string; html: string; text?: string };
 
 export function emailConfigured(): boolean {
@@ -19,7 +21,7 @@ export async function sendEmail({ to, subject, html, text }: SendArgs): Promise<
   const senderName = process.env.BREVO_SENDER_NAME || "CreatorForge.io";
 
   try {
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    const res = await fetchWithTimeout("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: { "api-key": apiKey, "Content-Type": "application/json", accept: "application/json" },
       body: JSON.stringify({

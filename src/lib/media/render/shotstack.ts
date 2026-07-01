@@ -11,6 +11,7 @@
  */
 
 import type { Scene } from "@/lib/types";
+import { fetchWithTimeout } from "@/lib/http";
 
 const ENV = process.env.SHOTSTACK_ENV === "v1" ? "v1" : "stage";
 const BASE = `https://api.shotstack.io/edit/${ENV}`;
@@ -118,11 +119,11 @@ export async function submitRender(spec: unknown): Promise<string> {
   const apiKey = process.env.SHOTSTACK_API_KEY;
   if (!apiKey) throw new Error("SHOTSTACK_API_KEY is not set");
 
-  const res = await fetch(`${BASE}/render`, {
+  const res = await fetchWithTimeout(`${BASE}/render`, {
     method: "POST",
     headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify(spec),
-  });
+  }, 30_000);
   if (!res.ok) throw new Error(`Shotstack render error ${res.status}: ${await res.text()}`);
 
   const json = (await res.json()) as { response?: { id?: string } };
@@ -141,7 +142,7 @@ export async function getRenderStatus(id: string): Promise<ShotstackStatus> {
   const apiKey = process.env.SHOTSTACK_API_KEY;
   if (!apiKey) throw new Error("SHOTSTACK_API_KEY is not set");
 
-  const res = await fetch(`${BASE}/render/${id}`, { headers: { "x-api-key": apiKey } });
+  const res = await fetchWithTimeout(`${BASE}/render/${id}`, { headers: { "x-api-key": apiKey } }, 30_000);
   if (!res.ok) throw new Error(`Shotstack status error ${res.status}`);
 
   const json = (await res.json()) as { response?: { status?: string; url?: string } };

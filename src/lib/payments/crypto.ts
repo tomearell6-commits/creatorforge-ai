@@ -9,6 +9,7 @@
  */
 
 import crypto from "crypto";
+import { fetchWithTimeout } from "@/lib/http";
 
 const NOWPAYMENTS_API = "https://api.nowpayments.io/v1";
 
@@ -25,7 +26,7 @@ export async function createCryptoInvoice(input: CreateInvoiceInput): Promise<{ 
   const apiKey = process.env.NOWPAYMENTS_API_KEY;
   if (!apiKey) throw new Error("NOWPAYMENTS_API_KEY is not set");
 
-  const res = await fetch(`${NOWPAYMENTS_API}/invoice`, {
+  const res = await fetchWithTimeout(`${NOWPAYMENTS_API}/invoice`, {
     method: "POST",
     headers: { "x-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -16,6 +16,7 @@
 import { createHash, randomBytes } from "crypto";
 import type { SocialPlatform } from "@/lib/types";
 import type { PublishProvider, PublishInput, PublishResult } from "./types";
+import { fetchWithTimeout } from "@/lib/http";
 
 export type ConnectionData = {
   accessToken: string;
@@ -90,7 +91,7 @@ export function buildAuthorizeUrl(platform: SocialPlatform, state: string): { ur
 }
 
 async function formPost(url: string, body: Record<string, string>, headers: Record<string, string> = {}) {
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded", ...headers },
     body: new URLSearchParams(body),
@@ -111,14 +112,14 @@ export async function oauthExchange(
       const t = await formPost("https://www.linkedin.com/oauth/v2/accessToken", {
         grant_type: "authorization_code", code, redirect_uri: rd, client_id: id!, client_secret: secret!,
       });
-      const me = await (await fetch("https://api.linkedin.com/v2/userinfo", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
+      const me = await (await fetchWithTimeout("https://api.linkedin.com/v2/userinfo", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
       return { accessToken: t.access_token, refreshToken: t.refresh_token ?? null, expiresIn: t.expires_in, externalId: me.sub, accountName: me.name ?? "LinkedIn" };
     }
     case "facebook":
     case "instagram": {
-      const t = await (await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?${new URLSearchParams({ client_id: id!, client_secret: secret!, redirect_uri: rd, code })}`)).json();
+      const t = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/oauth/access_token?${new URLSearchParams({ client_id: id!, client_secret: secret!, redirect_uri: rd, code })}`)).json();
       if (t.error) throw new Error(t.error.message);
-      const accounts = await (await fetch(`https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${t.access_token}`)).json();
+      const accounts = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${t.access_token}`)).json();
       const page = accounts.data?.[0];
       if (!page) throw new Error("No Facebook Page found on this account.");
       if (platform === "facebook") {
@@ -131,8 +132,8 @@ export async function oauthExchange(
     case "pinterest": {
       const basic = Buffer.from(`${id}:${secret}`).toString("base64");
       const t = await formPost("https://api.pinterest.com/v5/oauth/token", { grant_type: "authorization_code", code, redirect_uri: rd }, { Authorization: `Basic ${basic}` });
-      const acct = await (await fetch("https://api.pinterest.com/v5/user_account", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
-      const boards = await (await fetch("https://api.pinterest.com/v5/boards?page_size=1", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
+      const acct = await (await fetchWithTimeout("https://api.pinterest.com/v5/user_account", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
+      const boards = await (await fetchWithTimeout("https://api.pinterest.com/v5/boards?page_size=1", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
       return { accessToken: t.access_token, refreshToken: t.refresh_token ?? null, expiresIn: t.expires_in, externalId: acct.username ?? "pinterest", accountName: acct.username ?? "Pinterest", metadata: { board_id: boards.items?.[0]?.id ?? null } };
     }
     case "tiktok": {
@@ -145,7 +146,7 @@ export async function oauthExchange(
       const t = await formPost("https://api.twitter.com/2/oauth2/token", {
         grant_type: "authorization_code", code, redirect_uri: rd, client_id: id!, code_verifier: opts.verifier ?? "",
       }, headers);
-      const me = await (await fetch("https://api.twitter.com/2/users/me", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
+      const me = await (await fetchWithTimeout("https://api.twitter.com/2/users/me", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
       return { accessToken: t.access_token, refreshToken: t.refresh_token ?? null, expiresIn: t.expires_in, externalId: me.data?.id ?? "x", accountName: me.data?.username ? `@${me.data.username}` : "X" };
     }
     default:
@@ -169,19 +170,19 @@ const X_UPLOAD = "https://upload.twitter.com/1.1/media/upload.json";
  */
 async function uploadXVideo(token: string, videoUrl: string): Promise<string | null> {
   try {
-    const vid = await fetch(videoUrl);
+    const vid = await fetchWithTimeout(videoUrl, {}, 30_000);
     if (!vid.ok) return null;
     const bytes = Buffer.from(await vid.arrayBuffer());
     const auth = { Authorization: `Bearer ${token}` };
 
     // INIT
-    const init = await fetch(X_UPLOAD, {
+    const init = await fetchWithTimeout(X_UPLOAD, {
       method: "POST",
       headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         command: "INIT", total_bytes: String(bytes.length), media_type: "video/mp4", media_category: "tweet_video",
       }),
-    });
+    }, 30_000);
     if (!init.ok) return null;
     const mediaId = (await init.json()).media_id_string as string;
 
@@ -198,20 +199,20 @@ async function uploadXVideo(token: string, videoUrl: string): Promise<string | n
         `Content-Type: application/octet-stream\r\n\r\n`
       );
       const post = Buffer.from(`\r\n--${boundary}--\r\n`);
-      const res = await fetch(X_UPLOAD, {
+      const res = await fetchWithTimeout(X_UPLOAD, {
         method: "POST",
         headers: { ...auth, "Content-Type": `multipart/form-data; boundary=${boundary}` },
         body: Buffer.concat([pre, chunk, post]),
-      });
+      }, 30_000);
       if (!res.ok) return null;
     }
 
     // FINALIZE
-    const fin = await fetch(X_UPLOAD, {
+    const fin = await fetchWithTimeout(X_UPLOAD, {
       method: "POST",
       headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ command: "FINALIZE", media_id: mediaId }),
-    });
+    }, 30_000);
     if (!fin.ok) return null;
     let info = (await fin.json()).processing_info;
 
@@ -219,7 +220,7 @@ async function uploadXVideo(token: string, videoUrl: string): Promise<string | n
     for (let tries = 0; info && info.state !== "succeeded" && tries < 15; tries++) {
       if (info.state === "failed") return null;
       await new Promise((r) => setTimeout(r, Math.min((info.check_after_secs ?? 2) * 1000, 5000)));
-      const st = await fetch(`${X_UPLOAD}?command=STATUS&media_id=${mediaId}`, { headers: auth });
+      const st = await fetchWithTimeout(`${X_UPLOAD}?command=STATUS&media_id=${mediaId}`, { headers: auth }, 30_000);
       if (!st.ok) return null;
       info = (await st.json()).processing_info;
     }
@@ -242,7 +243,7 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             const author = `urn:li:person:${input.account.externalId}`;
             const vis = input.visibility === "private" ? "CONNECTIONS" : "PUBLIC";
             const text = [caption(input), input.videoUrl].filter(Boolean).join("\n\n");
-            const res = await fetch("https://api.linkedin.com/v2/ugcPosts", {
+            const res = await fetchWithTimeout("https://api.linkedin.com/v2/ugcPosts", {
               method: "POST",
               headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", "X-Restli-Protocol-Version": "2.0.0" },
               body: JSON.stringify({
@@ -257,11 +258,11 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
           }
           case "facebook": {
             const pageId = (input.account.metadata?.page_id as string) ?? input.account.externalId;
-            const res = await fetch(`https://graph.facebook.com/v21.0/${pageId}/videos`, {
+            const res = await fetchWithTimeout(`https://graph.facebook.com/v21.0/${pageId}/videos`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ file_url: input.videoUrl, description: caption(input), access_token: token }),
-            });
+            }, 30_000);
             const j = await res.json();
             if (!res.ok || j.error) return { status: "failed", error: `Facebook: ${j.error?.message ?? res.status}` };
             return { status: "published", externalPostId: j.id, externalUrl: `https://facebook.com/${j.id}` };
@@ -269,17 +270,17 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
           case "instagram": {
             const ig = input.account.metadata?.ig_user_id as string;
             if (!ig) return { status: "failed", error: "Missing Instagram business account id." };
-            const create = await (await fetch(`https://graph.facebook.com/v21.0/${ig}/media`, {
+            const create = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/${ig}/media`, {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ media_type: "REELS", video_url: input.videoUrl, caption: caption(input), access_token: token }),
-            })).json();
+            }, 30_000)).json();
             if (create.error) return { status: "failed", error: `Instagram: ${create.error.message}` };
             // Brief wait for the container to finish processing.
             await new Promise((r) => setTimeout(r, 4000));
-            const pub = await (await fetch(`https://graph.facebook.com/v21.0/${ig}/media_publish`, {
+            const pub = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/${ig}/media_publish`, {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ creation_id: create.id, access_token: token }),
-            })).json();
+            }, 30_000)).json();
             if (pub.error) return { status: "failed", error: `Instagram publish: ${pub.error.message}` };
             return { status: "published", externalPostId: pub.id, externalUrl: `https://instagram.com/reel/${pub.id}` };
           }
@@ -287,7 +288,7 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             const boardId = input.account.metadata?.board_id as string;
             if (!boardId) return { status: "failed", error: "No Pinterest board found — create one first." };
             if (!input.thumbnailUrl) return { status: "failed", error: "Pinterest needs a thumbnail image — generate one first." };
-            const res = await fetch("https://api.pinterest.com/v5/pins", {
+            const res = await fetchWithTimeout("https://api.pinterest.com/v5/pins", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
               body: JSON.stringify({ board_id: boardId, title: input.title.slice(0, 100), description: input.description.slice(0, 500), link: input.videoUrl || undefined, media_source: { source_type: "image_url", url: input.thumbnailUrl } }),
             });
@@ -296,13 +297,13 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             return { status: "published", externalPostId: j.id, externalUrl: `https://pinterest.com/pin/${j.id}` };
           }
           case "tiktok": {
-            const res = await fetch("https://open.tiktokapis.com/v2/post/publish/video/init/", {
+            const res = await fetchWithTimeout("https://open.tiktokapis.com/v2/post/publish/video/init/", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
               body: JSON.stringify({
                 post_info: { title: caption(input).slice(0, 150), privacy_level: input.visibility === "public" ? "PUBLIC_TO_EVERYONE" : "SELF_ONLY" },
                 source_info: { source: "PULL_FROM_URL", video_url: input.videoUrl },
               }),
-            });
+            }, 30_000);
             const j = await res.json();
             if (j.error && j.error.code !== "ok") return { status: "failed", error: `TikTok: ${j.error.message}` };
             return { status: "published", externalPostId: j.data?.publish_id ?? "", externalUrl: undefined };
@@ -313,7 +314,7 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             const tweet: Record<string, unknown> = mediaId
               ? { text: caption(input).slice(0, 280), media: { media_ids: [mediaId] } }
               : { text: [input.title, input.videoUrl].filter(Boolean).join(" ").slice(0, 280) };
-            const res = await fetch("https://api.twitter.com/2/tweets", {
+            const res = await fetchWithTimeout("https://api.twitter.com/2/tweets", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
               body: JSON.stringify(tweet),
             });

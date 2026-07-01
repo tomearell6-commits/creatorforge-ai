@@ -8,6 +8,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { VerificationStatus } from "./constants";
+import { fetchWithTimeout } from "@/lib/http";
 
 /** True when any real verification provider is configured (drives credit billing). */
 export function willUseNeverBounce(): boolean { return !!(process.env.NEVERBOUNCE_API_KEY || process.env.ZEROBOUNCE_API_KEY); }
@@ -58,7 +59,7 @@ export async function verifySingleEmail(email: string): Promise<VerifyResult> {
   try {
     if (provider === "zerobounce") {
       const params = new URLSearchParams({ api_key: process.env.ZEROBOUNCE_API_KEY!, email: clean });
-      const res = await fetch(`https://api.zerobounce.net/v2/validate?${params.toString()}`);
+      const res = await fetchWithTimeout(`https://api.zerobounce.net/v2/validate?${params.toString()}`);
       if (!res.ok) return { email: clean, result: "failed", score: 0, provider };
       const j = (await res.json()) as { status?: string; sub_status?: string };
       const result = mapZeroBounce(j.status ?? "unknown", j.sub_status ?? "");
@@ -66,7 +67,7 @@ export async function verifySingleEmail(email: string): Promise<VerifyResult> {
     }
     // NeverBounce
     const params = new URLSearchParams({ key: process.env.NEVERBOUNCE_API_KEY!, email: clean });
-    const res = await fetch(`https://api.neverbounce.com/v4/single/check?${params.toString()}`);
+    const res = await fetchWithTimeout(`https://api.neverbounce.com/v4/single/check?${params.toString()}`);
     if (!res.ok) return { email: clean, result: "failed", score: 0, provider };
     const j = (await res.json()) as { result?: string; status?: string };
     const map: Record<string, VerificationStatus> = { valid: "valid", invalid: "invalid", disposable: "disposable", catchall: "catchall", unknown: "unknown" };

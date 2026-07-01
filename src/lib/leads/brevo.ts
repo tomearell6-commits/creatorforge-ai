@@ -6,12 +6,14 @@
  *
  * Spec name: services/brevoCampaignService.ts
  */
+import { fetchWithTimeout } from "@/lib/http";
+
 const BASE = "https://api.brevo.com/v3";
 
 export function willUseBrevo(): boolean { return !!process.env.BREVO_API_KEY; }
 
 async function brevo(path: string, method: string, body?: unknown): Promise<{ ok: boolean; status: number; json: unknown }> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetchWithTimeout(`${BASE}${path}`, {
     method,
     headers: { "api-key": process.env.BREVO_API_KEY!, "Content-Type": "application/json", accept: "application/json" },
     body: body ? JSON.stringify(body) : undefined,

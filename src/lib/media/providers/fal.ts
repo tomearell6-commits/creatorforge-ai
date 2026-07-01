@@ -10,6 +10,7 @@
  * render mode with repriced credits (see docs/AI-VIDEO.md).
  */
 import type { VideoProvider, VideoGenInput, VideoGenResult } from "../types";
+import { fetchWithTimeout } from "@/lib/http";
 
 const QUEUE = "https://queue.fal.run";
 
@@ -41,7 +42,7 @@ export async function submitClip(input: VideoGenInput, modelId?: string): Promis
   if (input.imageUrl) body.image_url = input.imageUrl;
   if (input.durationSeconds) body.duration = input.durationSeconds;
 
-  const res = await fetch(`${QUEUE}/${m}`, { method: "POST", headers: authHeader(), body: JSON.stringify(body) });
+  const res = await fetchWithTimeout(`${QUEUE}/${m}`, { method: "POST", headers: authHeader(), body: JSON.stringify(body) }, 30_000);
   if (!res.ok) throw new Error(`fal submit error ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const j = await res.json();
   return { requestId: j.request_id, statusUrl: j.status_url, responseUrl: j.response_url, model: m };
@@ -49,12 +50,12 @@ export async function submitClip(input: VideoGenInput, modelId?: string): Promis
 
 /** Poll a submitted clip. Returns { status, url } — url is set when COMPLETED. */
 export async function pollClip(statusUrl: string, responseUrl: string): Promise<{ status: string; url: string | null }> {
-  const st = await fetch(statusUrl, { headers: authHeader() });
+  const st = await fetchWithTimeout(statusUrl, { headers: authHeader() }, 30_000);
   if (!st.ok) throw new Error(`fal status error ${st.status}`);
   const status = (await st.json()).status as string; // IN_QUEUE | IN_PROGRESS | COMPLETED
   if (status !== "COMPLETED") return { status, url: null };
 
-  const res = await fetch(responseUrl, { headers: authHeader() });
+  const res = await fetchWithTimeout(responseUrl, { headers: authHeader() }, 30_000);
   if (!res.ok) throw new Error(`fal result error ${res.status}`);
   const out = await res.json();
   // Different models nest the url differently; cover the common shapes.

@@ -8,6 +8,7 @@
  * Spec name: services/firecrawlLeadScanner.ts
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { fetchWithTimeout } from "@/lib/http";
 
 export function willUseFirecrawl(): boolean { return !!process.env.FIRECRAWL_API_KEY; }
 
@@ -35,7 +36,7 @@ export async function crawlSourceUrl(url: string): Promise<Scrape | null> {
     };
   }
   try {
-    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+    const res = await fetchWithTimeout("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ url, formats: ["markdown", "html"], onlyMainContent: true }),
