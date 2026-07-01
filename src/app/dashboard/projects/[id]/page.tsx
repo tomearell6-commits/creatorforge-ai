@@ -6,6 +6,7 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/constants";
+import { CategoryIcon } from "@/components/icons/CategoryIcon";
 import { deleteProject } from "../actions";
 
 export default async function ProjectDetailPage({
@@ -36,8 +37,8 @@ export default async function ProjectDetailPage({
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">
-            {cat?.emoji} {cat?.name} · {formatDate(project.created_at)}
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <CategoryIcon slug={cat?.slug} className="h-4 w-4" /> {cat?.name} · {formatDate(project.created_at)}
           </p>
           <h1 className="mt-1 text-2xl font-bold">{project.title}</h1>
           {project.idea && <p className="mt-2 text-muted-foreground">{project.idea}</p>}

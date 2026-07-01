@@ -129,7 +129,7 @@ export function ScriptGenerator({
             <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className={selectClass}>
               {CATEGORIES.map((c) => (
                 <option key={c.slug} value={c.slug}>
-                  {c.emoji} {c.name}
+                  {c.name}
                 </option>
               ))}
             </select>
