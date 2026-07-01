@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { apiError } from "@/lib/api/respond";
 
 /** GET — the user's books (My Books). Supports ?status= filter. */
 export async function GET(request: Request) {
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
     writing_style: b.writing_style ?? null, tone: b.tone ?? null, reading_level: b.reading_level ?? null,
     target_words: b.target_words ?? null, status: "draft",
   }).select("id").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ id: data!.id });
 }
 
@@ -40,7 +41,7 @@ export async function PATCH(request: Request) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of ["title", "subtitle", "author_name", "language", "category", "audience", "writing_style", "tone", "reading_level", "target_words", "concept", "description", "objectives", "usps", "status", "favorite", "cover_url"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await supabase.from("books").update(patch).eq("id", b.id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 

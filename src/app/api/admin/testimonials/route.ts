@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { apiError } from "@/lib/api/respond";
 
 /** GET — all testimonials (incl. unpublished) for the admin editor. */
 export async function GET() {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     platform: b.platform ?? null, accent: b.accent ?? "sky", avatar_url: b.avatar_url ?? null,
     is_published: b.is_published ?? true, sort_order: Number(b.sort_order ?? 0),
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 
@@ -33,7 +34,7 @@ export async function PATCH(request: Request) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of ["name", "role", "quote", "rating", "platform", "accent", "avatar_url", "is_published", "sort_order"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await gate.admin.from("testimonials").update(patch).eq("id", b.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 

@@ -7,6 +7,7 @@ import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { SEO_CREDIT_COSTS } from "@/lib/constants";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { captureError } from "@/lib/logger";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * Publish an SEO article to a connected WordPress site.
@@ -20,7 +21,9 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "wp-publish", 30, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
-  const { articleId, siteId, mode, scheduledAt } = await request.json();
+  const body = await readJsonBody<{ articleId?: string; siteId?: string; mode?: string; scheduledAt?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { articleId, siteId, mode, scheduledAt } = body;
   if (!articleId || !siteId) return NextResponse.json({ error: "articleId and siteId are required." }, { status: 400 });
   if (mode === "schedule" && !scheduledAt) return NextResponse.json({ error: "Pick a date/time to schedule." }, { status: 400 });
 

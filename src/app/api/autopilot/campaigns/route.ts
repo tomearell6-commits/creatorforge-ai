@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlan, planAllowsAutopilotFull } from "@/lib/plan";
+import { apiError } from "@/lib/api/respond";
 
 /** GET — the user's campaigns. */
 export async function GET() {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
     publish_windows: b.publish_windows ?? ["09:00"], timezone: b.timezone ?? "UTC",
     destinations: b.destinations ?? [], mode, status: "active",
   }).select("id").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ id: data!.id, note });
 }
 
@@ -59,7 +60,7 @@ export async function PATCH(request: Request) {
     if (b[k] !== undefined) patch[k] = b[k];
   }
   const { error } = await supabase.from("autopilot_campaigns").update(patch).eq("id", b.id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 

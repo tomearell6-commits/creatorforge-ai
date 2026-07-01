@@ -17,6 +17,7 @@ import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import type { Scene, Subtitle } from "@/lib/types";
 
@@ -38,6 +39,7 @@ export function SceneBuilder({
   const [scenes, setScenes] = useState<Scene[]>(initialScenes);
   const [building, setBuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirm();
 
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 0), 0);
 
@@ -46,7 +48,15 @@ export function SceneBuilder({
   }
 
   async function build() {
-    if (scenes.length > 0 && !confirm("Rebuild scenes? This replaces the current scenes.")) return;
+    if (
+      scenes.length > 0 &&
+      !(await confirm({
+        title: "Rebuild scenes?",
+        description: "This replaces the current scenes.",
+        confirmLabel: "Rebuild",
+      }))
+    )
+      return;
     setError(null);
     setBuilding(true);
     try {
@@ -109,6 +119,7 @@ export function SceneBuilder({
 
   return (
     <div className="space-y-6">
+      {dialog}
       <Card className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <CardTitle>Scenes</CardTitle>

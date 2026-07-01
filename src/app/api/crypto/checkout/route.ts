@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createCryptoInvoice } from "@/lib/payments/crypto";
 import { PLANS } from "@/lib/constants";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * POST /api/crypto/checkout -> create a NOWPayments invoice for a paid plan and
@@ -15,7 +16,9 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { plan } = await request.json();
+  const body = await readJsonBody<{ plan?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { plan } = body;
   const planObj = PLANS.find((p) => p.id === plan);
   if (!planObj || planObj.price <= 0) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });

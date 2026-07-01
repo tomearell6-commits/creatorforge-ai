@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { apiError } from "@/lib/api/respond";
 
 /** GET /api/autopilot/rules?campaignId= */
 export async function GET(request: Request) {
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     user_id: user.id, campaign_id: b.campaign_id ?? null, name: b.name, rule_type: b.rule_type,
     config: b.config ?? {}, enabled: b.enabled ?? true,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 
@@ -36,7 +37,7 @@ export async function PATCH(request: Request) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of ["name", "rule_type", "config", "enabled"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await supabase.from("autopilot_rules").update(patch).eq("id", b.id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
+import { apiError } from "@/lib/api/respond";
 
 /** Editable template fields (owner-scoped). */
 const FIELDS = ["name", "subject", "preview_text", "body", "cta_label", "cta_url", "sender_name", "signature"] as const;
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
   if (!name) return NextResponse.json({ error: "Template name is required." }, { status: 400 });
 
   const { data, error } = await supabase.from("lead_outreach_templates").insert({ user_id: user.id, ...pick(b), name }).select("*").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ template: data });
 }
 
@@ -51,7 +52,7 @@ export async function PATCH(request: Request) {
   const { data, error } = await supabase.from("lead_outreach_templates")
     .update({ ...pick(b), updated_at: new Date().toISOString() })
     .eq("id", b.id).eq("user_id", user.id).select("*").maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   if (!data) return NextResponse.json({ error: "Template not found." }, { status: 404 });
   return NextResponse.json({ template: data });
 }
@@ -67,6 +68,6 @@ export async function DELETE(request: Request) {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
   const { error } = await supabase.from("lead_outreach_templates").delete().eq("id", id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }

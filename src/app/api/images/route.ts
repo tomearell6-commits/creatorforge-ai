@@ -5,6 +5,7 @@ import { uploadMedia } from "@/lib/media/storage";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { CREDIT_COSTS } from "@/lib/constants";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * POST /api/images -> generate a scene image, store the asset, link it to the
@@ -20,7 +21,9 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "images-generate", 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
-  const { projectId, sceneId, prompt } = await request.json();
+  const body = await readJsonBody<{ projectId?: string; sceneId?: string; prompt?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { projectId, sceneId, prompt } = body;
   if (!projectId || !prompt) {
     return NextResponse.json({ error: "projectId and prompt are required" }, { status: 400 });
   }

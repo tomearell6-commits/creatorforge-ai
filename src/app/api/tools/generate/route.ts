@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { toolGenerate, willUseRealToolAI, isToolId, type ToolId } from "@/lib/tools/generate";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /** AI text tools (hashtags, meta-titles). 1 credit when real AI is used. */
 const COST = 1;
@@ -15,7 +16,9 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "tools-generate", 30, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
-  const { tool, topic, platform } = (await request.json()) as { tool: ToolId; topic: string; platform?: string };
+  const body = await readJsonBody<{ tool: ToolId; topic: string; platform?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { tool, topic, platform } = body;
   if (!topic?.trim()) return NextResponse.json({ error: "Enter a topic or keyword." }, { status: 400 });
   if (!isToolId(tool)) return NextResponse.json({ error: "Unknown tool." }, { status: 400 });
 

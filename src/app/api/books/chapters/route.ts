@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { apiError } from "@/lib/api/respond";
 
 const wc = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
 
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.from("book_chapters").insert({
     book_id: b.bookId, user_id: user.id, title: b.title, part: b.part ?? null, position: b.position ?? 999, content: "", word_count: 0,
   }).select("id").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ id: data!.id });
 }
 
@@ -41,7 +42,7 @@ export async function PATCH(request: Request) {
   if (b.content !== undefined) { patch.content = b.content; patch.word_count = wc(b.content); }
 
   const { error } = await supabase.from("book_chapters").update(patch).eq("id", b.id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
 
   if (b.snapshot && b.content !== undefined) {
     await supabase.from("book_versions").insert({ chapter_id: b.id, user_id: user.id, content: b.content, label: "autosave" });

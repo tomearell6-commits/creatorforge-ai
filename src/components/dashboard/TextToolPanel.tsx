@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 
 /** Generic panel for list-style AI text tools ({items: string[]}). */
 export function TextToolPanel({
@@ -21,14 +22,15 @@ export function TextToolPanel({
   const [items, setItems] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
 
   async function go() {
-    if (!topic.trim()) { setMsg("Enter a topic."); return; }
-    setBusy(true); setMsg(null);
+    if (!topic.trim()) { setErr("Enter a topic."); setMsg(null); return; }
+    setBusy(true); setMsg(null); setErr(null);
     const res = await fetch("/api/tools/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tool, topic }) });
     const j = await res.json();
-    if (!res.ok) setMsg(j.error || "Failed.");
+    if (!res.ok) setErr(j.error || "Failed.");
     else { setItems(j.output.items ?? []); setMsg(j.usedAI ? null : "Generated (placeholder — set ANTHROPIC_API_KEY for AI)."); }
     setBusy(false);
   }
@@ -39,6 +41,7 @@ export function TextToolPanel({
       <Card className="space-y-3">
         <div><Label htmlFor="ttp-input">{inputLabel}</Label><Input id="ttp-input" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={placeholder} onKeyDown={(e) => e.key === "Enter" && go()} /></div>
         <Button disabled={busy} onClick={go}>{busy ? "Generating…" : buttonLabel}</Button>
+        {err && <Alert variant="error">{err}</Alert>}
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
+import { apiError } from "@/lib/api/respond";
 
 /** GET /api/leads/lists — the user's lists with member counts. */
 export async function GET() {
@@ -42,14 +43,14 @@ export async function POST(request: Request) {
     if (rows.length === 0) return NextResponse.json({ added: 0 });
 
     const { error } = await supabase.from("lead_list_members").upsert(rows, { onConflict: "list_id,lead_id", ignoreDuplicates: true });
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error) return apiError(error.message, 500);
     return NextResponse.json({ added: rows.length });
   }
 
   const name = typeof b.name === "string" ? b.name.trim() : "";
   if (!name) return NextResponse.json({ error: "List name is required." }, { status: 400 });
   const { data, error } = await supabase.from("lead_lists").insert({ user_id: user.id, name, description: b.description ?? null }).select("*").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ list: data });
 }
 
@@ -68,7 +69,7 @@ export async function PATCH(request: Request) {
   if ("description" in b) patch.description = b.description ?? null;
 
   const { data, error } = await supabase.from("lead_lists").update(patch).eq("id", b.id).eq("user_id", user.id).select("*").maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   if (!data) return NextResponse.json({ error: "List not found." }, { status: 404 });
   return NextResponse.json({ list: data });
 }
@@ -84,6 +85,6 @@ export async function DELETE(request: Request) {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
   const { error } = await supabase.from("lead_lists").delete().eq("id", id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }

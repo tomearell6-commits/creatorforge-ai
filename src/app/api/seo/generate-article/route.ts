@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { generateSeoPackage, willUseRealSeoAI } from "@/lib/seo/generate";
+import { generateSeoPackage, willUseRealSeoAI, type SeoArticleInput } from "@/lib/seo/generate";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { SEO_CREDIT_COSTS } from "@/lib/constants";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { logEvent } from "@/lib/analytics";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * SEO Content Studio — generate a full SEO package and save it as a draft article.
@@ -18,8 +19,9 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "seo-generate", 15, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
-  const body = await request.json();
-  if (!body.mainKeyword?.trim()) return NextResponse.json({ error: "Main keyword is required." }, { status: 400 });
+  const body = await readJsonBody<Partial<SeoArticleInput>>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  if (typeof body.mainKeyword !== "string" || !body.mainKeyword.trim()) return NextResponse.json({ error: "Main keyword is required." }, { status: 400 });
 
   const billable = willUseRealSeoAI();
   if (billable && (await getCreditBalance()) < SEO_CREDIT_COSTS.article) {

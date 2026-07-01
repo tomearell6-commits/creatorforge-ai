@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { apiError } from "@/lib/api/respond";
 
 /** GET — all tutorials (incl. unpublished) for the admin manager. */
 export async function GET() {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     video_url: b.video_url, thumbnail_url: b.thumbnail_url ?? null, duration: b.duration ?? null,
     level: b.level ?? "beginner", sort_order: Number(b.sort_order ?? 0), is_published: b.is_published ?? true,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 
@@ -32,7 +33,7 @@ export async function PATCH(request: Request) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of ["title", "description", "category", "video_url", "thumbnail_url", "duration", "level", "sort_order", "is_published"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await gate.admin.from("tutorials").update(patch).eq("id", b.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 

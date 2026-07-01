@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { apiError } from "@/lib/api/respond";
 import type { AccessLevel } from "@/lib/leads/access";
 
 const LEVELS: AccessLevel[] = ["none", "limited", "full", "advanced"];
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
         },
         { onConflict: "plan" }
       );
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       await record(null, `set_limits ${plan}: level=${accessLevel} monthly=${Math.floor(monthlyLeads)} daily=${Math.floor(dailySends)} auto=${automatedSend}`);
       break;
     }
@@ -101,7 +102,7 @@ export async function POST(request: Request) {
         { user_id: userId, suspended: true, suspended_reason: reason, updated_by: user.id, updated_at: now },
         { onConflict: "user_id" }
       );
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       await record(userId, `suspend: ${reason ?? ""}`);
       break;
     }
@@ -113,7 +114,7 @@ export async function POST(request: Request) {
         { user_id: userId, suspended: false, suspended_reason: null, updated_by: user.id, updated_at: now },
         { onConflict: "user_id" }
       );
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       await record(userId, "unsuspend");
       break;
     }
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
         { user_id: userId, access_level_override: level, updated_by: user.id, updated_at: now },
         { onConflict: "user_id" }
       );
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       await record(userId, `set_access: ${level ?? "plan-default"}`);
       break;
     }
@@ -141,7 +142,7 @@ export async function POST(request: Request) {
         { user_id: userId, enabled, updated_by: user.id, updated_at: now },
         { onConflict: "user_id" }
       );
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       await record(userId, `toggle: ${enabled ? "enabled" : "disabled"}`);
       break;
     }

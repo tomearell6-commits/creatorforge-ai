@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildCues, serializeCaptions } from "@/lib/media/subtitles";
 import { uploadMedia } from "@/lib/media/storage";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * POST  /api/subtitles -> generate subtitles (SRT/VTT) from a project's scenes
@@ -15,7 +16,9 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { projectId, format } = await request.json();
+  const body = await readJsonBody<{ projectId?: string; format?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { projectId, format } = body;
   if (!projectId) return NextResponse.json({ error: "projectId is required" }, { status: 400 });
   const fmt: "srt" | "vtt" = format === "vtt" ? "vtt" : "srt";
 
@@ -114,7 +117,9 @@ export async function PATCH(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id, content } = await request.json();
+  const body = await readJsonBody<{ id?: string; content?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { id, content } = body;
   if (!id || typeof content !== "string") {
     return NextResponse.json({ error: "id and content are required" }, { status: 400 });
   }

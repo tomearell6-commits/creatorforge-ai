@@ -5,6 +5,7 @@ import { uploadMedia } from "@/lib/media/storage";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { CREDIT_COSTS } from "@/lib/constants";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * POST /api/voice/generate -> synthesize a voiceover, store the audio asset and
@@ -20,8 +21,9 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "voice-generate", 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
-  const { projectId, sceneId, text, voiceId, language, accent, speed, pitch } =
-    await request.json();
+  const body = await readJsonBody<{ projectId?: string; sceneId?: string; text?: string; voiceId?: string; language?: string; accent?: string; speed?: number; pitch?: number }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { projectId, sceneId, text, voiceId, language, accent, speed, pitch } = body;
   if (!projectId || !text) {
     return NextResponse.json({ error: "projectId and text are required" }, { status: 400 });
   }

@@ -4,20 +4,22 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 
 export function MetaTitleGenerator() {
   const [topic, setTopic] = useState("");
   const [options, setOptions] = useState<{ title: string; description: string }[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
 
   async function go() {
-    if (!topic.trim()) { setMsg("Enter a keyword or topic."); return; }
-    setBusy(true); setMsg(null);
+    if (!topic.trim()) { setErr("Enter a keyword or topic."); setMsg(null); return; }
+    setBusy(true); setMsg(null); setErr(null);
     const res = await fetch("/api/tools/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tool: "meta-titles", topic }) });
     const j = await res.json();
-    if (!res.ok) setMsg(j.error || "Failed.");
+    if (!res.ok) setErr(j.error || "Failed.");
     else { setOptions(j.output.options); setMsg(j.usedAI ? null : "Generated (placeholder — set ANTHROPIC_API_KEY for AI)."); }
     setBusy(false);
   }
@@ -28,6 +30,7 @@ export function MetaTitleGenerator() {
       <Card className="space-y-3">
         <div><Label htmlFor="mtg-keyword-topic">Keyword / topic</Label><Input id="mtg-keyword-topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="e.g. best dog food for puppies" onKeyDown={(e) => e.key === "Enter" && go()} /></div>
         <Button disabled={busy} onClick={go}>{busy ? "Generating…" : "Generate SEO titles"}</Button>
+        {err && <Alert variant="error">{err}</Alert>}
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>
 

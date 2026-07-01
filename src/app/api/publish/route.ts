@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { executePost } from "@/lib/publishing/execute";
 import type { PublishJob, PublishMode, ScheduledPost, SocialPlatform, Visibility } from "@/lib/types";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * Publishing Center (Phase 6 — Module 2).
@@ -46,7 +47,8 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = (await request.json()) as Body;
+  const body = await readJsonBody<Body>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
   if (!body.title?.trim()) return NextResponse.json({ error: "Title is required" }, { status: 400 });
   if (!body.platforms?.length) return NextResponse.json({ error: "Select at least one platform" }, { status: 400 });
   if (body.mode === "schedule" && !body.scheduledAt) {

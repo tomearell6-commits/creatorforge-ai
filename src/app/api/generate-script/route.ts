@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateScript, willUseRealAI } from "@/lib/ai/generate";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { CREDITS_PER_SCRIPT } from "@/lib/constants";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * POST  /api/generate-script  -> generate a script (real Claude or placeholder).
@@ -17,7 +18,9 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { category, idea, title, tone, length } = await request.json();
+  const body = await readJsonBody<{ category?: string; idea?: string; title?: string; tone?: string; length?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { category, idea, title, tone, length } = body;
   if (!idea || !category) {
     return NextResponse.json({ error: "category and idea are required" }, { status: 400 });
   }
@@ -69,7 +72,9 @@ export async function PUT(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { projectId, content, model, tokensUsed } = await request.json();
+  const body = await readJsonBody<{ projectId?: string; content?: string; model?: string; tokensUsed?: number }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { projectId, content, model, tokensUsed } = body;
   if (!projectId || !content) {
     return NextResponse.json({ error: "projectId and content are required" }, { status: 400 });
   }

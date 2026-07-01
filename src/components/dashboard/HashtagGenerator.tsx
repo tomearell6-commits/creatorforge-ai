@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 
 const sel = "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "X", "LinkedIn", "Facebook", "Pinterest"];
@@ -14,14 +15,15 @@ export function HashtagGenerator() {
   const [sets, setSets] = useState<{ label: string; tags: string[] }[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
   async function go() {
-    if (!topic.trim()) { setMsg("Enter a topic."); return; }
-    setBusy(true); setMsg(null);
+    if (!topic.trim()) { setErr("Enter a topic."); setMsg(null); return; }
+    setBusy(true); setMsg(null); setErr(null);
     const res = await fetch("/api/tools/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tool: "hashtags", topic, platform }) });
     const j = await res.json();
-    if (!res.ok) setMsg(j.error || "Failed.");
+    if (!res.ok) setErr(j.error || "Failed.");
     else { setSets(j.output.sets); setMsg(j.usedAI ? null : "Generated (placeholder — set ANTHROPIC_API_KEY for AI)."); }
     setBusy(false);
   }
@@ -38,6 +40,7 @@ export function HashtagGenerator() {
           <div><Label htmlFor="hg-platform">Platform</Label><select id="hg-platform" className={sel} value={platform} onChange={(e) => setPlatform(e.target.value)}>{PLATFORMS.map((p) => <option key={p}>{p}</option>)}</select></div>
         </div>
         <Button disabled={busy} onClick={go}>{busy ? "Generating…" : "Generate hashtags"}</Button>
+        {err && <Alert variant="error">{err}</Alert>}
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
       </Card>
 

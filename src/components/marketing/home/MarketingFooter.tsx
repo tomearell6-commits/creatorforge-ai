@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { STUDIOS } from "@/config/studios";
-import { BrandIcon } from "@/components/icons/BrandIcon";
 
 const su = (href: string) => `/signup?redirect=${encodeURIComponent(href)}`;
 
@@ -16,14 +15,6 @@ const RESOURCES = [
   { label: "System Status", href: "#" },
 ];
 
-const SOCIAL: { platform: string; label: string }[] = [
-  { platform: "x", label: "X (Twitter)" },
-  { platform: "youtube", label: "YouTube" },
-  { platform: "instagram", label: "Instagram" },
-  { platform: "linkedin", label: "LinkedIn" },
-  { platform: "facebook", label: "Facebook" },
-];
-
 export function MarketingFooter() {
   return (
     <footer className="border-t border-border bg-muted/30">
@@ -35,13 +26,6 @@ export function MarketingFooter() {
               CreatorForge<span className="text-brand-600">.io</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">The AI Business Operating System — create, market, publish, automate, analyze, and grow.</p>
-            <div className="mt-4 flex gap-2">
-              {SOCIAL.map(({ platform, label }) => (
-                <a key={label} href="#" aria-label={label} className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-                  <BrandIcon platform={platform} monochrome className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
           </div>
 
           {/* Studio columns (grouped by Studio per spec) */}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { apiError } from "@/lib/api/respond";
 
 /** GET — the user's ad campaigns. */
 export async function GET() {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     objective: b.objective ?? "traffic", platforms: b.platforms ?? [], creative_types: b.creative_types ?? [],
     audience: b.audience ?? {}, status: b.status ?? "draft", scheduled_at: b.scheduled_at ?? null,
   }).select("id").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
 
   await supabase.from("campaign_history").insert({ user_id: user.id, campaign_id: data!.id, action: "created", detail: `Campaign "${b.name}" created.` });
   return NextResponse.json({ id: data!.id });
@@ -41,7 +42,7 @@ export async function PATCH(request: Request) {
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   for (const k of ["name", "business", "website", "industry", "country", "language", "objective", "platforms", "creative_types", "audience", "status", "scheduled_at"]) if (b[k] !== undefined) patch[k] = b[k];
   const { error } = await supabase.from("ad_campaigns").update(patch).eq("id", b.id).eq("user_id", user.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return apiError(error.message, 500);
   return NextResponse.json({ ok: true });
 }
 

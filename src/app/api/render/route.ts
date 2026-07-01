@@ -14,6 +14,7 @@ import { emitNotification } from "@/lib/notifications";
 import { logEvent } from "@/lib/analytics";
 import { runTrigger } from "@/lib/automation/engine";
 import { captureError } from "@/lib/logger";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 import type { Scene } from "@/lib/types";
 
 /**
@@ -83,7 +84,9 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { projectId, mode } = await request.json();
+  const body = await readJsonBody<{ projectId?: string; mode?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { projectId, mode } = body;
   if (!projectId) return NextResponse.json({ error: "projectId is required" }, { status: 400 });
   const tier = renderTier(mode);
 
@@ -163,7 +166,9 @@ export async function PATCH(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id, action } = await request.json();
+  const body = await readJsonBody<{ id?: string; action?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { id, action } = body;
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
   const { data: job } = await supabase.from("render_jobs").select("*").eq("id", id).eq("user_id", user.id).single();

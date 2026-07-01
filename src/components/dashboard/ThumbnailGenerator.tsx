@@ -7,6 +7,7 @@ import { ImagePlus, Download } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 import { THUMBNAIL_STYLES } from "@/lib/media/voices";
 import type { Thumbnail } from "@/lib/types";
 
@@ -88,7 +89,7 @@ export function ThumbnailGenerator({
           <Label htmlFor="t-prompt">Image prompt (optional)</Label>
           <Textarea id="t-prompt" rows={2} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Describe the background image…" />
         </div>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <Alert variant="error">{error}</Alert>}
         <Button onClick={generate} disabled={loading}>
           <ImagePlus className="h-4 w-4" /> {loading ? "Generating…" : "Generate thumbnail (16:9)"}
         </Button>

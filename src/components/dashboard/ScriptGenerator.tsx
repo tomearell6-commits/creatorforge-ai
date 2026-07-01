@@ -7,6 +7,7 @@ import { Sparkles, Save, Check, Coins } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 import { CATEGORIES, TONES, LENGTHS, DEFAULT_TONE, DEFAULT_LENGTH } from "@/lib/constants";
 
 type ProjectOption = { id: string; title: string; category: string; idea: string | null };
@@ -174,7 +175,7 @@ export function ScriptGenerator({
       </Card>
 
       {error && (
-        <div className="text-sm text-red-500">
+        <Alert variant="error">
           {error}
           {needsUpgrade && (
             <>
@@ -184,7 +185,7 @@ export function ScriptGenerator({
               </Link>
             </>
           )}
-        </div>
+        </Alert>
       )}
 
       {script && (

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { splitScriptIntoScenes } from "@/lib/media/scenes";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * POST   /api/scenes  -> (re)build scenes for a project from its latest script.
@@ -25,7 +26,9 @@ async function requireUserAndProject(projectId: string) {
 }
 
 export async function POST(request: Request) {
-  const { projectId } = await request.json();
+  const body = await readJsonBody<{ projectId?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { projectId } = body;
   if (!projectId) return NextResponse.json({ error: "projectId is required" }, { status: 400 });
 
   const ctx = await requireUserAndProject(projectId);

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { apiError } from "@/lib/api/respond";
 
 /** GET — list all packages (incl. inactive) for the admin portal. */
 export async function GET() {
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
         slug: b.slug, name: b.name, usd_price: b.usd_price, credits: b.credits,
         bonus: b.bonus ?? 0, sort_order: b.sort_order ?? 99,
       });
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       return NextResponse.json({ ok: true });
     }
     case "update": {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
         if (b[k] != null) patch[k] = b[k];
       }
       const { error } = await admin.from("credit_packages").update(patch).eq("id", b.id);
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       return NextResponse.json({ ok: true });
     }
     case "disable":
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       const { error } = await admin.from("credit_packages")
         .update({ is_active: b.action === "enable", updated_at: new Date().toISOString() })
         .eq("id", b.id);
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      if (error) return apiError(error.message, 500);
       return NextResponse.json({ ok: true });
     }
     default:

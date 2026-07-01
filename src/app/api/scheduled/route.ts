@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { apiError, readJsonBody } from "@/lib/api/respond";
 
 /**
  * Content Calendar feed (Phase 6 — Module 3).
@@ -24,7 +25,9 @@ export async function PATCH(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id, scheduledAt } = await request.json();
+  const body = await readJsonBody<{ id?: string; scheduledAt?: string }>(request);
+  if (!body) return apiError("Invalid JSON body", 400);
+  const { id, scheduledAt } = body;
   if (!id || !scheduledAt) return NextResponse.json({ error: "id and scheduledAt required" }, { status: 400 });
 
   const { data, error } = await supabase
