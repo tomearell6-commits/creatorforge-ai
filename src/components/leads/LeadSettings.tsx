@@ -6,7 +6,7 @@ import { LEAD_CREDIT_COSTS } from "@/lib/leads/constants";
 
 const PROVIDERS = [
   { name: "Firecrawl", role: "Public web crawling & extraction", env: "FIRECRAWL_API_KEY" },
-  { name: "NeverBounce", role: "Email deliverability verification", env: "NEVERBOUNCE_API_KEY" },
+  { name: "NeverBounce / ZeroBounce", role: "Email deliverability verification", env: "NEVERBOUNCE_API_KEY or ZEROBOUNCE_API_KEY" },
   { name: "Brevo", role: "List sync & email outreach", env: "BREVO_API_KEY" },
 ];
 
