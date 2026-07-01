@@ -1,10 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Clapperboard, CheckCircle2, AlertTriangle, Coins, RefreshCw, HardDrive, Bell, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { NOTIFICATION_META } from "@/lib/constants";
 import type { Notification } from "@/lib/types";
+
+// One semantic Lucide icon (+ tint) per notification type — replaces emoji.
+const NOTIF_ICON: Record<string, { Icon: LucideIcon; tint: string }> = {
+  render_complete:      { Icon: Clapperboard, tint: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300" },
+  publish_success:      { Icon: CheckCircle2,  tint: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300" },
+  publish_failed:       { Icon: AlertTriangle, tint: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300" },
+  credits_low:          { Icon: Coins,         tint: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" },
+  subscription_renewed: { Icon: RefreshCw,     tint: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" },
+  storage_full:         { Icon: HardDrive,     tint: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" },
+};
+const NOTIF_FALLBACK = { Icon: Bell, tint: "bg-muted text-muted-foreground" };
 
 export function NotificationsList() {
   const [items, setItems] = useState<Notification[]>([]);
@@ -42,10 +53,10 @@ export function NotificationsList() {
       {!loading && items.length === 0 && <p className="text-sm text-muted-foreground">No notifications yet.</p>}
       <div className="space-y-2">
         {items.map((n) => {
-          const meta = NOTIFICATION_META[n.type] ?? { emoji: "🔔", label: n.type };
+          const { Icon, tint } = NOTIF_ICON[n.type] ?? NOTIF_FALLBACK;
           return (
             <Card key={n.id} className={`flex items-start gap-3 p-3 ${n.read ? "opacity-70" : ""}`}>
-              <span className="text-xl">{meta.emoji}</span>
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${tint}`}><Icon className="h-4 w-4" aria-hidden /></span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{n.title}</span>
