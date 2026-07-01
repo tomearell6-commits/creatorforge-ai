@@ -1,4 +1,5 @@
 import { LeadLists } from "@/components/leads/LeadLists";
+import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 
 export const metadata = { title: "Lead Lists — CreatorForge AI" };
 
@@ -9,7 +10,9 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Lead Lists</h1>
         <p className="mt-1 text-muted-foreground">Group, export, and sync your leads.</p>
       </div>
-      <LeadLists />
+      <LeadAccessGate need="search">
+        <LeadLists />
+      </LeadAccessGate>
     </div>
   );
 }

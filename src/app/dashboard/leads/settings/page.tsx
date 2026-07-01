@@ -1,4 +1,6 @@
 import { LeadSettings } from "@/components/leads/LeadSettings";
+import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
+import { SenderProfileForm } from "@/components/leads/SenderProfileForm";
 
 export const metadata = { title: "Lead Generator Settings — CreatorForge AI" };
 
@@ -9,7 +11,10 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Lead Generator Settings</h1>
         <p className="mt-1 text-muted-foreground">Provider status, credit costs, and compliance.</p>
       </div>
-      <LeadSettings />
+      <LeadAccessGate need="view">
+        <SenderProfileForm />
+        <LeadSettings />
+      </LeadAccessGate>
     </div>
   );
 }

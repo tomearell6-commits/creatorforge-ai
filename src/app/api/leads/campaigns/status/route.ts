@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { OUTREACH_ELIGIBLE } from "@/lib/leads/constants";
+import { guardLead } from "@/lib/leads/access";
 
 /** GET /api/leads/campaigns/status?id= — campaign row (owner) + lead counts. */
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "view");
+  if (gate instanceof NextResponse) return gate;
 
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });

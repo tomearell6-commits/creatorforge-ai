@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { safeSourceUrl } from "@/lib/leads/compliance";
+import { guardLead } from "@/lib/leads/access";
 import { MAX_LEADS_PER_CAMPAIGN, MAX_SOURCE_URLS } from "@/lib/leads/constants";
 
 /** POST /api/leads/campaigns/create — create a lead search campaign (draft). */
@@ -11,6 +12,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const rl = await limitRequestAsync(request, "lead-create", 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "search");
+  if (gate instanceof NextResponse) return gate;
 
   const b = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const name = typeof b.name === "string" ? b.name.trim() : "";

@@ -4,6 +4,7 @@ import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { LEAD_CREDIT_COSTS } from "@/lib/leads/constants";
 import { canContact, logCompliance } from "@/lib/leads/compliance";
+import { guardLead, logUsage } from "@/lib/leads/access";
 import { createContactList, syncLeadsToBrevo, willUseBrevo, type LeadContact } from "@/lib/leads/brevo";
 
 /**
@@ -17,6 +18,9 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const rl = await limitRequestAsync(request, "lead-brevo-sync", 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "send");
+  if (gate instanceof NextResponse) return gate;
+  await logUsage(supabase, user.id, "sync");
 
   const { listId } = (await request.json().catch(() => ({}))) as { listId?: string };
   if (!listId) return NextResponse.json({ error: "Missing listId." }, { status: 400 });

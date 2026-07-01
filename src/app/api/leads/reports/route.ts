@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { OUTREACH_ELIGIBLE } from "@/lib/leads/constants";
+import { guardLead } from "@/lib/leads/access";
 
 /** GET /api/leads/reports — dashboard metrics for the signed-in user. */
 export async function GET() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "view");
+  if (gate instanceof NextResponse) return gate;
 
   const leadCount = (build: (q: ReturnType<typeof leadBase>) => ReturnType<typeof leadBase>) =>
     build(leadBase()).then((r) => r.count ?? 0);

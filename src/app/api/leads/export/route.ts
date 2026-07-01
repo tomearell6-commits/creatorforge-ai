@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { guardLead, logUsage } from "@/lib/leads/access";
 
 /** Columns exported (order matters). */
 const COLUMNS = [
@@ -29,6 +30,9 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "search");
+  if (gate instanceof NextResponse) return gate;
+  await logUsage(supabase, user.id, "export");
 
   const params = new URL(request.url).searchParams;
   const format = params.get("format") === "xlsx" ? "xlsx" : "csv";

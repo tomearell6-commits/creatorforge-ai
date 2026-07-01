@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { guardLead } from "@/lib/leads/access";
 
 /** GET /api/leads/list?campaignId=&status=&limit= — the user's leads, newest first (cap 500). */
 export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "view");
+  if (gate instanceof NextResponse) return gate;
 
   const params = new URL(request.url).searchParams;
   const campaignId = params.get("campaignId");

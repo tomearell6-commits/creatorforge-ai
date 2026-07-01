@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { LEAD_CREDIT_COSTS } from "@/lib/leads/constants";
+import { guardLead, logUsage } from "@/lib/leads/access";
 import { logCompliance, safeSourceUrl } from "@/lib/leads/compliance";
 import {
   crawlSourceUrl, findContactPages, extractBusinessData, normalizeLeadData,
@@ -24,11 +25,20 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "lead-run", 8, 60 * 60_000); // 8/hour
   if (!rl.ok) return NextResponse.json({ error: "Lead scanning is rate-limited. Please wait before running again." }, { status: 429 });
 
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "search");
+  if (gate instanceof NextResponse) return gate;
+
   const { campaignId } = (await request.json().catch(() => ({}))) as { campaignId?: string };
   if (!campaignId) return NextResponse.json({ error: "Missing campaignId." }, { status: 400 });
 
   const { data: campaign } = await supabase.from("lead_campaigns").select("*").eq("id", campaignId).eq("user_id", user.id).maybeSingle();
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
+
+  // Enforce the plan's remaining monthly-lead allowance.
+  const remainingAllowance = Math.max(0, gate.limits.monthlyLeads - gate.usage.leadsThisMonth);
+  const maxLeads = Math.min(campaign.max_leads, remainingAllowance);
+  if (maxLeads <= 0) return NextResponse.json({ error: "You've reached your plan's monthly lead limit.", reason: "monthly_limit", action: "upgrade_plan" }, { status: 403 });
+  await logUsage(supabase, user.id, "search", `campaign ${campaignId}`);
 
   const billScan = willUseFirecrawl();
   const billVerify = willUseNeverBounce();
@@ -40,7 +50,7 @@ export async function POST(request: Request) {
 
   try {
     for (const rawUrl of (campaign.source_urls as string[])) {
-      if (rawLeads.length >= campaign.max_leads) break;
+      if (rawLeads.length >= maxLeads) break;
       const safe = await safeSourceUrl(rawUrl);
       if (!safe.ok) { await logCompliance(supabase, user.id, "blocked_url", `${rawUrl}: ${safe.error}`, { campaignId }); continue; }
 

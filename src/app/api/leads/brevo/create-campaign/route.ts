@@ -4,6 +4,7 @@ import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { LEAD_CREDIT_COSTS } from "@/lib/leads/constants";
 import { withUnsubscribeFooter } from "@/lib/leads/compliance";
+import { guardLead } from "@/lib/leads/access";
 import { createEmailCampaign, willUseBrevo } from "@/lib/leads/brevo";
 
 /**
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const rl = await limitRequestAsync(request, "lead-brevo-campaign", 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+  const gate = await guardLead(supabase, user.id, !!user.email_confirmed_at, "send");
+  if (gate instanceof NextResponse) return gate;
 
   const b = (await request.json().catch(() => ({}))) as { templateId?: string; listId?: string; name?: string; brevoListId?: number };
   if (!b.templateId || !b.listId) return NextResponse.json({ error: "templateId and listId are required." }, { status: 400 });

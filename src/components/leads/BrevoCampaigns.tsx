@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { BrevoSyncPanel } from "./BrevoSyncPanel";
+import { SendConfirmPanel, type SendConfirmCampaign } from "./SendConfirmPanel";
 
 type Template = { id: string; name: string };
 type LeadList = { id: string; name: string; member_count?: number };
@@ -35,6 +36,8 @@ export function BrevoCampaigns() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ variant: "success" | "warning"; text: string } | null>(null);
+  // A freshly created draft awaiting the final review-and-send confirmation.
+  const [pendingSend, setPendingSend] = useState<SendConfirmCampaign | null>(null);
 
   async function loadCampaigns() {
     try {
@@ -75,6 +78,7 @@ export function BrevoCampaigns() {
     setBusy(true);
     setError(null);
     setNotice(null);
+    setPendingSend(null);
     try {
       const createRes = await fetch("/api/leads/brevo/create-campaign", {
         method: "POST",
@@ -89,18 +93,15 @@ export function BrevoCampaigns() {
       }
 
       if (send) {
-        const sendRes = await fetch("/api/leads/brevo/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ campaignId: campaign.id }),
+        // Route the send through the required review-and-confirm step.
+        const list = lists.find((l) => l.id === listId);
+        setPendingSend({
+          id: campaign.id,
+          name: campaign.name ?? name.trim(),
+          subject: campaign.subject,
+          listId,
+          recipients: campaign.recipients ?? list?.member_count ?? 0,
         });
-        if (!sendRes.ok) throw new Error((await sendRes.json().catch(() => ({})))?.error || "Send failed.");
-        const { configured: sendConfigured } = await sendRes.json();
-        setNotice(
-          sendConfigured
-            ? { variant: "success", text: `Campaign "${name.trim()}" sent.` }
-            : { variant: "warning", text: "Connect Brevo (BREVO_API_KEY) to enable outreach." }
-        );
       } else {
         setNotice({ variant: "success", text: `Campaign "${name.trim()}" created as a draft.` });
       }
@@ -174,10 +175,21 @@ export function BrevoCampaigns() {
             {busy ? <><Spinner size="sm" /> Working…</> : "Create draft"}
           </Button>
           <Button variant="accent" disabled={!canCreate} onClick={() => createAndSend(true)}>
-            <Send className="h-4 w-4" aria-hidden /> Create &amp; send
+            <Send className="h-4 w-4" aria-hidden /> Create &amp; review
           </Button>
         </div>
       </Card>
+
+      {pendingSend && (
+        <SendConfirmPanel
+          campaign={pendingSend}
+          onSent={() => {
+            setNotice({ variant: "success", text: `Campaign "${pendingSend.name}" sent.` });
+            setPendingSend(null);
+            loadCampaigns();
+          }}
+        />
+      )}
 
       <div className="space-y-2">
         <CardTitle className="text-base">Email campaigns</CardTitle>
