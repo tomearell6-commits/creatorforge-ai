@@ -20,17 +20,22 @@ function model(input: VideoGenInput): string {
   return input.imageUrl ? "fal-ai/kling-video/v1/standard/image-to-video" : "fal-ai/minimax/video-01";
 }
 
+/** fal.ai's key. Canonical name is FAL_KEY; FAL_API_KEY is accepted as an alias. */
+function falKey(): string | undefined {
+  return process.env.FAL_KEY || process.env.FAL_API_KEY;
+}
+
 export function isFalConfigured(): boolean {
-  return !!process.env.FAL_KEY;
+  return !!falKey();
 }
 
 function authHeader() {
-  return { Authorization: `Key ${process.env.FAL_KEY}`, "Content-Type": "application/json" };
+  return { Authorization: `Key ${falKey()}`, "Content-Type": "application/json" };
 }
 
 /** Submit a clip job; returns the queue handles to poll. `modelId` overrides the default. */
 export async function submitClip(input: VideoGenInput, modelId?: string): Promise<{ requestId: string; statusUrl: string; responseUrl: string; model: string }> {
-  if (!isFalConfigured()) throw new Error("FAL_KEY is not set");
+  if (!isFalConfigured()) throw new Error("FAL_KEY is not set (fal.ai video disabled)");
   const m = modelId || model(input);
   const body: Record<string, unknown> = { prompt: input.prompt };
   if (input.imageUrl) body.image_url = input.imageUrl;

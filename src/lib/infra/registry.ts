@@ -53,7 +53,7 @@ export const PROVIDERS: ProviderDef[] = [
     apiEndpoint: "https://api.shotstack.io", docsUrl: "https://shotstack.io/docs", supportUrl: "https://shotstack.io/support",
     renewalRequired: true, supportsUsageReporting: true, supportsBalanceReporting: false, supportsHealthChecks: true, supportsWebhooks: true,
     note: "Final MP4 render (timeline assembly)." },
-  { id: "fal", name: "fal.ai (Video)", category: "ai", envKeys: ["FAL_API_KEY"], authType: "api_key",
+  { id: "fal", name: "fal.ai (Video)", category: "ai", envKeys: ["FAL_KEY"], optionalEnvKeys: ["VIDEO_PROVIDER"], authType: "api_key",
     apiEndpoint: "https://queue.fal.run", docsUrl: "https://fal.ai/docs", supportUrl: "https://fal.ai/support",
     renewalRequired: false, supportsUsageReporting: true, supportsBalanceReporting: true, supportsHealthChecks: true, supportsWebhooks: false,
     note: "AI video footage (MiniMax / Kling / Veo 3)." },
