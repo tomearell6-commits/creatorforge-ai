@@ -12,7 +12,7 @@ import {
   Library, Server, CalendarDays, FolderKanban, PenLine, FileDown, Palette,
   Search, Globe, Bell, ListChecks, Rocket, History as HistoryIcon, Users, Wallet,
   CreditCard, KeyRound, Handshake, Gift, LifeBuoy, Crown, Settings, Hash, Type,
-  Mail, FileSearch,
+  Mail, FileSearch, Target,
 } from "lucide-react";
 
 export type StudioTool = { label: string; href: string; icon: typeof Video; tour?: string };
@@ -259,6 +259,19 @@ export const STUDIOS: Studio[] = [
           { label: "Billing & Subscription", href: "/dashboard/billing", icon: CreditCard },
           { label: "API Center", href: "/dashboard/api", icon: KeyRound },
           { label: "Settings", href: "/dashboard/settings", icon: Settings },
+        ],
+      },
+      {
+        heading: "Lead Generator",
+        tools: [
+          { label: "Lead Dashboard", href: "/dashboard/leads", icon: Target },
+          { label: "New Lead Search", href: "/dashboard/leads/search", icon: Search },
+          { label: "Lead Lists", href: "/dashboard/leads/lists", icon: ListChecks },
+          { label: "Email Verification", href: "/dashboard/leads/verification", icon: FileSearch },
+          { label: "Outreach Templates", href: "/dashboard/leads/templates", icon: FileText },
+          { label: "Brevo Campaigns", href: "/dashboard/leads/campaigns", icon: Mail },
+          { label: "Lead Reports", href: "/dashboard/leads/reports", icon: BarChart3 },
+          { label: "Lead Settings", href: "/dashboard/leads/settings", icon: Settings },
         ],
       },
       {
