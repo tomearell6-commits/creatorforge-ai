@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Site = { id: string; site_name: string; site_url: string; username: string; default_category: string | null; connection_status: string; last_connection_test: string | null };
 
@@ -11,7 +13,9 @@ export function WordPressSites() {
   const [sites, setSites] = useState<Site[]>([]);
   const [form, setForm] = useState({ siteName: "", siteUrl: "", username: "", appPassword: "", defaultCategory: "" });
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState<Site | null>(null);
 
   async function load() { const j = await (await fetch("/api/wordpress/sites")).json(); setSites(j.sites ?? []); }
   useEffect(() => { load(); }, []);
@@ -20,11 +24,28 @@ export function WordPressSites() {
     setBusy(true); setMsg(null);
     const res = await fetch("/api/wordpress/sites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     const j = await res.json();
-    if (!res.ok) setMsg(j.error || "Connection failed.");
-    else { setForm({ siteName: "", siteUrl: "", username: "", appPassword: "", defaultCategory: "" }); setMsg("Connected ✅"); await load(); }
+    if (!res.ok) setMsg({ kind: "error", text: j.error || "Connection failed." });
+    else { setForm({ siteName: "", siteUrl: "", username: "", appPassword: "", defaultCategory: "" }); setMsg({ kind: "success", text: "Connected." }); await load(); }
     setBusy(false);
   }
-  async function remove(id: string) { await fetch(`/api/wordpress/sites/${id}`, { method: "DELETE" }); await load(); }
+  async function remove(id: string) {
+    setRemoving(true); setMsg(null);
+    try {
+      const res = await fetch(`/api/wordpress/sites/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setMsg({ kind: "error", text: j.error || "Couldn't disconnect the site. Please try again." });
+        return;
+      }
+      setMsg({ kind: "success", text: "Site disconnected." });
+      await load();
+    } catch {
+      setMsg({ kind: "error", text: "Network error while disconnecting. Please try again." });
+    } finally {
+      setRemoving(false);
+      setConfirmRemove(null);
+    }
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -40,7 +61,7 @@ export function WordPressSites() {
         <div><Label htmlFor="wp-app-password">Application password</Label><Input id="wp-app-password" value={form.appPassword} onChange={(e) => setForm({ ...form, appPassword: e.target.value })} placeholder="xxxx xxxx xxxx xxxx" /></div>
         <div><Label htmlFor="wp-default-category">Default category (optional)</Label><Input id="wp-default-category" value={form.defaultCategory} onChange={(e) => setForm({ ...form, defaultCategory: e.target.value })} /></div>
         <Button disabled={busy} onClick={connect}>{busy ? "Verifying…" : "Connect & test"}</Button>
-        {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
+        {msg && <Alert variant={msg.kind}>{msg.text}</Alert>}
       </Card>
 
       <div className="space-y-3">
@@ -55,10 +76,20 @@ export function WordPressSites() {
                 <span className={`rounded-full px-2 py-0.5 ${s.connection_status === "connected" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>{s.connection_status}</span>
               </div>
             </div>
-            <button className="text-xs text-red-600 underline" onClick={() => remove(s.id)}>Disconnect</button>
+            <button className="text-xs text-red-600 underline" onClick={() => setConfirmRemove(s)}>Disconnect</button>
           </Card>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={confirmRemove !== null}
+        title="Disconnect site?"
+        description={confirmRemove ? `Disconnect ${confirmRemove.site_name}? Publishing to this site will stop until you reconnect it.` : undefined}
+        confirmLabel="Disconnect"
+        loading={removing}
+        onConfirm={() => { if (confirmRemove) remove(confirmRemove.id); }}
+        onCancel={() => setConfirmRemove(null)}
+      />
     </div>
   );
 }

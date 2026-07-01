@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { PLATFORMS } from "@/lib/constants";
 import { PlatformIcon } from "@/components/icons/PlatformIcon";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { SocialAccount, SocialPlatform } from "@/lib/types";
 
 function statusBadge(a: SocialAccount) {
@@ -32,6 +33,7 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
   const [wpOpen, setWpOpen] = useState(false);
   const [wp, setWp] = useState({ siteUrl: "", username: "", appPassword: "" });
   const [wpError, setWpError] = useState<string | null>(null);
+  const [confirmDisconnect, setConfirmDisconnect] = useState<SocialAccount | null>(null);
   const [banner, setBanner] = useState<{ kind: "ok" | "error"; text: string } | null>(
     connected
       ? { kind: "ok", text: `${prettyPlatform(connected)} connected successfully.` }
@@ -70,9 +72,21 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
 
   async function disconnect(id: string) {
     setBusy(id);
-    await fetch(`/api/social/${id}`, { method: "DELETE" });
-    await load();
-    setBusy(null);
+    try {
+      const res = await fetch(`/api/social/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setBanner({ kind: "error", text: j.error ?? "Couldn't disconnect the account. Please try again." });
+        return;
+      }
+      setBanner({ kind: "ok", text: "Account disconnected." });
+      await load();
+    } catch {
+      setBanner({ kind: "error", text: "Network error while disconnecting. Please try again." });
+    } finally {
+      setBusy(null);
+      setConfirmDisconnect(null);
+    }
   }
 
   async function connectWordPress() {
@@ -145,7 +159,7 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
                     <Button size="sm" variant="outline" disabled={busy === acc.id} onClick={() => refresh(acc.id)}>
                       Refresh
                     </Button>
-                    <Button size="sm" variant="ghost" disabled={busy === acc.id} onClick={() => disconnect(acc.id)}>
+                    <Button size="sm" variant="ghost" disabled={busy === acc.id} onClick={() => setConfirmDisconnect(acc)}>
                       Disconnect
                     </Button>
                   </>
@@ -179,6 +193,16 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
         })}
       </div>
       {loading && <p className="text-sm text-muted-foreground">Loading accounts…</p>}
+
+      <ConfirmDialog
+        open={confirmDisconnect !== null}
+        title="Disconnect account?"
+        description={confirmDisconnect ? `Disconnect ${prettyPlatform(confirmDisconnect.platform)}? You'll need to reconnect it before you can publish or schedule again.` : undefined}
+        confirmLabel="Disconnect"
+        loading={busy === confirmDisconnect?.id}
+        onConfirm={() => { if (confirmDisconnect) disconnect(confirmDisconnect.id); }}
+        onCancel={() => setConfirmDisconnect(null)}
+      />
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { AUTOMATION_TRIGGERS, AUTOMATION_ACTIONS } from "@/lib/constants";
 import type { AutomationRule } from "@/lib/types";
 
@@ -14,6 +16,9 @@ export function AutomationRules() {
   const [trigger, setTrigger] = useState(AUTOMATION_TRIGGERS[0].value);
   const [action, setAction] = useState(AUTOMATION_ACTIONS[0].value);
   const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<AutomationRule | null>(null);
 
   async function load() {
     const res = await fetch("/api/automation");
@@ -43,14 +48,29 @@ export function AutomationRules() {
   }
 
   async function remove(id: string) {
-    await fetch(`/api/automation/${id}`, { method: "DELETE" });
-    await load();
+    setRemoving(true); setMsg(null);
+    try {
+      const res = await fetch(`/api/automation/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setMsg({ kind: "error", text: j.error || "Couldn't delete the rule. Please try again." });
+        return;
+      }
+      setMsg({ kind: "success", text: "Rule deleted." });
+      await load();
+    } catch {
+      setMsg({ kind: "error", text: "Network error while deleting. Please try again." });
+    } finally {
+      setRemoving(false);
+      setConfirmDelete(null);
+    }
   }
 
   const label = (arr: readonly { value: string; label: string }[], v: string) => arr.find((x) => x.value === v)?.label ?? v;
 
   return (
     <div className="space-y-6">
+      {msg && <Alert variant={msg.kind}>{msg.text}</Alert>}
       <Card className="space-y-3">
         <h3 className="font-semibold">New rule</h3>
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Rule name (e.g. Auto-notify on render)" />
@@ -87,11 +107,21 @@ export function AutomationRules() {
               <button onClick={() => toggle(r)} className="cursor-pointer">
                 <Badge variant={r.enabled ? "success" : "danger"}>{r.enabled ? "Enabled" : "Disabled"}</Badge>
               </button>
-              <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => remove(r.id)}>Delete</button>
+              <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setConfirmDelete(r)}>Delete</button>
             </div>
           </Card>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        title="Delete rule?"
+        description={confirmDelete ? `Delete "${confirmDelete.name}"? This automation rule will stop running and can't be recovered.` : undefined}
+        confirmLabel="Delete"
+        loading={removing}
+        onConfirm={() => { if (confirmDelete) remove(confirmDelete.id); }}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

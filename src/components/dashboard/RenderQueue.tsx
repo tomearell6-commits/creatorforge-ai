@@ -6,6 +6,7 @@ import { Play, RotateCcw, Server, Download } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { cn, formatDate } from "@/lib/utils";
 import { RENDER_TIERS } from "@/lib/constants";
 import type { RenderJob } from "@/lib/types";
@@ -143,17 +144,16 @@ export function RenderQueue({
       </div>
 
       {error && (
-        <p className="text-sm text-red-500">
+        <Alert
+          variant="error"
+          action={needsUpgrade ? (
+            <Link href="/dashboard/billing" className="font-medium text-brand-600 underline">
+              View plans
+            </Link>
+          ) : undefined}
+        >
           {error}
-          {needsUpgrade && (
-            <>
-              {" "}
-              <Link href="/dashboard/billing" className="font-medium text-brand-600 underline">
-                View plans
-              </Link>
-            </>
-          )}
-        </p>
+        </Alert>
       )}
 
       {jobs.length === 0 ? (

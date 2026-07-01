@@ -16,6 +16,7 @@ import {
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 import { cn } from "@/lib/utils";
 import type { Scene, Subtitle } from "@/lib/types";
 
@@ -128,7 +129,7 @@ export function SceneBuilder({
           Generate and save a script to this project first, then build scenes.
         </p>
       )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <Alert variant="error">{error}</Alert>}
 
       {/* Timeline */}
       {scenes.length > 0 && (

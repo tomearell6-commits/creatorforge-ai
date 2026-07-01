@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { Input, Label } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { SUPPORTED_CRYPTO, MIN_PURCHASE_USD, MAX_PURCHASE_USD } from "@/lib/constants";
 
 type Pkg = { slug: string; name: string; usdPrice: number; credits: number; bonus: number; tag?: string };
@@ -84,7 +85,7 @@ export function WalletClient() {
 
       {active && <CheckoutPanel active={active} coin={coin} onClose={() => { setActive(null); refresh(); loadTxns(); }} />}
 
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {err && <Alert variant="error">{err}</Alert>}
 
       {/* Coin selector */}
       <Card className="space-y-3">
@@ -132,15 +133,15 @@ export function WalletClient() {
         <h2 className="text-lg font-semibold">Recent Transactions</h2>
         <Card className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm">
+            <select aria-label="Filter transactions by status" value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm">
               <option value="">All statuses</option>
               {["pending", "confirming", "completed", "failed", "refunded"].map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select value={fMonth} onChange={(e) => setFMonth(e.target.value)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm">
+            <select aria-label="Filter transactions by month" value={fMonth} onChange={(e) => setFMonth(e.target.value)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm">
               <option value="">All months</option>
               {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString("en", { month: "long" })}</option>)}
             </select>
-            <Input value={fYear} onChange={(e) => setFYear(e.target.value)} className="h-9 w-24" placeholder="Year" />
+            <Input aria-label="Filter transactions by year" value={fYear} onChange={(e) => setFYear(e.target.value)} className="h-9 w-24" placeholder="Year" />
           </div>
 
           {txns.length === 0 ? (
@@ -342,7 +343,7 @@ function AutoTopup({ packages }: { packages: Pkg[] }) {
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={save}>Save auto top-up</Button>
-          {saved && <span className="text-sm text-brand-700">Saved ✓</span>}
+          {saved && <Alert variant="success">Saved.</Alert>}
         </div>
         <p className="text-xs text-muted-foreground">
           Auto top-up creates a crypto payment request when your balance drops below the threshold. With confirmation required, you approve each charge.

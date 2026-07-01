@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Label, Textarea } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SEO_ARTICLE_TYPES, SEO_SEARCH_INTENTS, SEO_WORD_COUNTS, SEO_CREDIT_COSTS } from "@/lib/constants";
 
 const sel = "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
@@ -29,8 +31,9 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
   const [siteId, setSiteId] = useState("");
   const [mode, setMode] = useState<"draft" | "now" | "schedule">("draft");
   const [scheduledAt, setScheduledAt] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ kind: "info" | "success" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmPublish, setConfirmPublish] = useState(false);
 
   useEffect(() => {
     fetch("/api/wordpress/sites").then((r) => r.json()).then((j) => { setSites(j.sites ?? []); if (j.sites?.[0]) setSiteId(j.sites[0].id); });
@@ -43,15 +46,15 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
   }, [initialArticleId]);
 
   async function generate() {
-    if (!form.mainKeyword.trim()) { setMsg("Enter a main keyword."); return; }
+    if (!form.mainKeyword.trim()) { setMsg({ kind: "error", text: "Enter a main keyword." }); return; }
     setGenerating(true); setMsg(null);
     const res = await fetch("/api/seo/generate-article", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, secondaryKeywords: form.secondaryKeywords.split(",").map((s) => s.trim()).filter(Boolean) }),
     });
     const j = await res.json();
-    if (!res.ok) setMsg(j.error || "Generation failed.");
-    else { setArticle(j.article); setMsg(j.usedAI ? "Generated with AI." : "Generated (placeholder — set ANTHROPIC_API_KEY for real AI)."); }
+    if (!res.ok) setMsg({ kind: "error", text: j.error || "Generation failed." });
+    else { setArticle(j.article); setMsg({ kind: "success", text: j.usedAI ? "Generated with AI." : "Generated (placeholder — set ANTHROPIC_API_KEY for real AI)." }); }
     setGenerating(false);
   }
 
@@ -69,14 +72,19 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
         article_content: article.article_content, excerpt: article.excerpt, tags: article.tags, category: article.category,
       }),
     });
-    setMsg("Saved.");
+    setMsg({ kind: "success", text: "Saved." });
     setBusy(false);
+  }
+
+  function requestPublish() {
+    if (!article) return;
+    if (!siteId) { setMsg({ kind: "error", text: "Connect a WordPress site first (SEO Studio → WordPress Sites)." }); return; }
+    if (mode === "schedule" && !scheduledAt) { setMsg({ kind: "error", text: "Pick a date/time." }); return; }
+    setConfirmPublish(true);
   }
 
   async function publish() {
     if (!article) return;
-    if (!siteId) { setMsg("Connect a WordPress site first (SEO Studio → WordPress Sites)."); return; }
-    if (mode === "schedule" && !scheduledAt) { setMsg("Pick a date/time."); return; }
     setBusy(true); setMsg(null);
     await save();
     const res = await fetch("/api/wordpress/publish", {
@@ -84,8 +92,10 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
       body: JSON.stringify({ articleId: article.id, siteId, mode, scheduledAt: mode === "schedule" ? new Date(scheduledAt).toISOString() : null }),
     });
     const j = await res.json();
-    setMsg(res.ok ? (mode === "now" ? `Published! ${j.url}` : mode === "schedule" ? "Scheduled on WordPress." : "Saved as WordPress draft.") : j.error || "Publish failed.");
+    if (res.ok) setMsg({ kind: "success", text: mode === "now" ? `Published! ${j.url}` : mode === "schedule" ? "Scheduled on WordPress." : "Saved as WordPress draft." });
+    else setMsg({ kind: "error", text: j.error || "Publish failed." });
     setBusy(false);
+    setConfirmPublish(false);
   }
 
   // ----- Step 1: input form -----
@@ -109,7 +119,7 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
           <Button disabled={generating} onClick={generate}>{generating ? "Generating full SEO package…" : "Generate SEO article"}</Button>
           <span className="text-xs text-muted-foreground">≈ {SEO_CREDIT_COSTS.article} credits (real AI) · free with placeholder</span>
         </div>
-        {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
+        {msg && <Alert variant={msg.kind}>{msg.text}</Alert>}
       </Card>
     );
   }
@@ -161,7 +171,7 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
               </Button>
             </div>
           ) : (
-            <select className={sel} value={siteId} onChange={(e) => setSiteId(e.target.value)}>
+            <select aria-label="WordPress site" className={sel} value={siteId} onChange={(e) => setSiteId(e.target.value)}>
               {sites.map((s) => <option key={s.id} value={s.id}>{s.site_name}</option>)}
             </select>
           )}
@@ -170,14 +180,31 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
               <button key={m} onClick={() => setMode(m)} className={`flex-1 rounded-lg border px-2 py-1.5 text-sm capitalize ${mode === m ? "border-brand-600 bg-brand-50 dark:bg-brand-900/20" : "border-border"}`}>{m === "now" ? "Publish" : m}</button>
             ))}
           </div>
-          {mode === "schedule" && <input type="datetime-local" className={sel} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />}
+          {mode === "schedule" && <input aria-label="Scheduled publish date and time" type="datetime-local" className={sel} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />}
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" disabled={busy} onClick={save}>Save draft</Button>
-            <Button className="flex-1" disabled={busy} onClick={publish}>{busy ? "Working…" : mode === "now" ? "Publish" : mode === "schedule" ? "Schedule" : "Send draft"}</Button>
+            <Button className="flex-1" disabled={busy} onClick={requestPublish}>{busy ? "Working…" : mode === "now" ? "Publish" : mode === "schedule" ? "Schedule" : "Send draft"}</Button>
           </div>
-          {msg && <p className="break-all text-xs text-muted-foreground">{msg}</p>}
+          {msg && <Alert variant={msg.kind} className="break-all">{msg.text}</Alert>}
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={confirmPublish}
+        danger={false}
+        title={mode === "now" ? "Publish to WordPress?" : mode === "schedule" ? "Schedule on WordPress?" : "Send draft to WordPress?"}
+        description={
+          mode === "now"
+            ? `Publish "${article.seo_title}" live to ${sites.find((s) => s.id === siteId)?.site_name ?? "your site"} now?`
+            : mode === "schedule"
+              ? `Schedule "${article.seo_title}" on ${sites.find((s) => s.id === siteId)?.site_name ?? "your site"} for ${scheduledAt}?`
+              : `Send "${article.seo_title}" as a draft to ${sites.find((s) => s.id === siteId)?.site_name ?? "your site"}?`
+        }
+        confirmLabel={mode === "now" ? "Publish" : mode === "schedule" ? "Schedule" : "Send draft"}
+        loading={busy}
+        onConfirm={publish}
+        onCancel={() => setConfirmPublish(false)}
+      />
     </div>
   );
 }

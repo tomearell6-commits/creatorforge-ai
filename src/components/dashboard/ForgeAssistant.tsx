@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, X, Minus, Send, Coins, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
+import { Alert } from "@/components/ui/Alert";
 
 type Msg = { id?: string; role: "user" | "assistant"; content: string; cost?: number; failed?: boolean };
 
@@ -149,8 +150,8 @@ export function ForgeAssistant() {
                   {m.content}
                   {m.role === "assistant" && !m.failed && i === messages.length - 1 && i > 0 && (
                     <div className="mt-1.5 flex items-center gap-2 text-muted-foreground">
-                      <button onClick={() => feedback("up")} title="Helpful"><ThumbsUp className="h-3.5 w-3.5 hover:text-brand-600" /></button>
-                      <button onClick={() => feedback("down")} title="Not helpful"><ThumbsDown className="h-3.5 w-3.5 hover:text-red-500" /></button>
+                      <button onClick={() => feedback("up")} title="Helpful" aria-label="Mark this answer helpful"><ThumbsUp className="h-3.5 w-3.5 hover:text-brand-600" /></button>
+                      <button onClick={() => feedback("down")} title="Not helpful" aria-label="Mark this answer not helpful"><ThumbsDown className="h-3.5 w-3.5 hover:text-red-500" /></button>
                       {m.cost ? <span className="ml-auto text-[11px]">{m.cost} credit{m.cost === 1 ? "" : "s"}</span> : null}
                     </div>
                   )}
@@ -194,21 +195,26 @@ export function ForgeAssistant() {
 
           {/* Need credits state */}
           {(needCredits || noCreditsLeft) && (
-            <div className="border-t border-border bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <Alert
+              variant="warning"
+              className="rounded-none border-t border-border"
+              action={<Link href="/dashboard/credits" className="inline-block rounded-md bg-brand-300 px-2 py-1 text-xs font-semibold text-brand-900">Top Up Credits</Link>}
+            >
               You need more credits to continue chatting with Forge AI Assistant.
-              <Link href="/dashboard/credits" className="ml-2 inline-block rounded-md bg-brand-300 px-2 py-1 font-semibold text-brand-900">Top Up Credits</Link>
-            </div>
+            </Alert>
           )}
 
           {/* Input */}
           <div className="flex items-center gap-2 border-t border-border bg-card p-2">
             <input
+              aria-label="Ask Forge AI Assistant"
               value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send(input))}
               placeholder="Ask Forge AI…" disabled={busy || needCredits || !!noCreditsLeft}
               className="h-10 flex-1 rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-60"
             />
             <button onClick={() => send(input)} disabled={busy || !input.trim() || needCredits || !!noCreditsLeft}
+              aria-label="Send message"
               className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-50">
               <Send className="h-4 w-4" />
             </button>

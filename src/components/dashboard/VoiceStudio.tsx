@@ -6,6 +6,7 @@ import { Play, Mic, Download } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Label, Textarea } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 import { VOICES, LANGUAGES, ACCENTS } from "@/lib/media/voices";
 import { formatDate } from "@/lib/utils";
 import type { Voiceover } from "@/lib/types";
@@ -130,7 +131,7 @@ export function VoiceStudio({
           <Textarea id="text" rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste or edit the narration to voice…" />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <Alert variant="error">{error}</Alert>}
 
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" onClick={preview} disabled={busy !== null}>

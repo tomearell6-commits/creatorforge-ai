@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { AffiliateAccount, AffiliateCommission } from "@/lib/types";
 
 const AFFILIATE_STATUS_VARIANT = {
@@ -23,6 +25,9 @@ export function AffiliateCenter() {
   const [d, setD] = useState<Data | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [payoutBusy, setPayoutBusy] = useState(false);
+  const [confirmPayout, setConfirmPayout] = useState(false);
 
   async function load() { setD(await (await fetch("/api/affiliate")).json()); }
   useEffect(() => { load(); }, []);
@@ -34,8 +39,22 @@ export function AffiliateCenter() {
     setBusy(false);
   }
   async function payout() {
-    await fetch("/api/affiliate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "payout", payoutMethod: "paypal" }) });
-    alert("Payout request recorded — our team will process it.");
+    setPayoutBusy(true); setMsg(null);
+    try {
+      const res = await fetch("/api/affiliate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "payout", payoutMethod: "paypal" }) });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setMsg({ kind: "error", text: j.error || "Couldn't request the payout. Please try again." });
+        return;
+      }
+      setMsg({ kind: "success", text: "Payout request recorded — our team will process it." });
+      await load();
+    } catch {
+      setMsg({ kind: "error", text: "Network error while requesting the payout. Please try again." });
+    } finally {
+      setPayoutBusy(false);
+      setConfirmPayout(false);
+    }
   }
 
   if (!d) return <p className="text-sm text-muted-foreground">Loading…</p>;
@@ -53,6 +72,7 @@ export function AffiliateCenter() {
   const r = d.report!;
   return (
     <div className="space-y-6">
+      {msg && <Alert variant={msg.kind}>{msg.text}</Alert>}
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Affiliate link</h3>
@@ -74,7 +94,7 @@ export function AffiliateCenter() {
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Payouts</h3>
-          <Button size="sm" variant="outline" onClick={payout}>Request payout</Button>
+          <Button size="sm" variant="outline" disabled={payoutBusy} onClick={() => setConfirmPayout(true)}>Request payout</Button>
         </div>
         <p className="text-xs text-muted-foreground">Payout processing is handled by our team (architecture in place; manual approval for now).</p>
       </Card>
@@ -87,6 +107,17 @@ export function AffiliateCenter() {
           <li>Product screenshots and demo videos</li>
         </ul>
       </Card>
+
+      <ConfirmDialog
+        open={confirmPayout}
+        danger={false}
+        title="Request payout?"
+        description={`Request a payout of your current balance of $${r.balance.toFixed(2)} via PayPal? Our team will review and process it.`}
+        confirmLabel="Request payout"
+        loading={payoutBusy}
+        onConfirm={payout}
+        onCancel={() => setConfirmPayout(false)}
+      />
     </div>
   );
 }

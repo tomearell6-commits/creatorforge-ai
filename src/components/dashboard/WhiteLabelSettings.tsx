@@ -28,27 +28,27 @@ export function WhiteLabelSettings() {
       <Card className="space-y-4">
         <h3 className="font-semibold">Branding</h3>
         <div>
-          <label className="text-sm font-medium">Brand name</label>
-          <Input value={c.brandName} onChange={(e) => setC({ ...c, brandName: e.target.value })} />
+          <label htmlFor="wl-brand-name" className="text-sm font-medium">Brand name</label>
+          <Input id="wl-brand-name" value={c.brandName} onChange={(e) => setC({ ...c, brandName: e.target.value })} />
         </div>
         <div>
-          <label className="text-sm font-medium">Brand color</label>
+          <label htmlFor="wl-brand-color" className="text-sm font-medium">Brand color</label>
           <div className="flex items-center gap-2">
-            <input type="color" value={c.brandColor} onChange={(e) => setC({ ...c, brandColor: e.target.value })} className="h-10 w-14 rounded border border-border" />
-            <Input value={c.brandColor} onChange={(e) => setC({ ...c, brandColor: e.target.value })} />
+            <input id="wl-brand-color-picker" aria-label="Brand color picker" type="color" value={c.brandColor} onChange={(e) => setC({ ...c, brandColor: e.target.value })} className="h-10 w-14 rounded border border-border" />
+            <Input id="wl-brand-color" value={c.brandColor} onChange={(e) => setC({ ...c, brandColor: e.target.value })} />
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium">Logo URL</label>
-          <Input value={c.logoUrl ?? ""} onChange={(e) => setC({ ...c, logoUrl: e.target.value || null })} placeholder="https://…/logo.png" />
+          <label htmlFor="wl-logo-url" className="text-sm font-medium">Logo URL</label>
+          <Input id="wl-logo-url" value={c.logoUrl ?? ""} onChange={(e) => setC({ ...c, logoUrl: e.target.value || null })} placeholder="https://…/logo.png" />
         </div>
         <div>
-          <label className="text-sm font-medium">Custom domain</label>
-          <Input value={c.customDomain ?? ""} onChange={(e) => setC({ ...c, customDomain: e.target.value || null })} placeholder="app.youragency.com" />
+          <label htmlFor="wl-custom-domain" className="text-sm font-medium">Custom domain</label>
+          <Input id="wl-custom-domain" value={c.customDomain ?? ""} onChange={(e) => setC({ ...c, customDomain: e.target.value || null })} placeholder="app.youragency.com" />
         </div>
         <div>
-          <label className="text-sm font-medium">Email sender</label>
-          <Input value={c.emailFrom ?? ""} onChange={(e) => setC({ ...c, emailFrom: e.target.value || null })} placeholder="noreply@youragency.com" />
+          <label htmlFor="wl-email-sender" className="text-sm font-medium">Email sender</label>
+          <Input id="wl-email-sender" value={c.emailFrom ?? ""} onChange={(e) => setC({ ...c, emailFrom: e.target.value || null })} placeholder="noreply@youragency.com" />
         </div>
         <Button disabled={busy} onClick={save}>{busy ? "Saving…" : "Save branding"}</Button>
         {msg && <p className="text-sm text-muted-foreground">{msg}</p>}

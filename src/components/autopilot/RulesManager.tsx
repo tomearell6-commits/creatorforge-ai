@@ -52,7 +52,7 @@ export function RulesManager() {
           <div><p className="font-medium">{r.name}</p><p className="text-xs capitalize text-muted-foreground">{r.rule_type.replace(/_/g, " ")}</p></div>
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-1.5 text-sm"><input type="checkbox" checked={r.enabled} onChange={() => toggle(r)} /> Enabled</label>
-            <Button size="sm" variant="ghost" className="text-red-600" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button>
+            <Button size="sm" variant="ghost" aria-label="Delete rule" className="text-red-600" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button>
           </div>
         </Card>
       ))}

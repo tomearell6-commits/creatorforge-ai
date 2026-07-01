@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CATEGORIES, PLATFORMS, VISIBILITY_OPTIONS } from "@/lib/constants";
 import { PlatformIcon } from "@/components/icons/PlatformIcon";
 import type { PublishJob, PublishMode, SocialAccount, SocialPlatform, Visibility } from "@/lib/types";
@@ -35,7 +37,8 @@ export function PublishComposer() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [optimizing, setOptimizing] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ kind: "info" | "success" | "error"; text: string } | null>(null);
+  const [confirmPublish, setConfirmPublish] = useState(false);
 
   async function loadAll() {
     const [a, s, j] = await Promise.all([
@@ -57,7 +60,7 @@ export function PublishComposer() {
   }
 
   async function runOptimize() {
-    if (!title.trim()) { setMsg("Add a title first to optimize."); return; }
+    if (!title.trim()) { setMsg({ kind: "error", text: "Add a title first to optimize." }); return; }
     setOptimizing(true);
     const res = await fetch("/api/optimize", {
       method: "POST",
@@ -68,14 +71,19 @@ export function PublishComposer() {
     if (o.seoTitle) setTitle(o.seoTitle);
     if (o.description) setDescription(o.description);
     if (o.hashtags) setHashtags(o.hashtags.join(" "));
-    setMsg(o.usedAI ? "Optimized with AI." : "Optimized (placeholder).");
+    setMsg({ kind: "success", text: o.usedAI ? "Optimized with AI." : "Optimized (placeholder)." });
     setOptimizing(false);
   }
 
+  function requestSubmit() {
+    if (!title.trim()) { setMsg({ kind: "error", text: "Title is required." }); return; }
+    if (platforms.length === 0) { setMsg({ kind: "error", text: "Select at least one platform." }); return; }
+    if (mode === "schedule" && !scheduledAt) { setMsg({ kind: "error", text: "Pick a date & time." }); return; }
+    if (mode === "now") { setConfirmPublish(true); return; }
+    submit();
+  }
+
   async function submit() {
-    if (!title.trim()) { setMsg("Title is required."); return; }
-    if (platforms.length === 0) { setMsg("Select at least one platform."); return; }
-    if (mode === "schedule" && !scheduledAt) { setMsg("Pick a date & time."); return; }
     setBusy(true); setMsg(null);
     const video = videos.find((v) => v.id === assetId);
     const res = await fetch("/api/publish", {
@@ -89,9 +97,10 @@ export function PublishComposer() {
       }),
     });
     const json = await res.json();
-    if (!res.ok) setMsg(json.error ?? "Failed");
-    else { setMsg(mode === "now" ? "Published!" : mode === "schedule" ? "Scheduled!" : "Saved as draft."); await loadAll(); }
+    if (!res.ok) setMsg({ kind: "error", text: json.error ?? "Failed" });
+    else { setMsg({ kind: "success", text: mode === "now" ? "Published!" : mode === "schedule" ? "Scheduled!" : "Saved as draft." }); await loadAll(); }
     setBusy(false);
+    setConfirmPublish(false);
   }
 
   async function retry(id: string) {
@@ -107,13 +116,13 @@ export function PublishComposer() {
       <div className="space-y-4 lg:col-span-2">
         <Card className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Rendered video</label>
+            <label htmlFor="pc-rendered-video" className="text-sm font-medium">Rendered video</label>
             {videos.length === 0 ? (
               <p className="mt-1 text-sm text-muted-foreground">
                 No rendered videos yet. <Link className="text-brand-600 underline" href="/dashboard/render">Render one first.</Link>
               </p>
             ) : (
-              <select className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              <select id="pc-rendered-video" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 value={assetId} onChange={(e) => setAssetId(e.target.value)}>
                 {videos.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
@@ -141,43 +150,43 @@ export function PublishComposer() {
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <label className="text-sm font-medium">Title</label>
+            <label htmlFor="pc-title" className="text-sm font-medium">Title</label>
             <Button size="sm" variant="outline" disabled={optimizing} onClick={runOptimize}>
               {optimizing ? "Optimizing…" : "✨ AI optimize"}
             </Button>
           </div>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Video title" />
+          <Input id="pc-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Video title" />
 
           <div>
-            <label className="text-sm font-medium">Description</label>
-            <textarea className="mt-1 h-28 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            <label htmlFor="pc-description" className="text-sm font-medium">Description</label>
+            <textarea id="pc-description" className="mt-1 h-28 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Hashtags</label>
-            <Input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="#viral #ai #content" />
+            <label htmlFor="pc-hashtags" className="text-sm font-medium">Hashtags</label>
+            <Input id="pc-hashtags" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="#viral #ai #content" />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-medium">Thumbnail URL</label>
-              <Input value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://…" />
+              <label htmlFor="pc-thumbnail-url" className="text-sm font-medium">Thumbnail URL</label>
+              <Input id="pc-thumbnail-url" value={thumbnailUrl} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://…" />
             </div>
             <div>
-              <label className="text-sm font-medium">Playlist (YouTube)</label>
-              <Input value={playlist} onChange={(e) => setPlaylist(e.target.value)} placeholder="Optional" />
+              <label htmlFor="pc-playlist" className="text-sm font-medium">Playlist (YouTube)</label>
+              <Input id="pc-playlist" value={playlist} onChange={(e) => setPlaylist(e.target.value)} placeholder="Optional" />
             </div>
             <div>
-              <label className="text-sm font-medium">Category</label>
-              <select className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              <label htmlFor="pc-category" className="text-sm font-medium">Category</label>
+              <select id="pc-category" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 value={category} onChange={(e) => setCategory(e.target.value)}>
                 {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium">Visibility</label>
-              <select className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              <label htmlFor="pc-visibility" className="text-sm font-medium">Visibility</label>
+              <select id="pc-visibility" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 value={visibility} onChange={(e) => setVisibility(e.target.value as Visibility)}>
                 {VISIBILITY_OPTIONS.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
               </select>
@@ -198,13 +207,13 @@ export function PublishComposer() {
             ))}
           </div>
           {mode === "schedule" && (
-            <input type="datetime-local" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            <input aria-label="Scheduled publish date and time" type="datetime-local" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
           )}
-          <Button className="w-full" disabled={busy} onClick={submit}>
+          <Button className="w-full" disabled={busy} onClick={requestSubmit}>
             {busy ? "Working…" : mode === "now" ? "Publish now" : mode === "schedule" ? "Schedule" : "Save draft"}
           </Button>
-          {msg && <p className="text-sm text-muted-foreground">{msg}</p>}
+          {msg && <Alert variant={msg.kind}>{msg.text}</Alert>}
         </Card>
 
         <Card>
@@ -225,6 +234,17 @@ export function PublishComposer() {
           </div>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={confirmPublish}
+        danger={false}
+        title="Publish now?"
+        description={`Publish "${title}" to ${platforms.length} platform${platforms.length === 1 ? "" : "s"} (${platforms.join(", ")}) right now?`}
+        confirmLabel="Publish now"
+        loading={busy}
+        onConfirm={submit}
+        onCancel={() => setConfirmPublish(false)}
+      />
     </div>
   );
 }
