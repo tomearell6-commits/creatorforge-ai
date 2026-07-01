@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { planCredits } from "@/lib/constants";
 import { creditWalletAdmin, notifyWallet } from "@/lib/credits/wallet";
 import { captureError } from "@/lib/logger";
+import { notify, clearCreditDedup } from "@/lib/notifications/service";
+import { topupSuccessEmail } from "@/lib/email/templates";
 
 /**
  * Crypto IPN webhook. Verifies the signature via the configured provider, then:
@@ -102,6 +104,17 @@ async function completeTopup(
 
     await notifyWallet(admin, purchase.user_id, "credits_added",
       "Credits added 🎉", `${purchase.credits.toLocaleString()} credits were added to your wallet.`);
+
+    // Bell + email via the notification system; refresh credit-alert dedup so a
+    // later drop can re-alert this cycle.
+    let email: string | null = null;
+    try { const { data } = await admin.auth.admin.getUserById(purchase.user_id); email = data.user?.email ?? null; } catch { /* ignore */ }
+    await notify(admin, {
+      userId: purchase.user_id, email, type: "topup_success", category: "credit",
+      title: "Credit top-up successful", message: `${purchase.credits.toLocaleString()} credits were added to your wallet.`,
+      ctaLabel: "Open Credit Wallet", ctaUrl: "/dashboard/credits", mail: topupSuccessEmail(purchase.credits),
+    });
+    await clearCreditDedup(admin, purchase.user_id, new Date().toISOString().slice(0, 10)).catch(() => {});
   } catch (e) {
     captureError(e, { category: "payment", stage: "topup_complete" });
     return NextResponse.json({ error: "Handler error" }, { status: 500 });

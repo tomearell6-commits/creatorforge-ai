@@ -228,7 +228,11 @@ export type AnalyticsEvent = {
 
 export type NotificationType =
   | "render_complete" | "publish_success" | "publish_failed"
-  | "credits_low" | "subscription_renewed" | "storage_full";
+  | "credits_low" | "subscription_renewed" | "storage_full"
+  // Credit & subscription notification system
+  | "credits_critical" | "credits_exhausted"
+  | "subscription_reminder" | "payment_failed" | "subscription_expired"
+  | "subscription_cancelled" | "topup_success";
 
 export type Notification = {
   id: string;
@@ -238,6 +242,10 @@ export type Notification = {
   body: string | null;
   link: string | null;
   read: boolean;
+  status?: string | null;
+  cta_label?: string | null;
+  cta_url?: string | null;
+  read_at?: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
 };

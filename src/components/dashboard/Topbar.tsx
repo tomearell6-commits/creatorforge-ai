@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./SignOutButton";
 import { CreditBadge } from "./CreditBadge";
+import { NotificationBell } from "./NotificationBell";
 import { MobileNav } from "./MobileNav";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -28,6 +29,7 @@ export async function Topbar() {
       <div className="flex items-center gap-3">
         <MobileNav />
         <CreditBadge credits={credits} plan={plan} />
+        <NotificationBell />
       </div>
       <div className="flex items-center gap-3">
         <span className="hidden text-sm text-muted-foreground sm:inline">{user?.email}</span>

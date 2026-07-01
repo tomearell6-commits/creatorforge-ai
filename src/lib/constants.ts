@@ -264,7 +264,7 @@ export const ROLE_CAN: Record<WorkspaceRole, { manageMembers: boolean; publish: 
   viewer: { manageMembers: false, publish: false, edit: false },
 };
 
-export const NOTIFICATION_META: Record<NotificationType, { emoji: string; label: string }> = {
+export const NOTIFICATION_META: Partial<Record<NotificationType, { emoji: string; label: string }>> = {
   render_complete:      { emoji: "🎬", label: "Render complete" },
   publish_success:      { emoji: "✅", label: "Published" },
   publish_failed:       { emoji: "⚠️", label: "Publish failed" },
@@ -298,6 +298,7 @@ export const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
+  { href: "/admin/notifications", label: "Notifications" },
   { href: "/admin/wallet", label: "Credit Wallet" },
   { href: "/admin/assistant", label: "AI Assistant" },
   { href: "/admin/seo-audit", label: "SEO Audit" },

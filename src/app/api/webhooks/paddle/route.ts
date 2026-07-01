@@ -3,6 +3,12 @@ import { verifyPaddleWebhook, priceToPlan } from "@/lib/payments/paddle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planCredits } from "@/lib/constants";
 import { captureError } from "@/lib/logger";
+import { notify, clearCreditDedup } from "@/lib/notifications/service";
+import { subscriptionRenewedEmail, paymentFailedEmail, subscriptionExpiredEmail } from "@/lib/email/templates";
+
+async function emailFor(admin: ReturnType<typeof createAdminClient>, userId: string): Promise<string | null> {
+  try { const { data } = await admin.auth.admin.getUserById(userId); return data.user?.email ?? null; } catch { return null; }
+}
 
 /**
  * Paddle Billing webhook. Verifies the signature, then on the relevant events
@@ -81,6 +87,22 @@ export async function POST(request: Request) {
         currency: (data.currency_code as string) ?? "USD",
         status: "completed",
       });
+
+      // Notify: subscription renewed + refresh credit-alert dedup for the new cycle.
+      const email = await emailFor(admin, userId);
+      await notify(admin, {
+        userId, email, type: "subscription_renewed", category: "subscription",
+        title: "Subscription renewed", message: `Your ${plan} plan renewed and your monthly credits were refreshed.`,
+        ctaLabel: "Open Dashboard", ctaUrl: "/dashboard", mail: subscriptionRenewedEmail(plan),
+      });
+      await clearCreditDedup(admin, userId, new Date().toISOString().slice(0, 10)).catch(() => {});
+    } else if (type === "transaction.payment_failed" && userId) {
+      const email = await emailFor(admin, userId);
+      await notify(admin, {
+        userId, email, type: "payment_failed", category: "payment",
+        title: "Payment failed", message: `We couldn't process your payment for the ${plan ?? "current"} plan. Please update your payment method.`,
+        ctaLabel: "Update Payment", ctaUrl: "/dashboard/billing", mail: paymentFailedEmail(plan ?? "your"),
+      });
     } else if (
       (type === "subscription.created" ||
         type === "subscription.updated" ||
@@ -111,6 +133,13 @@ export async function POST(request: Request) {
       const subId = String(data.id ?? "");
       await admin.from("subscriptions").update({ status: "canceled" }).eq("provider_sub_id", subId);
       await admin.from("profiles").update({ plan: "free" }).eq("user_id", userId);
+
+      const email = await emailFor(admin, userId);
+      await notify(admin, {
+        userId, email, type: "subscription_cancelled", category: "subscription",
+        title: "Subscription cancelled", message: "Your subscription was cancelled. You can renew any time to restore your plan.",
+        ctaLabel: "Renew", ctaUrl: "/dashboard/billing", mail: subscriptionExpiredEmail(plan ?? "your"),
+      });
     }
   } catch (e) {
     captureError(e, { category: "payment", provider: "paddle", stage: "handler" });

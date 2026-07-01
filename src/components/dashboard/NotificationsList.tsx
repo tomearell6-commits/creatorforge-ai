@@ -1,19 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clapperboard, CheckCircle2, AlertTriangle, Coins, RefreshCw, HardDrive, Bell, type LucideIcon } from "lucide-react";
+import { Clapperboard, CheckCircle2, AlertTriangle, Coins, RefreshCw, HardDrive, Bell, XCircle, CalendarClock, CreditCard, CalendarX, Ban, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { Notification } from "@/lib/types";
 
+const RED = "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+const AMBER = "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+const BRAND = "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300";
+const BLUE = "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+
 // One semantic Lucide icon (+ tint) per notification type — replaces emoji.
 const NOTIF_ICON: Record<string, { Icon: LucideIcon; tint: string }> = {
-  render_complete:      { Icon: Clapperboard, tint: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300" },
-  publish_success:      { Icon: CheckCircle2,  tint: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300" },
-  publish_failed:       { Icon: AlertTriangle, tint: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300" },
-  credits_low:          { Icon: Coins,         tint: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" },
-  subscription_renewed: { Icon: RefreshCw,     tint: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" },
-  storage_full:         { Icon: HardDrive,     tint: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" },
+  render_complete:      { Icon: Clapperboard, tint: BRAND },
+  publish_success:      { Icon: CheckCircle2,  tint: BRAND },
+  publish_failed:       { Icon: AlertTriangle, tint: RED },
+  credits_low:          { Icon: Coins,         tint: AMBER },
+  credits_critical:     { Icon: AlertTriangle, tint: AMBER },
+  credits_exhausted:    { Icon: XCircle,       tint: RED },
+  topup_success:        { Icon: Coins,         tint: BRAND },
+  subscription_renewed: { Icon: RefreshCw,     tint: BLUE },
+  subscription_reminder:{ Icon: CalendarClock, tint: BLUE },
+  subscription_expired: { Icon: CalendarX,     tint: RED },
+  subscription_cancelled:{ Icon: Ban,          tint: RED },
+  payment_failed:       { Icon: CreditCard,    tint: RED },
+  storage_full:         { Icon: HardDrive,     tint: AMBER },
 };
 const NOTIF_FALLBACK = { Icon: Bell, tint: "bg-muted text-muted-foreground" };
 

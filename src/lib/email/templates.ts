@@ -71,3 +71,87 @@ export function suspiciousActivityEmail(details: string) {
     text: `Security alert on your CreatorForge.io account: ${details}. Review your security: ${securityUrl}`,
   };
 }
+
+// ---- Credit & subscription notification emails --------------------------
+const CREDITS_URL = `${APP_URL}/dashboard/credits`;
+const BILLING_URL = `${APP_URL}/dashboard/billing`;
+const SUPPORT_URL = `${APP_URL}/dashboard/support`;
+const link = (url: string, label: string) => `<a href="${url}" style="color:#4d7c0f;font-weight:600;text-decoration:underline">${label}</a>`;
+const SUPPORT_FOOT = `Need help? Contact ${link(SUPPORT_URL, "support")}. Manage alerts in Settings → Notifications.`;
+
+export type CreditEmailCtx = { name?: string | null; planName: string; remaining: number; used: number };
+
+function creditBody(ctx: CreditEmailCtx, lead: string): string {
+  return `${lead}<br/><br/>
+    <b>Plan:</b> ${ctx.planName}<br/>
+    <b>Credits remaining:</b> ${ctx.remaining.toLocaleString()}<br/>
+    <b>Credits used:</b> ${ctx.used.toLocaleString()}<br/><br/>
+    Top up any time from your ${link(CREDITS_URL, "Credit Wallet")}, or review your ${link(BILLING_URL, "Billing")}.`;
+}
+
+export function creditLowEmail(ctx: CreditEmailCtx) {
+  return {
+    subject: "Your CreatorForge.io credits are running low",
+    html: layout({ heading: "Your credits are running low", body: creditBody(ctx, `Hi ${ctx.name || "there"}, you've used about 75% of your credits.`), buttonLabel: "Top Up Credits", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io credits are running low. Plan ${ctx.planName}, ${ctx.remaining} remaining. Top up: ${CREDITS_URL}`,
+  };
+}
+export function creditCriticalEmail(ctx: CreditEmailCtx) {
+  return {
+    subject: "Your CreatorForge.io credits are almost finished",
+    html: layout({ heading: "Your credits are almost finished", body: creditBody(ctx, `Hi ${ctx.name || "there"}, you have under 10% of your credits left. Top up now to avoid interruption.`), buttonLabel: "Top Up Credits", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io credits are almost finished (${ctx.remaining} left). Top up: ${CREDITS_URL}`,
+  };
+}
+export function creditExhaustedEmail(ctx: CreditEmailCtx) {
+  return {
+    subject: "Your CreatorForge.io credits are exhausted",
+    html: layout({ heading: "You're out of credits", body: creditBody(ctx, `Hi ${ctx.name || "there"}, you've used all your credits. Generation is paused until you top up — editing and browsing stay available.`), buttonLabel: "Top Up Credits", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io credits are exhausted. Top up to continue: ${CREDITS_URL}`,
+  };
+}
+
+export function topupSuccessEmail(credits: number) {
+  return {
+    subject: "Your CreatorForge.io credit top-up was successful",
+    html: layout({ heading: "Credits added", body: `${credits.toLocaleString()} credits were added to your wallet and are ready to use. Thank you!`, buttonLabel: "Open Credit Wallet", buttonUrl: CREDITS_URL, footnote: SUPPORT_FOOT }),
+    text: `${credits} credits were added to your CreatorForge.io wallet: ${CREDITS_URL}`,
+  };
+}
+
+const REMINDER_SUBJECTS: Record<number, string> = {
+  14: "Your CreatorForge.io subscription renews soon",
+  7: "Your CreatorForge.io subscription renewal is coming up",
+  3: "Your CreatorForge.io subscription renews in 3 days",
+  1: "Your CreatorForge.io subscription renews tomorrow",
+};
+export function subscriptionReminderEmail(opts: { planName: string; days: number; renewalDate: string }) {
+  const subject = REMINDER_SUBJECTS[opts.days] || "Your CreatorForge.io subscription renews soon";
+  const when = opts.days === 1 ? "tomorrow" : `in ${opts.days} days`;
+  return {
+    subject,
+    html: layout({ heading: subject, body: `Your <b>${opts.planName}</b> plan renews ${when} (${opts.renewalDate}). No action is needed if your payment details are up to date.`, buttonLabel: "Manage Billing", buttonUrl: BILLING_URL, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io ${opts.planName} subscription renews ${when} (${opts.renewalDate}). Manage: ${BILLING_URL}`,
+  };
+}
+export function paymentFailedEmail(planName: string) {
+  return {
+    subject: "There was a problem with your CreatorForge.io payment",
+    html: layout({ heading: "Your payment didn't go through", body: `We couldn't process the payment for your <b>${planName}</b> plan. Please update your payment method to keep your subscription active.`, buttonLabel: "Update Payment Method", buttonUrl: BILLING_URL, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io payment for ${planName} failed. Update payment: ${BILLING_URL}`,
+  };
+}
+export function subscriptionExpiredEmail(planName: string) {
+  return {
+    subject: "Your CreatorForge.io subscription has expired",
+    html: layout({ heading: "Your subscription has expired", body: `Your <b>${planName}</b> subscription has ended. Renew any time to restore your plan's monthly credits and features.`, buttonLabel: "Renew Subscription", buttonUrl: BILLING_URL, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io ${planName} subscription has expired. Renew: ${BILLING_URL}`,
+  };
+}
+export function subscriptionRenewedEmail(planName: string) {
+  return {
+    subject: "Your CreatorForge.io subscription was renewed",
+    html: layout({ heading: "Subscription renewed", body: `Your <b>${planName}</b> subscription renewed successfully and your monthly credits have been refreshed. Thank you for being with CreatorForge.io!`, buttonLabel: "Open Dashboard", buttonUrl: `${APP_URL}/dashboard`, footnote: SUPPORT_FOOT }),
+    text: `Your CreatorForge.io ${planName} subscription renewed. ${APP_URL}/dashboard`,
+  };
+}
