@@ -158,7 +158,131 @@ export function AdminNotifications() {
           ))}
         </div>
       </section>
+
+      {/* Weekly summaries */}
+      <WeeklySummariesPanel />
     </div>
+  );
+}
+
+type WeeklyStats = {
+  summariesSent: number;
+  failedDeliveries: number;
+  openRate: number | null;
+  clickRate: number | null;
+  lowCreditUsers: number;
+  usersWithFailedJobs: number;
+};
+
+type WeeklyLog = {
+  id?: string;
+  channel?: string;
+  status?: string;
+  sent_at?: string | null;
+  created_at?: string | null;
+  [k: string]: unknown;
+};
+
+function pct(v: number | null | undefined): string {
+  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+  // Accept either a fraction (0–1) or an already-scaled percentage.
+  const scaled = v <= 1 ? v * 100 : v;
+  return `${Math.round(scaled)}%`;
+}
+
+function WeeklySummariesPanel() {
+  const [stats, setStats] = useState<WeeklyStats | null>(null);
+  const [logs, setLogs] = useState<WeeklyLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/reports/weekly-summary");
+        if (!res.ok) throw new Error();
+        const json = await res.json().catch(() => ({}));
+        setStats(json.stats ?? null);
+        setLogs(Array.isArray(json.logs) ? json.logs : []);
+      } catch {
+        setErr("Couldn't load weekly summary analytics.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  return (
+    <section className="space-y-3">
+      <CardTitle className="text-base">Weekly summaries</CardTitle>
+
+      {err && <Alert variant="error">{err}</Alert>}
+
+      {loading ? (
+        <div className="flex justify-center py-10">
+          <Spinner size="lg" label="Loading weekly summary analytics" />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            <StatCard label="Summaries sent" value={stats?.summariesSent} />
+            <StatCard label="Failed deliveries" value={stats?.failedDeliveries} tone="danger" />
+            <TextStatCard label="Open rate" value={pct(stats?.openRate)} />
+            <TextStatCard label="Click rate" value={pct(stats?.clickRate)} />
+            <StatCard label="Low-credit users" value={stats?.lowCreditUsers} tone="warning" />
+            <StatCard label="Users with failed jobs" value={stats?.usersWithFailedJobs} tone="warning" />
+          </div>
+
+          <Card className="overflow-x-auto p-0">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border text-left text-xs text-muted-foreground">
+                <tr>
+                  <th className="p-3">Channel</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="p-6 text-center text-muted-foreground">
+                      No weekly summary deliveries yet.
+                    </td>
+                  </tr>
+                )}
+                {logs.map((l, i) => {
+                  const ts = l.sent_at ?? l.created_at;
+                  return (
+                    <tr key={l.id ?? i} className="border-b border-border/50">
+                      <td className="p-3 capitalize text-muted-foreground">{l.channel ?? "—"}</td>
+                      <td className="p-3">
+                        {l.status ? (
+                          <Badge variant={statusVariant(l.status)}>{l.status}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-3 whitespace-nowrap text-muted-foreground">
+                        {ts ? new Date(ts).toLocaleString() : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Card>
+        </>
+      )}
+    </section>
+  );
+}
+
+function TextStatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <Card className="p-4">
+      <div className="text-xl font-bold">{value}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
+    </Card>
   );
 }
 

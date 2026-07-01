@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clapperboard, CheckCircle2, AlertTriangle, Coins, RefreshCw, HardDrive, Bell, XCircle, CalendarClock, CreditCard, CalendarX, Ban, type LucideIcon } from "lucide-react";
+import { Clapperboard, CheckCircle2, AlertTriangle, Coins, RefreshCw, HardDrive, Bell, XCircle, CalendarClock, CreditCard, CalendarX, Ban, FileBarChart, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { Notification } from "@/lib/types";
@@ -25,6 +25,7 @@ const NOTIF_ICON: Record<string, { Icon: LucideIcon; tint: string }> = {
   subscription_expired: { Icon: CalendarX,     tint: RED },
   subscription_cancelled:{ Icon: Ban,          tint: RED },
   payment_failed:       { Icon: CreditCard,    tint: RED },
+  weekly_summary:       { Icon: FileBarChart,  tint: BLUE },
   storage_full:         { Icon: HardDrive,     tint: AMBER },
 };
 const NOTIF_FALLBACK = { Icon: Bell, tint: "bg-muted text-muted-foreground" };

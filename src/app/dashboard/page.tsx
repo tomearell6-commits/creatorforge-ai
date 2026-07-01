@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { getWalletSummary } from "@/lib/credits/wallet";
 import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard";
+import { WeeklySummaryCard } from "@/components/dashboard/WeeklySummaryCard";
 import { AssistantOnboardingCard } from "@/components/dashboard/AssistantOnboardingCard";
 import { StudioGrid } from "@/components/dashboard/StudioGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -41,6 +42,8 @@ export default async function DashboardHome() {
       </div>
 
       {wallet && <DashboardCreditCard summary={wallet} />}
+
+      <WeeklySummaryCard />
 
       {/* Six flagship Studios */}
       <div className="space-y-3">

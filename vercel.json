@@ -3,6 +3,7 @@
     { "path": "/api/cron/seo-publish", "schedule": "0 * * * *" },
     { "path": "/api/cron/autopilot", "schedule": "0 * * * *" },
     { "path": "/api/jobs/check-credit-alerts", "schedule": "0 */6 * * *" },
-    { "path": "/api/jobs/check-subscription-alerts", "schedule": "0 8 * * *" }
+    { "path": "/api/jobs/check-subscription-alerts", "schedule": "0 8 * * *" },
+    { "path": "/api/jobs/weekly-summary", "schedule": "0 * * * *" }
   ]
 }

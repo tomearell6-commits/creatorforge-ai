@@ -155,3 +155,67 @@ export function subscriptionRenewedEmail(planName: string) {
     text: `Your CreatorForge.io ${planName} subscription renewed. ${APP_URL}/dashboard`,
   };
 }
+
+// ---- Weekly usage summary ----------------------------------------------
+export type WeeklyEmailReport = {
+  weekStart: string; weekEnd: string;
+  creditsUsed: number; creditsRemaining: number; creditsToppedUp: number; monthlyCredits: number; purchasedCredits: number; estimatedDaysRemaining: number | null;
+  videosCreated: number; seoArticlesCreated: number; imagesCreated: number; voiceoversCreated: number; adsCreated: number; booksCreated: number; chaptersCreated: number;
+  postsPublished: number; postsScheduled: number; postsFailed: number; upcomingPosts: number;
+  automationsActive: number; automationJobsDone: number; automationsPaused: number; automationJobsFailed: number;
+  subscriptionStatus: string; plan: string; renewalDate: string | null;
+  recommendations: string[];
+};
+
+function statRow(label: string, value: number | string): string {
+  return `<tr><td style="padding:4px 0;color:#3f4b39">${label}</td><td style="padding:4px 0;text-align:right;font-weight:700">${value}</td></tr>`;
+}
+function section(title: string, rows: string): string {
+  return `<tr><td style="padding:18px 0 6px;font-size:14px;font-weight:700;color:#0f1b0a;border-top:1px solid #eee">${title}</td></tr>
+    <tr><td><table role="presentation" width="100%" style="font-size:13px">${rows}</table></td></tr>`;
+}
+
+export function weeklySummaryEmail(name: string | null, r: WeeklyEmailReport) {
+  const recs = r.recommendations.map((x) => `<li style="margin:4px 0">${x}</li>`).join("");
+  const body = `Hi ${name || "there"}, here's your CreatorForge.io activity for <b>${r.weekStart} → ${r.weekEnd}</b>.
+    <table role="presentation" width="100%" style="margin-top:8px">
+      ${section("Credit Summary", [
+        statRow("Credits used this week", r.creditsUsed.toLocaleString()),
+        statRow("Credits remaining", r.creditsRemaining.toLocaleString()),
+        statRow("Purchased credits", r.purchasedCredits.toLocaleString()),
+        statRow("Monthly credits", r.monthlyCredits.toLocaleString()),
+        statRow("Estimated days remaining", r.estimatedDaysRemaining ?? "—"),
+      ].join(""))}
+      ${section("Content Created", [
+        statRow("Videos", r.videosCreated), statRow("SEO articles", r.seoArticlesCreated),
+        statRow("Ads", r.adsCreated), statRow("Books / chapters", `${r.booksCreated} / ${r.chaptersCreated}`),
+        statRow("Images", r.imagesCreated), statRow("Voiceovers", r.voiceoversCreated),
+      ].join(""))}
+      ${section("Publishing", [
+        statRow("Published posts", r.postsPublished), statRow("Scheduled posts", r.postsScheduled),
+        statRow("Failed jobs", r.postsFailed), statRow("Upcoming this week", r.upcomingPosts),
+      ].join(""))}
+      ${section("Automation", [
+        statRow("Active automations", r.automationsActive), statRow("Completed jobs", r.automationJobsDone),
+        statRow("Paused automations", r.automationsPaused), statRow("Failed automations", r.automationJobsFailed),
+      ].join(""))}
+      ${section("Billing", [
+        statRow("Current plan", r.plan), statRow("Status", r.subscriptionStatus),
+        statRow("Renewal date", r.renewalDate ? r.renewalDate.slice(0, 10) : "—"),
+      ].join(""))}
+    </table>
+    <div style="margin-top:16px;padding:12px 14px;background:#f7fee7;border-radius:10px">
+      <b>Recommended next actions</b><ul style="margin:8px 0 0;padding-left:18px;color:#3f4b39">${recs}</ul>
+    </div>
+    <div style="margin-top:16px;font-size:13px">
+      ${link(`${APP_URL}/dashboard`, "View Dashboard")} &nbsp;·&nbsp;
+      ${link(CREDITS_URL, "Top Up Credits")} &nbsp;·&nbsp;
+      ${link(BILLING_URL, "Manage Subscription")} &nbsp;·&nbsp;
+      ${link(`${APP_URL}/dashboard/calendar`, "Publishing Calendar")}
+    </div>`;
+  return {
+    subject: "Your weekly CreatorForge.io usage summary",
+    html: layout({ heading: "CreatorForge.io Weekly Summary", body, buttonLabel: "View Full Weekly Report", buttonUrl: `${APP_URL}/dashboard/reports/weekly`, footnote: SUPPORT_FOOT }),
+    text: `Your weekly CreatorForge.io summary (${r.weekStart}–${r.weekEnd}): ${r.creditsUsed} credits used, ${r.creditsRemaining} remaining, ${r.videosCreated} videos, ${r.postsPublished} posts published. Full report: ${APP_URL}/dashboard/reports/weekly`,
+  };
+}
