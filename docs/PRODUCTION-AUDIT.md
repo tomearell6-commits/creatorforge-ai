@@ -183,6 +183,11 @@ _All additive → safe to ship as a new migration `0026`._
 
 **Batch B — UX confidence + accessibility (commit `a836773`):** new accessible `ConfirmDialog` primitive + `useConfirm()`; confirmation + `Alert` feedback on every destructive/money action (disconnect, delete rule/campaign/book, affiliate payout, admin suspend/set-credits/set-plan, publish, publish-now); all native `prompt()/alert()/confirm()` removed from those flows; form-label associations (PublishComposer, WhiteLabelSettings) + aria-labels across assistant/wallet/tours/prompt-bar; `Alert` adopted in RenderQueue/VoiceStudio/SceneBuilder/ForgeAssistant/WalletClient.
 
-**Updated readiness: ~88/100.** Remaining top debt: test coverage (still 14 tests), API error-envelope + zod standardization, `Alert` adoption across the ~10 tool-generator components, 2 residual native calls (`QueueManager` reschedule prompt, `SceneBuilder` rebuild confirm), 5 dead files, homepage social links.
+**Batch D — Coverage + API + cleanup (commit `df08543`):**
+- **Tests:** +93 unit tests (**107 total, all passing**) — SSRF guard, Paddle webhook signature, lead access-gating, email-verification heuristic, credit estimator, SEO scoring.
+- **API:** new `src/lib/api/respond.ts` (`apiError` + `readJsonBody`); 34 DB-error branches corrected 400→500 across 11 routes; malformed-JSON guards on 15 high-value mutating routes.
+- **Cleanup:** deleted 4 dead files; removed the last 2 native dialogs; stripped dead homepage social links; `Alert` adopted in the tool-generator components.
+
+**Updated readiness: ~92/100 (A−).** Remaining debt (non-blocking, staged): full `zod` schema validation across all routes; `Alert` in remaining minor spots; deeper E2E/integration + load tests; `getVideoProvider` seam is unused (intentional).
 
 _Generated during the Final Production Polish phase._
