@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { PLATFORMS } from "@/lib/constants";
+import { PlatformIcon } from "@/components/icons/PlatformIcon";
 
 type Data = {
   summary: {
@@ -73,7 +74,7 @@ export function AnalyticsCharts() {
             const meta = PLATFORMS.find((p) => p.id === platform);
             return (
               <div key={platform} className="flex items-center gap-2 text-sm">
-                <span className="w-28">{meta?.emoji} {meta?.name ?? platform}</span>
+                <span className="flex w-28 items-center gap-1.5"><PlatformIcon platform={platform} className="h-4 w-4" /> {meta?.name ?? platform}</span>
                 <div className="h-3 flex-1 rounded bg-muted">
                   <div className="h-3 rounded bg-brand-600" style={{ width: `${(count / platformMax) * 100}%` }} />
                 </div>

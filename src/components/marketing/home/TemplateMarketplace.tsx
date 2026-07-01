@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { PlatformIcon } from "@/components/icons/PlatformIcon";
 
 type Template = { name: string; studio: string; platform: string; difficulty: "Beginner" | "Intermediate" | "Advanced"; popular?: boolean };
 
@@ -66,9 +67,14 @@ export function TemplateMarketplace() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((t) => (
           <Link key={t.name} href={`/signup?redirect=${encodeURIComponent("/dashboard/templates")}`} className="group flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md">
-            <div className="min-w-0">
-              <p className="font-semibold text-foreground">{t.name}</p>
-              <p className="text-xs text-muted-foreground">{t.studio} Studio · {t.platform}</p>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
+                <PlatformIcon platform={t.platform} className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.studio} Studio · {t.platform}</p>
+              </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
               <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${DIFF_TINT[t.difficulty]}`}>{t.difficulty}</span>

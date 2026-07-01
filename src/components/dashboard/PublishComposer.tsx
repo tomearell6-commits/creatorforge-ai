@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { CATEGORIES, PLATFORMS, VISIBILITY_OPTIONS } from "@/lib/constants";
+import { PlatformIcon } from "@/components/icons/PlatformIcon";
 import type { PublishJob, PublishMode, SocialAccount, SocialPlatform, Visibility } from "@/lib/types";
 
 type VideoAsset = { id: string; name: string; url: string; project_id: string | null };
@@ -130,9 +131,9 @@ export function PublishComposer() {
                 const active = platforms.includes(p.id);
                 return (
                   <button key={p.id} type="button" disabled={!isConnected} onClick={() => togglePlatform(p.id)}
-                    className={`rounded-full border px-3 py-1.5 text-sm ${active ? "border-brand-600 bg-brand-600 text-white" : "border-border bg-card"} ${!isConnected ? "opacity-40 cursor-not-allowed" : ""}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${active ? "border-brand-600 bg-brand-600 text-white" : "border-border bg-card"} ${!isConnected ? "opacity-40 cursor-not-allowed" : ""}`}
                     title={isConnected ? "" : "Connect this platform first"}>
-                    {p.emoji} {p.name}
+                    <PlatformIcon platform={p.id} className="h-3.5 w-3.5" monochrome={active} /> {p.name}
                   </button>
                 );
               })}

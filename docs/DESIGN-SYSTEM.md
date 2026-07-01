@@ -90,6 +90,11 @@ import { BrandIcon, hasBrandIcon } from "@/components/icons/BrandIcon";
 - **Omitted:** OpenAI (and other marks companies have asked icon sets to drop) — `hasBrandIcon` returns false so callers fall back to a neutral Lucide icon. Don't fabricate path data.
 - **Used in:** Connected Ad Accounts, Social Accounts, homepage footer. Extend by adopting `BrandIcon` wherever a platform is named.
 
+### Convenience wrappers
+
+- **`PlatformIcon`** (`components/icons/PlatformIcon.tsx`) — give it a platform id/name; renders the `BrandIcon` when one exists, else a neutral `Globe`. Use for social/publishing platforms (Publish composer, Calendar, Analytics, Social Accounts, template cards).
+- **`CategoryIcon`** (`components/icons/CategoryIcon.tsx`) — one Lucide glyph per content category (keyed by `CATEGORIES[].slug`), `Folder` fallback. Use for project category badges. Replaces the old per-category emoji.
+
 ### Contributing an icon
 
 1. Feature/tool icon → pick the closest existing Lucide glyph; add it in the relevant `config/*`. Don't add a new icon library.
