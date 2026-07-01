@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { SettingsForm } from "@/components/dashboard/SettingsForm";
+import { ChangePasswordForm } from "@/components/dashboard/ChangePasswordForm";
 
 export const metadata = { title: "Settings — CreatorForge AI" };
 
@@ -31,6 +32,12 @@ export default async function SettingsPage() {
           fullName={profile?.full_name ?? (user?.user_metadata?.full_name as string) ?? ""}
         />
       </Card>
+
+      <div>
+        <h2 className="text-lg font-semibold">Security</h2>
+        <p className="text-sm text-muted-foreground">Keep your account protected.</p>
+      </div>
+      <ChangePasswordForm />
 
       <Card>
         <CardTitle>Account</CardTitle>

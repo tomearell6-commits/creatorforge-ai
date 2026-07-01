@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
@@ -82,7 +83,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
         />
       </div>
       <div>
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          {mode === "login" && (
+            <Link href="/forgot-password" className="text-xs font-medium text-brand-600 hover:underline">
+              Forgot password?
+            </Link>
+          )}
+        </div>
         <Input
           id="password"
           type="password"
