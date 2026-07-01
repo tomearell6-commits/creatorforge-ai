@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { isAdminEmail } from "@/lib/admin";
+import { requireAdmin } from "@/lib/admin";
 
 /**
- * Admin analytics (Phase 6 — Module 8). Platform-wide stats. Gated to
- * ADMIN_EMAILS; uses the service-role client to read across all users.
+ * Admin analytics (Phase 6 — Module 8). Platform-wide stats. Gated by
+ * requireAdmin (ADMIN_EMAILS allowlist OR admin_users row); uses the
+ * service-role client to read across all users.
  */
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!isAdminEmail(user.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-  const admin = createAdminClient();
+  const gate = await requireAdmin();
+  if ("error" in gate) return gate.error;
+  const admin = gate.admin;
   const [profiles, subs, publishHistory, renderJobs, creditUsage, assets, events] = await Promise.all([
     admin.from("profiles").select("plan, credits"),
     admin.from("subscriptions").select("plan, status"),

@@ -6,22 +6,44 @@
  */
 import "server-only";
 import type { ScanResult } from "./types";
+import { validateAuditUrl } from "./ssrf";
 
 const UA = "Mozilla/5.0 (compatible; CreatorForgeSEOAudit/1.0; +https://www.creatorsforge.io)";
 const MAX_BYTES = 1_500_000;
 const TIMEOUT_MS = 12_000;
+const MAX_REDIRECTS = 5;
 
+/**
+ * Fetch with manual redirect handling so every hop is re-validated against the
+ * SSRF guard — a validated public host can otherwise 3xx-redirect to a private
+ * / cloud-metadata address. The caller must validate the initial URL.
+ */
 async function fetchText(url: string, timeout = TIMEOUT_MS): Promise<{ ok: boolean; status: number; text: string; ms: number; finalUrl: string }> {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeout);
   const started = Date.now();
+  let current = url;
   try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" }, redirect: "follow" });
-    const raw = await res.text();
-    return { ok: res.ok, status: res.status, text: raw.slice(0, MAX_BYTES), ms: Date.now() - started, finalUrl: res.url || url };
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), timeout);
+      try {
+        const res = await fetch(current, { signal: ctrl.signal, headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" }, redirect: "manual" });
+        if (res.status >= 300 && res.status < 400) {
+          const loc = res.headers.get("location");
+          if (!loc) return { ok: false, status: res.status, text: "", ms: Date.now() - started, finalUrl: current };
+          const next = new URL(loc, current).toString();
+          const check = await validateAuditUrl(next); // re-validate every redirect target
+          if (!check.ok) return { ok: false, status: 0, text: "", ms: Date.now() - started, finalUrl: current };
+          current = next;
+          continue;
+        }
+        const raw = await res.text();
+        return { ok: res.ok, status: res.status, text: raw.slice(0, MAX_BYTES), ms: Date.now() - started, finalUrl: res.url || current };
+      } finally { clearTimeout(t); }
+    }
+    return { ok: false, status: 0, text: "", ms: Date.now() - started, finalUrl: current }; // too many redirects
   } catch {
-    return { ok: false, status: 0, text: "", ms: Date.now() - started, finalUrl: url };
-  } finally { clearTimeout(t); }
+    return { ok: false, status: 0, text: "", ms: Date.now() - started, finalUrl: current };
+  }
 }
 
 const stripTags = (html: string) => html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();

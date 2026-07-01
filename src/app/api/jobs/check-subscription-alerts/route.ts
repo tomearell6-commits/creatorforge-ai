@@ -15,7 +15,8 @@ export const dynamic = "force-dynamic";
 const DEFAULT_DAYS = [14, 7, 3, 1];
 
 async function run(request: Request) {
-  if (process.env.CRON_SECRET && request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const admin = createAdminClient();

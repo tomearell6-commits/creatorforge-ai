@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyPaddleWebhook, priceToPlan } from "@/lib/payments/paddle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planCredits } from "@/lib/constants";
+import { creditWalletAdmin } from "@/lib/credits/wallet";
 import { captureError } from "@/lib/logger";
 import { notify, clearCreditDedup } from "@/lib/notifications/service";
 import { subscriptionRenewedEmail, paymentFailedEmail, subscriptionExpiredEmail } from "@/lib/email/templates";
@@ -63,20 +64,10 @@ export async function POST(request: Request) {
       if (existing) return NextResponse.json({ received: true, duplicate: true });
 
       const grant = planCredits(plan);
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("credits")
-        .eq("user_id", userId)
-        .single();
-
-      await admin
-        .from("profiles")
-        .update({ plan, credits: (profile?.credits ?? 0) + grant })
-        .eq("user_id", userId);
-
-      await admin
-        .from("credit_usage")
-        .insert({ user_id: userId, amount: grant, reason: `subscription_grant:${plan}` });
+      // Atomic wallet credit (ledger + buckets + balance) — avoids the lost-update
+      // race of a read-then-write, matching the crypto webhook path.
+      await creditWalletAdmin(admin, userId, grant, "monthly", "subscription_grant", `paddle_plan:${plan}`, txnId);
+      await admin.from("profiles").update({ plan }).eq("user_id", userId);
 
       const totals = (data.details as { totals?: { total?: string } } | undefined)?.totals;
       await admin.from("payment_transactions").insert({

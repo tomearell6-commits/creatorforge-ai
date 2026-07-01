@@ -4,6 +4,7 @@ import { getVoiceProvider } from "@/lib/media/providers";
 import { uploadMedia } from "@/lib/media/storage";
 import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { CREDIT_COSTS } from "@/lib/constants";
+import { limitRequestAsync } from "@/lib/security/ratelimit";
 
 /**
  * POST /api/voice/generate -> synthesize a voiceover, store the audio asset and
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const rl = await limitRequestAsync(request, "voice-generate", 20, 60_000);
+  if (!rl.ok) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429 });
 
   const { projectId, sceneId, text, voiceId, language, accent, speed, pitch } =
     await request.json();
