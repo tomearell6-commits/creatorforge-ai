@@ -18,25 +18,28 @@ export async function POST() {
   }
 
   try {
-    const res = await fetchWithTimeout("https://api.elevenlabs.io/v1/user", {
+    // GET /v1/voices needs only voice-read access — closer to what the app's
+    // text-to-speech calls require than /v1/user (which needs user_read and can
+    // reject an otherwise-working, permission-scoped key).
+    const res = await fetchWithTimeout("https://api.elevenlabs.io/v1/voices", {
       headers: { "xi-api-key": apiKey },
     }, 15_000);
     const bodyText = await res.text();
     if (!res.ok) {
       let message = bodyText.slice(0, 300);
       try { message = JSON.parse(bodyText)?.detail?.message ?? message; } catch { /* non-JSON error body */ }
+      const scopeIssue = /permission/i.test(message);
       return NextResponse.json({
-        ok: false, authenticated: res.status !== 401 ? null : false, status: res.status, message,
-        hint: res.status === 401 ? "ELEVENLABS_API_KEY is invalid or revoked." : `ElevenLabs returned ${res.status}.`,
+        ok: false, authenticated: res.status !== 401 ? null : (scopeIssue ? true : false), status: res.status, message,
+        hint: scopeIssue
+          ? "The key authenticates but is missing a required permission scope. In ElevenLabs, edit the key and enable at least 'Text to Speech' (and ideally 'Voices' read) access — new keys can default to no scopes selected."
+          : res.status === 401 ? "ELEVENLABS_API_KEY is invalid or revoked." : `ElevenLabs returned ${res.status}.`,
       });
     }
-    const json = JSON.parse(bodyText) as { subscription?: { tier?: string; character_count?: number; character_limit?: number } };
+    const json = JSON.parse(bodyText) as { voices?: unknown[] };
     return NextResponse.json({
-      ok: true, authenticated: true,
-      tier: json.subscription?.tier ?? null,
-      charactersUsed: json.subscription?.character_count ?? null,
-      charactersLimit: json.subscription?.character_limit ?? null,
-      message: "ElevenLabs accepted the key.",
+      ok: true, authenticated: true, voiceCount: json.voices?.length ?? 0,
+      message: "ElevenLabs accepted the key and voice list access works.",
     });
   } catch (err) {
     return NextResponse.json({ ok: false, authenticated: false, message: err instanceof Error ? err.message : "Network error reaching ElevenLabs" }, { status: 502 });
