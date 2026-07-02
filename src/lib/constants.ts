@@ -297,6 +297,7 @@ export const LOW_CREDITS_THRESHOLD = 10;
 export const ADMIN_NAV = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/users", label: "Users" },
+  { href: "/admin/team", label: "Team & Admins" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/notifications", label: "Notifications" },
   { href: "/admin/wallet", label: "Credit Wallet" },
