@@ -18,28 +18,33 @@ export async function POST() {
   }
 
   try {
-    // GET /v1/voices needs only voice-read access — closer to what the app's
-    // text-to-speech calls require than /v1/user (which needs user_read and can
-    // reject an otherwise-working, permission-scoped key).
-    const res = await fetchWithTimeout("https://api.elevenlabs.io/v1/voices", {
-      headers: { "xi-api-key": apiKey },
-    }, 15_000);
-    const bodyText = await res.text();
+    // The app only ever calls POST /v1/text-to-speech/{voiceId} (voice.ts) —
+    // read endpoints like /v1/user (user_read) and /v1/voices (voices_read)
+    // need DIFFERENT scopes a restricted "Text to Speech"-only key won't have,
+    // so they're not a valid proxy. Do the real, minimal call instead: a
+    // 2-character synthesis costs a negligible fraction of a cent.
+    const voiceId = "9BWtsMINqrJLrRacOk9x"; // "Aria" premade voice, same default the app maps
+    const res = await fetchWithTimeout(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: "POST",
+      headers: { "xi-api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "Hi", model_id: "eleven_turbo_v2_5" }),
+    }, 20_000);
     if (!res.ok) {
+      const bodyText = await res.text();
       let message = bodyText.slice(0, 300);
       try { message = JSON.parse(bodyText)?.detail?.message ?? message; } catch { /* non-JSON error body */ }
       const scopeIssue = /permission/i.test(message);
       return NextResponse.json({
         ok: false, authenticated: res.status !== 401 ? null : (scopeIssue ? true : false), status: res.status, message,
         hint: scopeIssue
-          ? "The key authenticates but is missing a required permission scope. In ElevenLabs, edit the key and enable at least 'Text to Speech' (and ideally 'Voices' read) access — new keys can default to no scopes selected."
+          ? "The key authenticates but is missing the 'Text to Speech' permission. In ElevenLabs, edit the key and set Text to Speech to 'Access'."
           : res.status === 401 ? "ELEVENLABS_API_KEY is invalid or revoked." : `ElevenLabs returned ${res.status}.`,
       });
     }
-    const json = JSON.parse(bodyText) as { voices?: unknown[] };
+    const bytes = (await res.arrayBuffer()).byteLength;
     return NextResponse.json({
-      ok: true, authenticated: true, voiceCount: json.voices?.length ?? 0,
-      message: "ElevenLabs accepted the key and voice list access works.",
+      ok: true, authenticated: true, audioBytes: bytes,
+      message: "ElevenLabs accepted the key and synthesized audio successfully.",
     });
   } catch (err) {
     return NextResponse.json({ ok: false, authenticated: false, message: err instanceof Error ? err.message : "Network error reaching ElevenLabs" }, { status: 502 });
