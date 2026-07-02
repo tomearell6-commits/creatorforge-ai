@@ -4,6 +4,7 @@ import { ArrowRight, ArrowLeft, Coins, Check } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { getCategoryBySlug } from "@/config/contentCategories";
+import { getDesignCategoryBySlug } from "@/config/designStudio";
 import { WORKFLOWS } from "@/config/contentWorkflows";
 
 export const metadata = { title: "Create — CreatorsForge AI" };
@@ -12,11 +13,15 @@ export const metadata = { title: "Create — CreatorsForge AI" };
 const SLUG_ALIASES: Record<string, string> = {
   "seo-website-audit-tool": "/dashboard/seo/audit",
   "seo-audit": "/dashboard/seo/audit",
+  "ai-design-studio": "/dashboard/design",
+  "design-studio": "/dashboard/design",
 };
 
 export default async function CategoryWorkflowPage({ params }: { params: Promise<{ categorySlug: string }> }) {
   const { categorySlug } = await params;
   if (SLUG_ALIASES[categorySlug]) redirect(SLUG_ALIASES[categorySlug]);
+  // Design Studio categories open the design wizard preselected.
+  if (getDesignCategoryBySlug(categorySlug)) redirect(`/dashboard/design/new?category=${categorySlug}`);
   const category = getCategoryBySlug(categorySlug);
 
   if (!category) {

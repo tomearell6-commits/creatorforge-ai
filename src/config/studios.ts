@@ -9,7 +9,7 @@
 import {
   Video, Megaphone, BookOpen, Workflow, BarChart3, Briefcase,
   LayoutGrid, Image as ImageIcon, Music, Share2, Sparkles, FileText, Clapperboard,
-  Library, Server, CalendarDays, FolderKanban, PenLine, FileDown, Palette,
+  Library, Server, CalendarDays, FolderKanban, PenLine, FileDown, Palette, LayoutTemplate,
   Search, Globe, Bell, ListChecks, Rocket, History as HistoryIcon, Users, Wallet,
   CreditCard, KeyRound, Handshake, Gift, LifeBuoy, Crown, Settings, Hash, Type,
   Mail, FileSearch, Target,
@@ -41,8 +41,8 @@ export const STUDIOS: Studio[] = [
     accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
     quickActions: [
       { label: "Create Video", href: "/dashboard/create?group=video", icon: Video },
+      { label: "Design a Graphic", href: "/dashboard/design/new", icon: Palette },
       { label: "Write Blog", href: "/dashboard/generate", icon: FileText },
-      { label: "Generate Image", href: "/dashboard/create?group=image", icon: ImageIcon },
       { label: "Generate Voiceover", href: "/dashboard/voice", icon: Music },
     ],
     sections: [
@@ -51,9 +51,21 @@ export const STUDIOS: Studio[] = [
         tools: [
           { label: "Create Hub", href: "/dashboard/create", icon: LayoutGrid },
           { label: "AI Video Studio", href: "/dashboard/create?group=video", icon: Video, tour: "ai-video-studio" },
+          { label: "AI Design Studio", href: "/dashboard/design", icon: Palette, tour: "create-first-design" },
           { label: "AI Image Studio", href: "/dashboard/create?group=image", icon: ImageIcon },
           { label: "AI Audio & Music Studio", href: "/dashboard/create?group=audio", icon: Music },
           { label: "AI Social Studio", href: "/dashboard/create?group=social", icon: Share2 },
+        ],
+      },
+      {
+        heading: "Design Studio",
+        tools: [
+          { label: "Design Dashboard", href: "/dashboard/design", icon: Palette },
+          { label: "New Design", href: "/dashboard/design/new", icon: LayoutGrid },
+          { label: "Design Templates", href: "/dashboard/design/templates", icon: LayoutTemplate },
+          { label: "Brand Kit", href: "/dashboard/design/brand-kit", icon: Palette },
+          { label: "Live AI Footage", href: "/dashboard/design/video-graphics", icon: Clapperboard },
+          { label: "Design Exports", href: "/dashboard/design/exports", icon: FileDown },
         ],
       },
       {

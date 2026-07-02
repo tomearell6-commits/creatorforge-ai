@@ -21,10 +21,15 @@ const TEMPLATES: Template[] = [
   { name: "Social Captions", studio: "Content", platform: "Instagram", difficulty: "Beginner", popular: true },
   { name: "SEO Audits", studio: "Analytics", platform: "Web", difficulty: "Beginner" },
   { name: "Website Audits", studio: "Analytics", platform: "Web", difficulty: "Intermediate" },
+  { name: "YouTube Thumbnails", studio: "Design", platform: "YouTube", difficulty: "Beginner", popular: true },
+  { name: "Instagram Posts", studio: "Design", platform: "Instagram", difficulty: "Beginner", popular: true },
+  { name: "Logo Concepts", studio: "Design", platform: "Web", difficulty: "Advanced" },
+  { name: "Book Covers", studio: "Design", platform: "Print/EPUB", difficulty: "Intermediate" },
+  { name: "Facebook Ad Creatives", studio: "Design", platform: "Facebook", difficulty: "Intermediate" },
 ];
 
 const FILTERS: { key: keyof Template | "all"; label: string; values: string[] }[] = [
-  { key: "studio", label: "Studio", values: ["Content", "Marketing", "Publishing", "Analytics"] },
+  { key: "studio", label: "Studio", values: ["Content", "Marketing", "Design", "Publishing", "Analytics"] },
   { key: "platform", label: "Platform", values: ["TikTok", "Instagram", "YouTube", "Facebook", "WordPress", "Email", "Web", "Print/EPUB"] },
   { key: "difficulty", label: "Difficulty", values: ["Beginner", "Intermediate", "Advanced"] },
 ];

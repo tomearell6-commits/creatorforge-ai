@@ -304,6 +304,7 @@ export const ADMIN_NAV = [
   { href: "/admin/assistant", label: "AI Assistant" },
   { href: "/admin/seo-audit", label: "SEO Audit" },
   { href: "/admin/leads", label: "Lead Generator" },
+  { href: "/admin/design", label: "Design Studio" },
   { href: "/admin/testimonials", label: "Testimonials" },
   { href: "/admin/tutorials", label: "Tutorials" },
   { href: "/admin/support", label: "Support Tickets" },

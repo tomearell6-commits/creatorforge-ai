@@ -173,6 +173,13 @@ export const FOOTER_COLUMNS = [
     ],
   },
   {
+    heading: "AI Design Studio",
+    links: [
+      "AI Design Studio", "YouTube Thumbnail", "Instagram Post", "Logo Concept",
+      "Book Cover", "Facebook Ad", "Brand Kit", "Live AI Footage Concept",
+    ],
+  },
+  {
     heading: "SEO Tools",
     links: [
       "SEO Blog Post Generator", "SEO Website Audit Tool", "WordPress Auto Poster", "AI SEO Article Writer",

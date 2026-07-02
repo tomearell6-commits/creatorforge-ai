@@ -24,6 +24,47 @@ export const TOURS: Tour[] = [
     ],
   },
   {
+    id: "create-first-design",
+    title: "Create Your First Design",
+    steps: [
+      { target: "create-first-design", href: "/dashboard", title: "Open Design Studio", body: "Design Studio is where you make graphics, ads, thumbnails, covers and brand assets. Click to open it." },
+      { href: "/dashboard/design/new", title: "Start a new design", body: "Pick a category and format, describe your goal and pick a style — AI drafts a professional concept you can edit." },
+      { href: "/dashboard/design/new", title: "Edit & export", body: "Fine-tune text, colors and layers in the editor, then export PNG, JPG or PDF. Manual editing is always free." },
+    ],
+  },
+  {
+    id: "use-template-design",
+    title: "Use a Design Template",
+    steps: [
+      { href: "/dashboard/design/templates", title: "Browse templates", body: "Open Design Templates and filter by difficulty or search by keyword." },
+      { href: "/dashboard/design/templates", title: "Use a template", body: "Click \"Use template\" to open it in the editor with editable layers, then make it yours." },
+    ],
+  },
+  {
+    id: "apply-brand-kit",
+    title: "Apply a Brand Kit",
+    steps: [
+      { href: "/dashboard/design/brand-kit", title: "Create a brand kit", body: "Save your logo, colors, fonts and tone once in Brand Kit." },
+      { href: "/dashboard/design/new", title: "Apply it to a design", body: "In the design wizard (and the editor) pick your brand kit to instantly apply your colors and fonts." },
+    ],
+  },
+  {
+    id: "export-design",
+    title: "Export a Design",
+    steps: [
+      { href: "/dashboard/design/projects", title: "Open a design", body: "Open any design from My Designs to launch the editor." },
+      { href: "/dashboard/design/exports", title: "Export & track", body: "Use the Export menu for PNG, JPG or PDF. PNG/JPG are free; every export is listed under Exports." },
+    ],
+  },
+  {
+    id: "live-footage-design",
+    title: "Create a Live AI Footage Prompt",
+    steps: [
+      { href: "/dashboard/design/video-graphics", title: "Open Live AI Footage", body: "Describe a scene, subject, camera and lighting to design a footage concept before generating video." },
+      { href: "/dashboard/design/video-graphics", title: "Send to Video/Ad Studio", body: "Use the generated video prompt, shot list and storyboard in the Video or Ad Studio." },
+    ],
+  },
+  {
     id: "ai-shorts",
     title: "Generate AI Shorts",
     steps: [

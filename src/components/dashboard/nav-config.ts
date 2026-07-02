@@ -1,4 +1,4 @@
-import { LayoutDashboard, LayoutTemplate, FolderKanban, Settings, LifeBuoy } from "lucide-react";
+import { LayoutDashboard, LayoutTemplate, FolderKanban, Settings, LifeBuoy, Palette } from "lucide-react";
 import { STUDIOS } from "@/config/studios";
 
 export type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; tour?: string };
@@ -20,6 +20,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     heading: "Workspace",
     items: [
+      { href: "/dashboard/design", label: "Design Studio", icon: Palette, tour: "create-first-design" },
       { href: "/dashboard/templates", label: "Templates", icon: LayoutTemplate, tour: "templates" },
       { href: "/dashboard/projects", label: "Recent Projects", icon: FolderKanban },
       { href: "/dashboard/settings", label: "Settings", icon: Settings },
