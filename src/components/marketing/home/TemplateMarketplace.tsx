@@ -26,6 +26,10 @@ const TEMPLATES: Template[] = [
   { name: "Logo Concepts", studio: "Design", platform: "Web", difficulty: "Advanced" },
   { name: "Book Covers", studio: "Design", platform: "Print/EPUB", difficulty: "Intermediate" },
   { name: "Facebook Ad Creatives", studio: "Design", platform: "Facebook", difficulty: "Intermediate" },
+  { name: "Luxury Villa Concepts", studio: "Design", platform: "Web", difficulty: "Intermediate", popular: true },
+  { name: "Property Listing Flyers", studio: "Design", platform: "Print/EPUB", difficulty: "Beginner" },
+  { name: "Property Walkthrough Videos", studio: "Design", platform: "YouTube", difficulty: "Intermediate" },
+  { name: "Floor Plan Concepts", studio: "Design", platform: "Web", difficulty: "Intermediate" },
 ];
 
 const FILTERS: { key: keyof Template | "all"; label: string; values: string[] }[] = [

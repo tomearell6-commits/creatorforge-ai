@@ -166,3 +166,67 @@ integrity, and both placeholder AI generators. Manual QA flow: new project →
 category/format → generate concept → edit text/layers → apply brand kit → save
 version → export PNG/JPG/PDF → live footage prompt → send to Video Studio →
 credit usage reflects only real-AI actions.
+
+---
+
+# Professional Industry Suites
+
+Design Studio scales by industry via **Industry Suites** (`/dashboard/design/industries`)
+— dedicated workspaces so users only see what their industry needs, instead of
+one giant template library.
+
+**Registry:** `src/config/industrySuites.ts` — 13 suites (Real Estate &
+Architecture · Ecommerce · Restaurant & Hospitality · Healthcare · Education ·
+Legal · Finance · Construction · Automotive · Fashion & Beauty · Travel &
+Tourism · Event Management · Manufacturing). Real Estate is `active`; the rest
+are `coming_soon` and already visible on the hub. Adding a suite later = flip
+status + add category groups + templates. Admins can also seed/extend suites and
+templates in the DB (`industry_suites` / `industry_suite_categories` /
+`industry_templates`, migration 0028) without a deploy; the API merges config +
+DB catalogues.
+
+## Real Estate & Architecture Suite
+
+`/dashboard/design/industries/real-estate-architecture` — the first active suite.
+
+- **Categories:** 10 groups / ~120 categories (Architectural Concepts, Floor Plan
+  Concepts, Exterior, Interior, Landscape, Construction & Materials, Real Estate
+  Marketing, Property Branding, 3D Visualization, Real Estate Documents).
+- **Wizard:** project basics (type, property, location, climate, plot, floors,
+  beds/baths, budget, target market) + design direction (styles, roof, materials,
+  landscape, brand) + one of 9 output types (Concept Prompt · Floor Plan ·
+  Interior · Exterior · Landscape · Marketing Asset · Presentation · Storyboard ·
+  Walkthrough).
+- **Structured AI output** (`src/lib/design/realestate.ts → RealEstateConcept`):
+  project summary, design concept, style direction, materials, color palette,
+  space-planning notes, interior/exterior/landscape image prompts, marketing
+  copy, listing description, social captions, video storyboard, walkthrough
+  script, recommended export format and the **mandatory disclaimer**.
+- **AI Property Walkthrough Designer** (suite tab): property + camera/lighting/
+  music/voiceover/platform → scene list, camera movement, drone shot concepts,
+  interior/exterior camera paths, voiceover script, caption, video prompt,
+  thumbnail prompt, social description. Hands off to Video Studio, Ad Studio and
+  the Publishing Calendar.
+- **Templates:** 24 built-in (`src/config/industryTemplates.ts`) — Luxury Villa,
+  Family House, Hotel, Hospital, Investment Deck, Listing Flyer, Facebook Ad,
+  Walkthrough Video, etc. Each defines output type, required inputs, default
+  prompt, credits, export formats and tags. Viewing templates is free.
+- **Exports:** PDF (print view, 1 credit), prompt package JSON (free), copy
+  image prompts (free); all recorded in `real_estate_exports`.
+- **Credits:** per output type — concept/interior/exterior/landscape 8, floor
+  plan 10, marketing 6, presentation 12, storyboard 10, walkthrough 12. Billed
+  only on real-AI success; 402 pre-check; placeholder runs free.
+- **Data:** `real_estate_projects`, `real_estate_design_outputs`,
+  `real_estate_walkthroughs`, `real_estate_exports` (owner RLS, migration 0028).
+- **Admin:** `/admin/design` → Industry Suites panel — activate/hide suites,
+  create/feature/hide/delete DB industry templates, RE usage stats. Audited
+  (`admin.industry.*`).
+
+## Safety
+
+Every generated concept carries: *"CreatorForge.io generates conceptual design,
+marketing, and visualization materials. Architectural, engineering, legal, and
+construction decisions should be reviewed by qualified professionals before use.
+AI-generated floor plan concepts are not certified drawings."* The wizard,
+suite overview and concept views all display it; the AI system prompts enforce
+the conceptual-only framing.

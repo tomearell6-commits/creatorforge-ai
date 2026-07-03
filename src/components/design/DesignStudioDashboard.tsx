@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, LayoutTemplate, Palette, Clapperboard, FileDown, FolderKanban, Layers, Coins, Sparkles, Star } from "lucide-react";
+import { Plus, LayoutTemplate, Palette, Clapperboard, FileDown, FolderKanban, Layers, Coins, Sparkles, Star, Building2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { FEATURED_DESIGN_CATEGORIES } from "@/config/designStudio";
+import { DesignCategoryGrid } from "./DesignCategoryGrid";
 
 type Project = { id: string; title: string; category: string | null; status: string; width: number; height: number; updated_at: string; credits_used: number };
 
 const QUICK = [
   { href: "/dashboard/design/new", label: "New Design", icon: Plus },
+  { href: "/dashboard/design/industries", label: "Industry Suites", icon: Building2 },
   { href: "/dashboard/design/templates", label: "Templates", icon: LayoutTemplate },
   { href: "/dashboard/design/brand-kit", label: "Brand Kit", icon: Palette },
   { href: "/dashboard/design/video-graphics", label: "Live Footage", icon: Clapperboard },
@@ -100,6 +102,20 @@ export function DesignStudioDashboard() {
         )}
       </div>
 
+      {/* Industry Suites promo */}
+      <Link href="/dashboard/design/industries" className="flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 transition-shadow hover:shadow-md dark:border-brand-900 dark:bg-brand-950/20">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+            <Building2 className="h-5 w-5" />
+          </span>
+          <div>
+            <div className="text-sm font-semibold">Professional Industry Suites</div>
+            <div className="text-xs text-muted-foreground">Real Estate & Architecture is live — floor plans, interiors, property marketing and AI walkthroughs.</div>
+          </div>
+        </div>
+        <ArrowRight className="h-4 w-4 shrink-0 text-brand-600" />
+      </Link>
+
       {/* Featured categories */}
       <div>
         <h2 className="mb-2 text-sm font-semibold">Popular designs</h2>
@@ -111,6 +127,12 @@ export function DesignStudioDashboard() {
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* Full category browser */}
+      <div>
+        <h2 className="mb-2 text-sm font-semibold">Browse all categories</h2>
+        <DesignCategoryGrid />
       </div>
     </div>
   );

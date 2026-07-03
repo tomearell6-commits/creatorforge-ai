@@ -15,6 +15,9 @@ const SLUG_ALIASES: Record<string, string> = {
   "seo-audit": "/dashboard/seo/audit",
   "ai-design-studio": "/dashboard/design",
   "design-studio": "/dashboard/design",
+  "real-estate-architecture-design": "/dashboard/design/industries/real-estate-architecture",
+  "real-estate-architecture": "/dashboard/design/industries/real-estate-architecture",
+  "industry-suites": "/dashboard/design/industries",
 };
 
 export default async function CategoryWorkflowPage({ params }: { params: Promise<{ categorySlug: string }> }) {

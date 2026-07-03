@@ -9,7 +9,7 @@
 import {
   Video, Megaphone, BookOpen, Workflow, BarChart3, Briefcase,
   LayoutGrid, Image as ImageIcon, Music, Share2, Sparkles, FileText, Clapperboard,
-  Library, Server, CalendarDays, FolderKanban, PenLine, FileDown, Palette, LayoutTemplate,
+  Library, Server, CalendarDays, FolderKanban, PenLine, FileDown, Palette, LayoutTemplate, Building2,
   Search, Globe, Bell, ListChecks, Rocket, History as HistoryIcon, Users, Wallet,
   CreditCard, KeyRound, Handshake, Gift, LifeBuoy, Crown, Settings, Hash, Type,
   Mail, FileSearch, Target,
@@ -61,6 +61,8 @@ export const STUDIOS: Studio[] = [
         heading: "Design Studio",
         tools: [
           { label: "Design Dashboard", href: "/dashboard/design", icon: Palette },
+          { label: "Industry Suites", href: "/dashboard/design/industries", icon: Briefcase },
+          { label: "Real Estate & Architecture", href: "/dashboard/design/industries/real-estate-architecture", icon: Building2 },
           { label: "New Design", href: "/dashboard/design/new", icon: LayoutGrid },
           { label: "Design Templates", href: "/dashboard/design/templates", icon: LayoutTemplate },
           { label: "Brand Kit", href: "/dashboard/design/brand-kit", icon: Palette },

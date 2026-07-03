@@ -65,6 +65,47 @@ export const TOURS: Tour[] = [
     ],
   },
   {
+    id: "first-real-estate-design",
+    title: "Create Your First Real Estate Design",
+    steps: [
+      { href: "/dashboard/design/industries", title: "Open Industry Suites", body: "Industry Suites are specialized design workspaces. Real Estate & Architecture is the first live suite." },
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Start a project", body: "Click Create New Project, fill in the property details (type, bedrooms, style, budget) and pick an output type." },
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Generate & export", body: "Generate your structured concept — summary, materials, palette, prompts and marketing copy — then export as PDF or a prompt package." },
+    ],
+  },
+  {
+    id: "use-real-estate-template",
+    title: "Use a Real Estate Template",
+    steps: [
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Browse templates", body: "The Overview tab shows featured and full template libraries — Luxury Villa, Family House, Hotel, Investment Deck and more." },
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Generate from a template", body: "Click any template — it preloads the wizard with a proven brief you can adjust before generating." },
+    ],
+  },
+  {
+    id: "property-marketing-assets",
+    title: "Generate Property Marketing Assets",
+    steps: [
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Pick a marketing category", body: "Under Real Estate Marketing Designs choose flyers, ads, posters or brochures." },
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Get copy + captions", body: "Set output type to Marketing Asset — you'll get marketing copy, a listing description and platform captions ready to use." },
+    ],
+  },
+  {
+    id: "ai-walkthrough-concept",
+    title: "Create an AI Walkthrough Concept",
+    steps: [
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Open AI Walkthrough", body: "Switch to the AI Walkthrough tab in the Real Estate suite." },
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Design the tour", body: "Describe the property, camera and lighting — get a scene list, drone shots, voiceover script and a ready video prompt, then send it to the Video Studio." },
+    ],
+  },
+  {
+    id: "export-real-estate-package",
+    title: "Export a Real Estate Design Package",
+    steps: [
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Generate a concept", body: "Any generated concept shows export actions at the top of the result." },
+      { href: "/dashboard/design/industries/real-estate-architecture", title: "Export", body: "Export PDF for presentations, download the prompt package (JSON), or copy the image prompts straight into any image model." },
+    ],
+  },
+  {
     id: "ai-shorts",
     title: "Generate AI Shorts",
     steps: [
