@@ -10,9 +10,9 @@ const RESOURCES = [
   { label: "Affiliate", href: su("/dashboard/affiliate") },
   { label: "Blog", href: "#faq" },
   { label: "Contact", href: "#faq" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms", href: "#" },
-  { label: "System Status", href: "#" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Refund Policy", href: "/refund-policy" },
 ];
 
 export function MarketingFooter() {

@@ -108,6 +108,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Please wait…" : mode === "signup" ? "Create account" : "Log in"}
       </Button>
+
+      {mode === "signup" && (
+        <p className="text-center text-xs text-muted-foreground">
+          By creating an account you agree to our{" "}
+          <a href="/terms" className="text-brand-600 hover:underline" target="_blank" rel="noopener">Terms of Service</a>{" "}
+          and{" "}
+          <a href="/privacy" className="text-brand-600 hover:underline" target="_blank" rel="noopener">Privacy Policy</a>.
+        </p>
+      )}
     </form>
   );
 }
