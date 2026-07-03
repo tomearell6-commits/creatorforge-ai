@@ -30,10 +30,14 @@ const TEMPLATES: Template[] = [
   { name: "Property Listing Flyers", studio: "Design", platform: "Print/EPUB", difficulty: "Beginner" },
   { name: "Property Walkthrough Videos", studio: "Design", platform: "YouTube", difficulty: "Intermediate" },
   { name: "Floor Plan Concepts", studio: "Design", platform: "Web", difficulty: "Intermediate" },
+  { name: "SaaS MVP Blueprints", studio: "Business", platform: "Web", difficulty: "Advanced", popular: true },
+  { name: "Website Project Plans", studio: "Business", platform: "Web", difficulty: "Beginner", popular: true },
+  { name: "Shopify Store Blueprints", studio: "Business", platform: "Web", difficulty: "Intermediate" },
+  { name: "Marketing Funnels", studio: "Business", platform: "Web", difficulty: "Intermediate" },
 ];
 
 const FILTERS: { key: keyof Template | "all"; label: string; values: string[] }[] = [
-  { key: "studio", label: "Studio", values: ["Content", "Marketing", "Design", "Publishing", "Analytics"] },
+  { key: "studio", label: "Studio", values: ["Content", "Marketing", "Design", "Business", "Publishing", "Analytics"] },
   { key: "platform", label: "Platform", values: ["TikTok", "Instagram", "YouTube", "Facebook", "WordPress", "Email", "Web", "Print/EPUB"] },
   { key: "difficulty", label: "Difficulty", values: ["Beginner", "Intermediate", "Advanced"] },
 ];

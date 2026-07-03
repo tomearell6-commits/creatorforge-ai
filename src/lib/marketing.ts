@@ -175,7 +175,7 @@ export const FOOTER_COLUMNS = [
   {
     heading: "AI Design Studio",
     links: [
-      "AI Design Studio", "Real Estate & Architecture Design", "YouTube Thumbnail", "Instagram Post",
+      "AI Design Studio", "AI Website & App Builder", "Real Estate & Architecture Design", "YouTube Thumbnail", "Instagram Post",
       "Logo Concept", "Book Cover", "Facebook Ad", "Brand Kit", "Live AI Footage Concept",
     ],
   },

@@ -12,7 +12,7 @@ import {
   Library, Server, CalendarDays, FolderKanban, PenLine, FileDown, Palette, LayoutTemplate, Building2,
   Search, Globe, Bell, ListChecks, Rocket, History as HistoryIcon, Users, Wallet,
   CreditCard, KeyRound, Handshake, Gift, LifeBuoy, Crown, Settings, Hash, Type,
-  Mail, FileSearch, Target,
+  Mail, FileSearch, Target, Hammer,
 } from "lucide-react";
 
 export type StudioTool = { label: string; href: string; icon: typeof Video; tour?: string };
@@ -257,6 +257,15 @@ export const STUDIOS: Studio[] = [
       { label: "View Infrastructure", href: "/admin/infra/health", icon: Server },
     ],
     sections: [
+      {
+        heading: "Build Studio",
+        tools: [
+          { label: "Build Dashboard", href: "/dashboard/build", icon: Hammer },
+          { label: "New Build Project", href: "/dashboard/build/new", icon: LayoutGrid },
+          { label: "Build Templates", href: "/dashboard/build/templates", icon: LayoutTemplate },
+          { label: "My Build Projects", href: "/dashboard/build/projects", icon: FolderKanban },
+        ],
+      },
       {
         heading: "AI Email Assistant",
         tools: [
