@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { Plus, Trash2, ImageIcon } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Sparkles, Coins } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
+import { DESIGN_CREDIT_COSTS } from "@/lib/design/credits";
 
 type Asset = { id: string; url: string; name: string | null; asset_type: string; source: string; created_at: string };
 
@@ -18,6 +19,8 @@ export function DesignAssetLibrary() {
   const [name, setName] = useState("");
   const [msg, setMsg] = useState<{ v: "error" | "success"; t: string } | null>(null);
   const [adding, setAdding] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,8 +60,50 @@ export function DesignAssetLibrary() {
     await load();
   }, [load]);
 
+  const generateAi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiPrompt.trim()) return;
+    setGenerating(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/design/image", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiPrompt.trim(), width: 1024, height: 1024 }),
+      });
+      if (res.status === 402) throw new Error("Not enough credits.");
+      if (res.status === 429) throw new Error("Too many requests — wait a minute.");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Image generation failed");
+      setAiPrompt("");
+      await load();
+      setMsg({ v: "success", t: "AI image generated and saved to your library." });
+    } catch (err) {
+      setMsg({ v: "error", t: err instanceof Error ? err.message : "Image generation failed" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Generate with AI (fal.ai FLUX) */}
+      <form onSubmit={generateAi} className="flex flex-wrap items-end gap-2 rounded-xl border border-brand-200 bg-brand-50/40 p-4 dark:border-brand-900 dark:bg-brand-950/10">
+        <label className="min-w-[240px] flex-1">
+          <span className="mb-0.5 flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-brand-600" /> Generate with AI
+          </span>
+          <input value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="A minimalist product photo on a marble surface, soft daylight…"
+            className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-brand-500" />
+        </label>
+        <span className="inline-flex items-center gap-1 pb-2 text-xs text-muted-foreground">
+          <Coins className="h-3 w-3" /> ~{DESIGN_CREDIT_COSTS.aiImage}
+        </span>
+        <Button type="submit" disabled={generating || !aiPrompt.trim()}>
+          {generating ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />} Generate
+        </Button>
+      </form>
+
       <form onSubmit={add} className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-card p-4">
         <label className="min-w-[240px] flex-1">
           <span className="mb-0.5 block text-[11px] font-medium text-muted-foreground">Image URL (https)</span>

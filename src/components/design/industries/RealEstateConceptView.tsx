@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { FileDown, Printer, Copy, Check, AlertTriangle, Clapperboard, Video, Megaphone, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { AiImageRender } from "@/components/design/AiImageRender";
 import type { RealEstateConcept } from "@/lib/design/realestate";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -128,6 +129,21 @@ export function RealEstateConceptView({
       <Section title="Space Planning Notes (conceptual)">
         <ul className="list-inside list-disc space-y-0.5">{concept.spacePlanningNotes.map((n, i) => <li key={i}>{n}</li>)}</ul>
       </Section>
+
+      {/* Render the prompts into real images (fal.ai FLUX) */}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h3 className="text-sm font-semibold">Render images with AI</h3>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Turn the concept prompts into photorealistic renders — saved to your Design Assets automatically.
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {/* No projectId here: these save to design_assets, whose FK points at
+              design_projects — real-estate projects live in their own table. */}
+          <AiImageRender label="Exterior" prompt={concept.exteriorPrompt} kind="image" />
+          <AiImageRender label="Interior" prompt={concept.interiorPrompt} kind="image" />
+          <AiImageRender label="Landscape" prompt={concept.landscapePrompt} kind="image" />
+        </div>
+      </div>
 
       <Section title="Image Prompts (paste into any image model)">
         <div className="space-y-2 font-mono text-xs">

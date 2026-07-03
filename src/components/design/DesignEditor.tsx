@@ -9,6 +9,7 @@ import { DesignToolbar } from "./DesignToolbar";
 import { DesignLayerPanel } from "./DesignLayerPanel";
 import { DesignPropertiesPanel } from "./DesignPropertiesPanel";
 import { BrandKitSelector } from "./BrandKitSelector";
+import { AiImageBar } from "./AiImageBar";
 import { blankCanvas } from "@/lib/design/layers";
 import { renderToDataUrl, downloadDataUrl, printImageAsPdf } from "@/lib/design/render";
 import type { ExportFormat } from "@/lib/design/types";
@@ -113,6 +114,12 @@ export function DesignEditor({ projectId }: { projectId?: string }) {
   return (
     <div className="space-y-3">
       <DesignToolbar ed={ed} onSave={save} onExport={exportAs} saving={saving} />
+      <AiImageBar
+        projectId={projectId}
+        width={meta.width}
+        height={meta.height}
+        onImage={(url) => ed.addLayer("image", { contentJson: { url }, width: 50, height: 50, positionX: 25, positionY: 25 })}
+      />
       {msg && <Alert variant={msg.variant}>{msg.text}</Alert>}
       <div className="grid gap-3 lg:grid-cols-[1fr_300px]">
         <DesignEditorCanvas ed={ed} width={meta.width} height={meta.height} />

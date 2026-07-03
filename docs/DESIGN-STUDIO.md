@@ -230,3 +230,25 @@ construction decisions should be reviewed by qualified professionals before use.
 AI-generated floor plan concepts are not certified drawings."* The wizard,
 suite overview and concept views all display it; the AI system prompts enforce
 the conceptual-only framing.
+
+---
+
+# AI Image Rendering (fal.ai FLUX)
+
+`src/lib/design/image.ts` + `POST /api/design/image` turn concept prompts into
+real images in-app — no more copy-pasting prompts elsewhere.
+
+- **Model:** FLUX 1.1 Pro via fal.ai (`FAL_IMAGE_MODEL` overrides; `FAL_KEY`
+  already live). Sizes clamp to ≤1440px, multiples of 8, aspect preserved.
+- **Persistence:** provider URLs are temporary, so every render is rehosted to
+  Supabase Storage (`uploadFromUrl`) and registered in `design_assets`
+  (source `ai`, prompt kept for provenance) + a `design_generation_jobs` row.
+- **Where it surfaces:**
+  1. Real Estate concept view — "Render images with AI" (Exterior / Interior /
+     Landscape cards, download buttons)
+  2. Design editor — AI-image bar under the toolbar; result lands on the canvas
+     as a new image layer
+  3. Design Assets — "Generate with AI" form
+- **Billing:** `DESIGN_CREDIT_COSTS.aiImage` (5) charged only on real-AI
+  success; 402 pre-check; 10 renders/min per user rate limit; placeholder
+  (picsum) is free when FAL_KEY is absent.
