@@ -232,7 +232,9 @@ export type NotificationType =
   // Credit & subscription notification system
   | "credits_critical" | "credits_exhausted"
   | "subscription_reminder" | "payment_failed" | "subscription_expired"
-  | "subscription_cancelled" | "topup_success" | "weekly_summary";
+  | "subscription_cancelled" | "topup_success" | "weekly_summary"
+  // AI Email Assistant
+  | "email_attention" | "email_summary";
 
 export type Notification = {
   id: string;

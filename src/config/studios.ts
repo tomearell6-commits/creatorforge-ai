@@ -258,6 +258,17 @@ export const STUDIOS: Studio[] = [
     ],
     sections: [
       {
+        heading: "AI Email Assistant",
+        tools: [
+          { label: "Email Dashboard", href: "/dashboard/email", icon: Mail },
+          { label: "Connect Email", href: "/dashboard/email/connect", icon: KeyRound },
+          { label: "Needs Attention", href: "/dashboard/email/needs-attention", icon: Bell },
+          { label: "Draft Replies", href: "/dashboard/email/drafts", icon: PenLine },
+          { label: "Automation Rules", href: "/dashboard/email/rules", icon: Workflow },
+          { label: "Email Reports", href: "/dashboard/email/reports", icon: BarChart3 },
+        ],
+      },
+      {
         heading: "Brand & Team",
         tools: [
           { label: "Brand Kit / White Label", href: "/dashboard/white-label", icon: Palette },
