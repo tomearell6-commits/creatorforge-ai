@@ -330,6 +330,22 @@ export const ADMIN_INFRA_NAV = [
   { href: "/admin/infra/health", label: "Service Health" },
 ];
 
+/** Operations Review Center — admin submenu (renewals, credits, keys, costs). */
+export const ADMIN_OPS_NAV = [
+  { href: "/admin/operations", label: "Overview" },
+  { href: "/admin/operations/alerts", label: "Alerts" },
+  { href: "/admin/operations/api-keys", label: "API Key Rotation" },
+  { href: "/admin/operations/subscriptions", label: "Subscriptions" },
+  { href: "/admin/operations/credits", label: "Credit Balances" },
+  { href: "/admin/operations/quotas", label: "Usage Quotas" },
+  { href: "/admin/operations/database-storage", label: "Database & Storage" },
+  { href: "/admin/operations/webhooks", label: "Webhooks" },
+  { href: "/admin/operations/health", label: "Service Health" },
+  { href: "/admin/operations/checklist", label: "Monthly Checklist" },
+  { href: "/admin/operations/calendar", label: "Renewal Calendar" },
+  { href: "/admin/operations/cost-forecast", label: "Cost Forecast" },
+];
+
 export const TICKET_STATUSES = ["open", "pending", "resolved", "closed"] as const;
 export const TICKET_PRIORITIES = ["low", "normal", "high", "urgent"] as const;
 export const TICKET_CATEGORIES = ["Billing", "Technical", "Publishing", "Account", "Feature request", "Other"] as const;
