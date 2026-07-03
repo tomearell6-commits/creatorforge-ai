@@ -114,7 +114,7 @@ Manual editing is **always free**. Billed only on a successful **real-AI** resul
 | Action | Credits |
 |--------|---------|
 | AI design concept | per-category (default 6) |
-| AI image / background | 5 / 4 |
+| AI image / background | 8 / 4 |
 | AI prompt assist | 1 |
 | Live footage concept | 10 |
 | Premium template | 15 |
@@ -238,7 +238,7 @@ the conceptual-only framing.
 `src/lib/design/image.ts` + `POST /api/design/image` turn concept prompts into
 real images in-app — no more copy-pasting prompts elsewhere.
 
-- **Model:** FLUX 1.1 Pro via fal.ai (`FAL_IMAGE_MODEL` overrides; `FAL_KEY`
+- **Model:** FLUX 1.1 Pro **Ultra** (2K premium renders) via fal.ai (`FAL_IMAGE_MODEL` overrides; `FAL_KEY`
   already live). Sizes clamp to ≤1440px, multiples of 8, aspect preserved.
 - **Persistence:** provider URLs are temporary, so every render is rehosted to
   Supabase Storage (`uploadFromUrl`) and registered in `design_assets`
@@ -249,6 +249,6 @@ real images in-app — no more copy-pasting prompts elsewhere.
   2. Design editor — AI-image bar under the toolbar; result lands on the canvas
      as a new image layer
   3. Design Assets — "Generate with AI" form
-- **Billing:** `DESIGN_CREDIT_COSTS.aiImage` (5) charged only on real-AI
+- **Billing:** `DESIGN_CREDIT_COSTS.aiImage` (8) charged only on real-AI
   success; 402 pre-check; 10 renders/min per user rate limit; placeholder
   (picsum) is free when FAL_KEY is absent.

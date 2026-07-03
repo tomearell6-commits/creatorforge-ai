@@ -7,7 +7,7 @@
 
 export const DESIGN_CREDIT_COSTS = {
   concept: 6,          // full AI design concept (layout + copy + colors + layers)
-  aiImage: 5,          // AI background / hero image generation
+  aiImage: 8,          // AI image generation (FLUX 1.1 Pro Ultra — 2K premium renders)
   aiBackground: 4,     // AI background-only generation
   aiPrompt: 1,         // AI prompt-only assist
   footage: 10,         // live AI footage concept (video prompt + shot list)
