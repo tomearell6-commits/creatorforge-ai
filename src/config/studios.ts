@@ -251,6 +251,7 @@ export const STUDIOS: Studio[] = [
     icon: Briefcase,
     accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
     quickActions: [
+      { label: "Plan a Product", href: "/dashboard/build/new", icon: Hammer },
       { label: "Top Up Credits", href: "/dashboard/credits", icon: Wallet },
       { label: "Invite Team", href: "/dashboard/team", icon: Users },
       { label: "Manage Brand", href: "/dashboard/white-label", icon: Palette },

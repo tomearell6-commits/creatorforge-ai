@@ -65,6 +65,15 @@ export const TOURS: Tour[] = [
     ],
   },
   {
+    id: "plan-first-product",
+    title: "Plan Your First Digital Product",
+    steps: [
+      { target: "plan-first-product", href: "/dashboard", title: "Open Build Studio", body: "Build Studio turns an idea into a complete plan: structure, copy, features, roadmap and marketing." },
+      { href: "/dashboard/build/new", title: "Describe your idea", body: "Pick a project type (website, app, store, landing page or funnel), describe your idea, and choose a goal and style." },
+      { href: "/dashboard/build/new", title: "Generate & export", body: "Generate the full package (~20 credits), review it across the tabs, then export a developer brief or a prompt package for AI coding tools." },
+    ],
+  },
+  {
     id: "first-real-estate-design",
     title: "Create Your First Real Estate Design",
     steps: [
