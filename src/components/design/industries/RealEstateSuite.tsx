@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Building2, Plus, Clapperboard, LayoutTemplate, Coins, Star, Crown, Trash2,
-  Video, Megaphone, CalendarDays, AlertTriangle,
+  Video, Megaphone, CalendarDays, AlertTriangle, Eye, ArrowLeft,
   Home, Gem, Briefcase, Store, Hotel, UtensilsCrossed, Palmtree, HeartPulse,
   GraduationCap, Warehouse, Factory, Church, Coffee, Scissors, Dumbbell, Users,
   TrendingUp, FileText, Instagram,
@@ -17,6 +17,8 @@ import { REAL_ESTATE_GROUPS, RE_DISCLAIMER, slugifySuiteCategory, getSuiteBySlug
 import { getIndustryTemplatesForSuite, type IndustryTemplate } from "@/config/industryTemplates";
 import { RealEstateWizard } from "./RealEstateWizard";
 import { WalkthroughDesigner } from "./WalkthroughDesigner";
+import { RealEstateConceptView } from "./RealEstateConceptView";
+import type { RealEstateConcept } from "@/lib/design/realestate";
 
 const TEMPLATE_ICONS: Record<string, typeof Home> = {
   Home, Gem, Building2, Briefcase, Store, Hotel, UtensilsCrossed, Palmtree, HeartPulse,
@@ -26,6 +28,7 @@ const TEMPLATE_ICONS: Record<string, typeof Home> = {
 
 type Tab = "overview" | "create" | "walkthrough" | "projects";
 type ReProject = { id: string; project_name: string; property_type: string | null; output_type: string; status: string; credits_used: number; updated_at: string };
+type ReOutput = { id: string; output_type: string; concept_json: RealEstateConcept; used_ai: boolean; credits_used: number; created_at: string };
 
 export function RealEstateSuite() {
   const suite = getSuiteBySlug("real-estate-architecture")!;
@@ -37,6 +40,9 @@ export function RealEstateSuite() {
   const [wizardSeed, setWizardSeed] = useState<{ template?: IndustryTemplate; category?: string } | null>(null);
   const [projects, setProjects] = useState<ReProject[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  // Viewing a past concept: which project, its saved outputs, and the selected one.
+  const [viewing, setViewing] = useState<{ project: ReProject; outputs: ReOutput[]; selected: number } | null>(null);
+  const [loadingView, setLoadingView] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
     setLoadingProjects(true);
@@ -55,12 +61,24 @@ export function RealEstateSuite() {
     setTab("create");
   };
 
+  const openConcept = useCallback(async (p: ReProject) => {
+    setLoadingView(p.id);
+    try {
+      const res = await fetch(`/api/design/realestate/outputs?project=${p.id}`, { cache: "no-store" });
+      const json = await res.json();
+      if (res.ok) setViewing({ project: p, outputs: json.outputs ?? [], selected: 0 });
+    } finally {
+      setLoadingView(null);
+    }
+  }, []);
+
   const removeProject = useCallback(async (p: ReProject) => {
     const ok = await confirm({ title: "Delete property project?", description: <><strong>{p.project_name}</strong> and its generated outputs will be removed.</>, confirmLabel: "Delete", danger: true });
     if (!ok) return;
     setLoading(true);
     try {
       await fetch("/api/design/realestate/projects", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: p.id }) });
+      setViewing((v) => (v?.project.id === p.id ? null : v));
       await loadProjects();
     } finally {
       close();
@@ -200,7 +218,56 @@ export function RealEstateSuite() {
 
       {tab === "walkthrough" && <WalkthroughDesigner />}
 
-      {tab === "projects" && (
+      {tab === "projects" && viewing && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <button onClick={() => setViewing(null)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" /> My Projects
+            </button>
+            {viewing.outputs.length > 1 && (
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                Version
+                <select
+                  value={viewing.selected}
+                  onChange={(e) => setViewing({ ...viewing, selected: Number(e.target.value) })}
+                  className="rounded-md border border-border bg-background px-2 py-1 text-sm outline-none focus:border-brand-500"
+                >
+                  {viewing.outputs.map((o, i) => (
+                    <option key={o.id} value={i}>
+                      {o.output_type.replace(/_/g, " ")} · {new Date(o.created_at).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+          {viewing.outputs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border p-12 text-center">
+              <Building2 className="mb-2 h-8 w-8 text-brand-500" />
+              <p className="text-sm font-medium">No generated concepts for this project yet</p>
+              <p className="mb-3 text-xs text-muted-foreground">Run the wizard to generate one — it will be saved here.</p>
+              <Button size="sm" onClick={() => { setViewing(null); openWizard({}); }}><Plus className="h-4 w-4" /> Generate concept</Button>
+            </div>
+          ) : (
+            <>
+              <div>
+                <h2 className="text-lg font-semibold">{viewing.project.project_name}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {viewing.outputs[viewing.selected].output_type.replace(/_/g, " ")} · saved {new Date(viewing.outputs[viewing.selected].created_at).toLocaleString()}
+                  {viewing.outputs[viewing.selected].used_ai ? ` · ${viewing.outputs[viewing.selected].credits_used} credits` : " · placeholder (free)"}
+                </p>
+              </div>
+              <RealEstateConceptView
+                concept={viewing.outputs[viewing.selected].concept_json}
+                projectName={viewing.project.project_name}
+                projectId={viewing.project.id}
+              />
+            </>
+          )}
+        </div>
+      )}
+
+      {tab === "projects" && !viewing && (
         loadingProjects ? (
           <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Spinner /> Loading projects…</div>
         ) : projects.length === 0 ? (
@@ -232,9 +299,14 @@ export function RealEstateSuite() {
                     <td className="px-4 py-2.5"><Badge variant={p.status === "generated" ? "brand" : p.status === "exported" ? "success" : "default"}>{p.status}</Badge></td>
                     <td className="px-4 py-2.5 text-muted-foreground">{p.credits_used || "—"}</td>
                     <td className="px-4 py-2.5 text-right">
-                      <button onClick={() => removeProject(p)} className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label={`Delete ${p.project_name}`}>
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => openConcept(p)} disabled={loadingView === p.id}>
+                          {loadingView === p.id ? <Spinner size="sm" /> : <Eye className="h-4 w-4" />} View
+                        </Button>
+                        <button onClick={() => removeProject(p)} className="rounded p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label={`Delete ${p.project_name}`}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
