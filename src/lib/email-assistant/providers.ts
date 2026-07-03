@@ -171,26 +171,29 @@ export async function listMessages(family: "google" | "microsoft", accessToken: 
     );
     if (!list.ok) throw new Error(`Gmail list failed (${list.status})`);
     const ids: { id: string; threadId: string }[] = (await list.json()).messages ?? [];
-    const out: FetchedMessage[] = [];
-    for (const m of ids) {
-      const res = await fetchWithTimeout(
-        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }, 15_000
-      );
-      if (!res.ok) continue;
-      const j = await res.json();
-      const h = (name: string) => (j.payload?.headers ?? []).find((x: { name: string; value: string }) => x.name.toLowerCase() === name.toLowerCase())?.value;
-      const from = h("From") ?? "";
-      const match = from.match(/^(.*?)\s*<(.+)>$/);
-      out.push({
-        providerMsgId: j.id, threadId: m.threadId,
-        fromName: match ? match[1].replace(/(^"|"$)/g, "") : from,
-        fromAddress: match ? match[2] : from,
-        subject: h("Subject") ?? "(no subject)", snippet: j.snippet ?? "",
-        receivedAt: j.internalDate ? new Date(Number(j.internalDate)).toISOString() : undefined,
-      });
-    }
-    return out;
+    // Fetch metadata in parallel — sequential fetches would eat most of the
+    // serverless time budget on a full 25-message scan.
+    const settled = await Promise.all(ids.map(async (m) => {
+      try {
+        const res = await fetchWithTimeout(
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }, 15_000
+        );
+        if (!res.ok) return null;
+        const j = await res.json();
+        const h = (name: string) => (j.payload?.headers ?? []).find((x: { name: string; value: string }) => x.name.toLowerCase() === name.toLowerCase())?.value;
+        const from = h("From") ?? "";
+        const match = from.match(/^(.*?)\s*<(.+)>$/);
+        return {
+          providerMsgId: j.id, threadId: m.threadId,
+          fromName: match ? match[1].replace(/(^"|"$)/g, "") : from,
+          fromAddress: match ? match[2] : from,
+          subject: h("Subject") ?? "(no subject)", snippet: j.snippet ?? "",
+          receivedAt: j.internalDate ? new Date(Number(j.internalDate)).toISOString() : undefined,
+        } as FetchedMessage;
+      } catch { return null; }
+    }));
+    return settled.filter((x): x is FetchedMessage => x !== null);
   }
   const res = await fetchWithTimeout(
     `https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$top=${max}&$select=id,conversationId,from,subject,bodyPreview,receivedDateTime`,

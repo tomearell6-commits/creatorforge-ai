@@ -23,7 +23,11 @@ export function EmailDashboard() {
       const res = await fetch("/api/email/sync", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accountId }),
       });
-      const json = await res.json();
+      const raw = await res.text();
+      let json: Record<string, unknown> & { fetched?: number; classified?: number; critical?: number; creditsUsed?: number; error?: string };
+      try { json = JSON.parse(raw); } catch {
+        throw new Error(res.status >= 500 ? "The scan took too long or the server errored — try again (large inboxes may need two passes)." : raw.slice(0, 120));
+      }
       if (res.status === 402) throw new Error("Not enough credits for the scan. Top up in Credit Wallet.");
       if (!res.ok) throw new Error(json.error ?? "Sync failed");
       setSyncMsg({ v: "success", t: `Synced: ${json.fetched} fetched, ${json.classified} classified${json.critical ? `, ${json.critical} critical` : ""}${json.creditsUsed ? ` · ${json.creditsUsed} credits` : " · free"}` });

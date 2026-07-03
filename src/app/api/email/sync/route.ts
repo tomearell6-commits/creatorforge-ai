@@ -6,7 +6,7 @@ import { getCreditBalance, deductCredits } from "@/lib/credits";
 import { rateLimitAsync } from "@/lib/security/ratelimit";
 import { listMessages, demoInbox, providerFamily, type EmailProviderId } from "@/lib/email-assistant/providers";
 import { getAccessToken } from "@/lib/email-assistant/tokens";
-import { classifyEmail, willUseRealEmailAI } from "@/lib/email-assistant/ai";
+import { classifyEmailsBatch, willUseRealEmailAI } from "@/lib/email-assistant/ai";
 import { estimateScanCredits, EMAIL_CREDIT_REASONS } from "@/lib/email-assistant/safety";
 import { emitNotification } from "@/lib/notifications";
 
@@ -85,12 +85,16 @@ export async function POST(request: Request) {
     }
   }
 
-  // 4. Classify new messages; build attention items; notify on critical.
-  let usedAIAny = false;
+  // 4. Classify ALL new messages in one batched AI call (stays inside the
+  // serverless time limit even for a full 25-email scan), then persist.
+  const { results, usedAI: usedAIAny } = await classifyEmailsBatch(
+    unclassified.map((m) => ({ fromName: m.from_name, fromAddress: m.from_address, subject: m.subject, body: m.body_text ?? m.snippet }))
+  );
   let criticalCount = 0;
-  for (const m of unclassified) {
-    const { result, usedAI } = await classifyEmail({ fromName: m.from_name, fromAddress: m.from_address, subject: m.subject, body: m.body_text ?? m.snippet });
-    usedAIAny = usedAIAny || usedAI;
+  for (let idx = 0; idx < unclassified.length; idx++) {
+    const m = unclassified[idx];
+    const result = results[idx];
+    const usedAI = usedAIAny;
     await supabase.from("email_classifications").upsert(
       {
         message_id: m.id, user_id: user.id, category: result.category, priority: result.priority,

@@ -101,6 +101,49 @@ export async function classifyEmail(email: EmailInput): Promise<{ result: Classi
   }
 }
 
+
+/**
+ * Batch classification — ALL emails in ONE Claude call (a 25-email inbox scan
+ * must finish well inside the 60s serverless limit; per-email calls cannot).
+ * Falls back to per-email heuristics on any failure. Bodies are truncated —
+ * plenty for triage.
+ */
+export async function classifyEmailsBatch(
+  emails: EmailInput[]
+): Promise<{ results: Classification[]; usedAI: boolean }> {
+  if (emails.length === 0) return { results: [], usedAI: false };
+  if (!willUseRealEmailAI()) {
+    return { results: emails.map((e) => classifyHeuristic(e)), usedAI: false };
+  }
+  try {
+    const payload = emails.map((e, i) => ({
+      i, from: e.fromName ?? e.fromAddress ?? "", subject: (e.subject ?? "").slice(0, 200),
+      body: (e.body ?? "").slice(0, 400),
+    }));
+    const r = await callClaude<{ results: (Classification & { i: number })[] }>(
+      "You are an executive email triage assistant. For EACH email in the input array, classify it. " +
+        "Return ONLY minified JSON {results:[{i(matching input index)," +
+        "category('urgent'|'needs_reply'|'waiting'|'support'|'sales_lead'|'billing'|'partnership'|'newsletter'|'low_priority'|'personal'|'follow_up')," +
+        "priority('critical'|'high'|'medium'|'low'),summary(1 sentence),needsReply(bool)," +
+        "isSensitive(bool: legal/financial/security/medical/government/dispute/refund/complaint)," +
+        "attentionReason(string or null),suggestedAction(string or null),deadline('YYYY-MM-DD' or null)}]}. " +
+        "Every input index must appear exactly once. No commentary.",
+      payload,
+      Math.min(8000, 300 * emails.length + 500)
+    );
+    const byIndex = new Map((r.results ?? []).map((x) => [x.i, x]));
+    const results = emails.map((e, i) => {
+      const got = byIndex.get(i);
+      const base = got ?? classifyHeuristic(e);
+      base.isSensitive = base.isSensitive || isSensitiveEmail({ subject: e.subject, body: e.body, category: base.category });
+      return base as Classification;
+    });
+    return { results, usedAI: true };
+  } catch {
+    return { results: emails.map((e) => classifyHeuristic(e)), usedAI: false };
+  }
+}
+
 export async function draftReply(email: EmailInput, tone: DraftTone): Promise<{ draft: string; usedAI: boolean }> {
   if (!willUseRealEmailAI()) return { draft: draftHeuristic(email, tone), usedAI: false };
   try {
