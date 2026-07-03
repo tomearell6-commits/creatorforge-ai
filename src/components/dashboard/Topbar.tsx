@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isPlatformAdmin } from "@/lib/admin";
 import { SignOutButton } from "./SignOutButton";
 import { CreditBadge } from "./CreditBadge";
 import { NotificationBell } from "./NotificationBell";
@@ -12,6 +13,7 @@ export async function Topbar() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { ok: isAdmin } = await isPlatformAdmin();
   let credits = 0;
   let plan = "free";
   if (user) {
@@ -27,7 +29,7 @@ export async function Topbar() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background px-4 sm:px-6">
       <div className="flex items-center gap-3">
-        <MobileNav />
+        <MobileNav isAdmin={isAdmin} />
         <CreditBadge credits={credits} plan={plan} />
         <NotificationBell />
       </div>

@@ -7,7 +7,7 @@ import { Logo } from "@/components/Logo";
 import { NavList } from "./NavList";
 
 /** Mobile hamburger that opens the sidebar as a slide-in drawer. Hidden on md+. */
-export function MobileNav() {
+export function MobileNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -40,7 +40,7 @@ export function MobileNav() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavList onNavigate={() => setOpen(false)} />
+            <NavList onNavigate={() => setOpen(false)} isAdmin={isAdmin} />
           </aside>
         </div>
       )}

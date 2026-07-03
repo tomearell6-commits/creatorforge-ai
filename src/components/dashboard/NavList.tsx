@@ -2,15 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_GROUPS } from "./nav-config";
+import { Crown, Activity } from "lucide-react";
+import { NAV_GROUPS, type NavGroup } from "./nav-config";
 import { cn } from "@/lib/utils";
 
+/** Shown only when the signed-in user passes the platform-admin gate. */
+const ADMIN_GROUP: NavGroup = {
+  heading: "Admin",
+  items: [
+    { href: "/admin", label: "Admin Portal", icon: Crown },
+    { href: "/admin/operations", label: "Operations Review", icon: Activity },
+  ],
+};
+
 /** Renders the grouped nav links. Shared by the desktop sidebar + mobile drawer. */
-export function NavList({ onNavigate }: { onNavigate?: () => void }) {
+export function NavList({ onNavigate, isAdmin = false }: { onNavigate?: () => void; isAdmin?: boolean }) {
   const pathname = usePathname();
+  const groups = isAdmin ? [...NAV_GROUPS, ADMIN_GROUP] : NAV_GROUPS;
   return (
     <nav className="flex-1 space-y-4 overflow-y-auto p-4">
-      {NAV_GROUPS.map((group, gi) => (
+      {groups.map((group, gi) => (
         <div key={gi} className="space-y-1">
           {group.heading && (
             <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
