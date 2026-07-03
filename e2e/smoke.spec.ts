@@ -5,8 +5,15 @@ import { test, expect } from "@playwright/test";
 
 test("landing page loads with brand + primary CTA", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/CreatorForge AI/i);
-  await expect(page.getByText(/Built for every niche/i)).toBeVisible();
+  await expect(page).toHaveTitle(/CreatorsForge/i);
+  await expect(page.getByRole("heading", { name: /Grow Your Business with AI/i })).toBeVisible();
+});
+
+test("legal pages are live", async ({ page }) => {
+  for (const path of ["/terms", "/privacy", "/refund-policy"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
 });
 
 test("pricing page renders plans", async ({ page }) => {
