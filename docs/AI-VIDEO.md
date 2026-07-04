@@ -37,7 +37,7 @@ to AI video clips, and keep a thin stitching layer.
 
 **Recommendation:** **fal.ai** as the video provider. One key → many models, so you
 can offer a cheap model (MiniMax/Kling) for most users and a premium model (Veo 3)
-for paid tiers — and switch with an env var, matching CreatorForge's provider pattern.
+for paid tiers — and switch with an env var, matching CreatorsForge's provider pattern.
 
 ## 3. Cost & latency (the deciding factors)
 
@@ -50,7 +50,7 @@ for paid tiers — and switch with an env var, matching CreatorForge's provider 
 - **Consistency:** character/style drift between clips is an industry-wide limitation;
   mitigations: strong style prompts, seed reuse, reference images, image-to-video.
 
-## 4. How it fits CreatorForge (clean)
+## 4. How it fits CreatorsForge (clean)
 
 - A dormant **`VIDEO_PROVIDER`** placeholder + `VideoProvider` interface already exist
   in `src/lib/media/providers/` — exactly the seam for this.

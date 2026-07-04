@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
           (summary.critical.length ? `<h3>Critical</h3><ul>${summary.critical.map((c) => `<li><strong>${c.from}</strong>: ${c.subject} — ${c.reason}</li>`).join("")}</ul>` : "") +
           (summary.nextActions.length ? `<h3>Suggested next actions</h3><ol>${summary.nextActions.map((a) => `<li>${a}</li>`).join("")}</ol>` : "") +
           `<p><a href="https://www.creatorsforge.io/dashboard/email/needs-attention" style="color:#65a30d">Open your inbox assistant →</a></p></div>`;
-        const r = await sendEmail({ to, subject: "Your CreatorForge.io email attention summary", html, text: `${summary.counts.critical} critical, ${summary.counts.needsReply} need a reply.` });
+        const r = await sendEmail({ to, subject: "Your CreatorsForge.io email attention summary", html, text: `${summary.counts.critical} critical, ${summary.counts.needsReply} need a reply.` });
         if (r.sent) {
           summaryEmails++;
           await admin.from("email_summary_reports").update({ emailed: true })

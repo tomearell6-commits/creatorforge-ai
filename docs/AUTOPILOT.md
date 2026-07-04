@@ -1,4 +1,4 @@
-# CreatorForge Autopilot
+# CreatorsForge Autopilot
 
 AI campaign automation: configure a strategy once and Autopilot plans, schedules,
 and (in Full mode) publishes content, then reports — with credit gating and
@@ -21,7 +21,7 @@ content-type rotation, and publish windows.
 
 ## 2. Dashboard pages
 
-Sidebar group **CreatorForge Autopilot**: Overview, Campaigns (+ 7-step Wizard at
+Sidebar group **CreatorsForge Autopilot**: Overview, Campaigns (+ 7-step Wizard at
 `/campaigns/new`), Planner, Automation Rules, Publishing Queue, Reports, History,
 Settings.
 

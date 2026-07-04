@@ -1,6 +1,6 @@
 # Publishing, Analytics & Automation (Phase 6)
 
-Phase 6 turns CreatorForge AI into a publishing platform: connect social accounts,
+Phase 6 turns CreatorsForge AI into a publishing platform: connect social accounts,
 compose + schedule + publish rendered videos, optimize metadata with AI, monitor
 analytics, get notified, automate workflows, and collaborate in workspaces.
 

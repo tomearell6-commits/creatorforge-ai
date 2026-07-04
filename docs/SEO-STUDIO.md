@@ -11,7 +11,7 @@ to one or more WordPress sites — modeled on the existing social-publishing wor
   links, SEO + readability scores).
 - **Edit:** an in-app editor for title, meta, slug, body (HTML), tags, category, FAQ.
 - **Publish:** to a connected WordPress site as **draft**, **publish now**, or
-  **schedule** (WP `future` status). Status + history tracked in CreatorForge.
+  **schedule** (WP `future` status). Status + history tracked in CreatorsForge.
 - **Plan:** a blog calendar (day/week/month) of scheduled + published articles.
 
 ## Dashboard modules (under "SEO Studio")
@@ -37,8 +37,8 @@ Public landing: **`/tools/seo-content-studio`**.
 
 ### WordPress Application Password setup (for users)
 1. WordPress admin → **Users → Profile → Application Passwords**.
-2. Name it "CreatorForge" → **Add New Application Password** → copy it.
-3. In CreatorForge → **SEO Studio → WordPress Sites** → enter Site URL, username,
+2. Name it "CreatorsForge" → **Add New Application Password** → copy it.
+3. In CreatorsForge → **SEO Studio → WordPress Sites** → enter Site URL, username,
    the application password → **Connect & test**.
 > If a managed host strips the `Authorization` header (LiteSpeed/Apache), add the
 > header-passthrough rule to `.htaccess` (see `docs/PUBLISHING.md` WordPress notes).

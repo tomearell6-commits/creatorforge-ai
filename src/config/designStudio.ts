@@ -1,5 +1,5 @@
 /**
- * CreatorForge Design Studio — the single source of truth for the design
+ * CreatorsForge Design Studio — the single source of truth for the design
  * workspace taxonomy: category groups, categories, canvas formats, and visual
  * styles. Consumed by the wizard, category grid, editor, templates, and the
  * AI concept generator. A category's `slug` is the kebab-case of its name.

@@ -1,6 +1,6 @@
 # Database Setup
 
-CreatorForge AI uses **Supabase** (PostgreSQL + Auth).
+CreatorsForge AI uses **Supabase** (PostgreSQL + Auth).
 
 ## 1. Create a Supabase project
 

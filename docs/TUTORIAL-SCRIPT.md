@@ -1,4 +1,4 @@
-# CreatorForge — Tutorial Video Script (end-to-end)
+# CreatorsForge — Tutorial Video Script (end-to-end)
 
 A complete, record-ready script for the tutorial library. Each "lesson" = one
 short video (60–120s). Format per lesson: **[ON SCREEN]** = what to show
@@ -12,7 +12,7 @@ Record the screen actions live for trust; a presenter or avatar can narrate.
 
 ## Lesson 1 — Getting Started (overview) · Category: Getting Started
 **[ON SCREEN]** Landing page → click "Start Creating" → signup → dashboard.
-**[SAY]** "Welcome to CreatorForge. In the next few minutes I'll show you how to
+**[SAY]** "Welcome to CreatorsForge. In the next few minutes I'll show you how to
 go from a single idea to a finished, published video — and how credits work so
 there are no surprises. Sign up with email or Google, and you land on your
 dashboard. At the top you'll see your Credit Wallet — that's what powers every
@@ -22,7 +22,7 @@ AI action. Let's create something."
 **[ON SCREEN]** Dashboard → Create Content → AI Video Studio → pick "AI Shorts" →
 enter a prompt → generate script → scenes → voiceover → images → Render Queue.
 **[SAY]** "Open Create Content and choose AI Video Studio. Pick a format like AI
-Shorts, describe your idea, and CreatorForge writes the script, breaks it into
+Shorts, describe your idea, and CreatorsForge writes the script, breaks it into
 scenes, adds a voiceover, and generates images automatically. When you're happy,
 send it to the Render Queue to produce a finished MP4. Each step shows its credit
 cost up front."
@@ -45,7 +45,7 @@ indexing, a prioritized issue list, and a one-click fix plan you can act on."
 **[ON SCREEN]** Social Accounts → connect YouTube/TikTok/Instagram; WordPress
 Sites → add a site.
 **[SAY]** "Before publishing, connect your destinations under Social Accounts and
-WordPress Sites. CreatorForge only ever posts to accounts you've connected and
+WordPress Sites. CreatorsForge only ever posts to accounts you've connected and
 authorized."
 
 ## Lesson 6 — Credits & crypto top-ups · Category: Billing

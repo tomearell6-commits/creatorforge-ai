@@ -1,4 +1,4 @@
-# CreatorForge AI — Production Readiness (Phase 8)
+# CreatorsForge AI — Production Readiness (Phase 8)
 
 This document is the Phase 8 deliverable set: readiness report, security &
 performance audits, test coverage, deployment/ops guides, backup, monitoring,

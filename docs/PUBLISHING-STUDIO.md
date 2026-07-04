@@ -1,4 +1,4 @@
-# CreatorForge Publishing Studio
+# CreatorsForge Publishing Studio
 
 The Publishing Studio is an end-to-end AI book-writing platform: plan a book, generate
 a concept and chapter outline, draft and edit chapters with AI assistance, design an

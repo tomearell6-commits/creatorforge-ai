@@ -64,7 +64,7 @@ aggregate counts ONLY — admins can never read email content.
 
 ## Jobs
 `/api/cron/email-assistant` daily 06:30 UTC (CRON_SECRET fail-closed):
-per-account daily summary (stored + emailed, "Your CreatorForge.io email
+per-account daily summary (stored + emailed, "Your CreatorsForge.io email
 attention summary"), automation-rule drafting (safe categories only), credits
 deducted via service role only when balance covers it — never negative.
 

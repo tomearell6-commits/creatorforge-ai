@@ -1,4 +1,4 @@
-# CreatorForge.io — Production Readiness Audit
+# CreatorsForge.io — Production Readiness Audit
 
 _Phase: Final End-to-End Production Polish. Method: automated tooling (typecheck, lint, tests, `npm audit`, bundle analysis, code-hygiene sweeps) + four parallel deep-read code audits (Security, UX/Design, API/DB, QA/Accessibility) against the real codebase. Every finding below was verified in code, not inferred._
 

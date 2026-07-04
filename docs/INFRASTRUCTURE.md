@@ -1,6 +1,6 @@
 # AI Infrastructure Operations Center
 
-Admin-only command center for monitoring every external service CreatorForge
+Admin-only command center for monitoring every external service CreatorsForge
 depends on — AI providers, payments, storage, email, auth, publishing, and core
 infra — with health, usage, quotas, balances, costs, renewals, and alerts.
 

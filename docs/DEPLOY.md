@@ -1,6 +1,6 @@
 # Deployment (Vercel)
 
-CreatorForge AI is a standard Next.js App Router app and deploys cleanly to Vercel.
+CreatorsForge AI is a standard Next.js App Router app and deploys cleanly to Vercel.
 
 ## Prerequisites
 

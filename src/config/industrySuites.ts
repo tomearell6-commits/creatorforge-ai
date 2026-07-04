@@ -196,6 +196,6 @@ export const RE_ROOF_STYLES = ["Flat", "Gable", "Hip", "Shed", "Mansard", "Butte
 
 /** Mandatory disclaimer shown with every generated concept. */
 export const RE_DISCLAIMER =
-  "CreatorForge.io generates conceptual design, marketing, and visualization materials. " +
+  "CreatorsForge.io generates conceptual design, marketing, and visualization materials. " +
   "Architectural, engineering, legal, and construction decisions should be reviewed by qualified " +
   "professionals before use. AI-generated floor plan concepts are not certified drawings.";

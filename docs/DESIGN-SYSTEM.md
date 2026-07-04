@@ -1,4 +1,4 @@
-# CreatorForge Design System
+# CreatorsForge Design System
 
 One design language across all six Studios and the marketing site. This documents
 the tokens and the shared primitives every screen should use instead of ad-hoc markup.
@@ -64,7 +64,7 @@ clip-art in the UI chrome.
 
 ### Internal icons — Lucide (only)
 
-- **Library:** [`lucide-react`](https://lucide.dev) is the single approved icon set for all CreatorForge features. Do not introduce Heroicons/Tabler/Font Awesome/emoji as UI icons.
+- **Library:** [`lucide-react`](https://lucide.dev) is the single approved icon set for all CreatorsForge features. Do not introduce Heroicons/Tabler/Font Awesome/emoji as UI icons.
 - **Sizing:** `h-4 w-4` (inline/labels), `h-5 w-5` (default/buttons/list rows), `h-6 w-6` (card headers), `h-7 w-7`+ (hero/empty-state). Keep Lucide's default stroke (2px) — don't override per-icon.
 - **Spacing:** icon + text use `gap-2` (or `gap-1.5` in dense pills).
 - **Color:** icons inherit `currentColor`. Use semantic tokens only — `text-brand-600` (primary), `text-muted-foreground` (secondary), and `text-amber-*/red-*/blue-*` strictly for warning/error/info. Never hardcode hex on an icon.

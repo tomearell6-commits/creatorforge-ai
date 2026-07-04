@@ -1,4 +1,4 @@
-# CreatorForge Design Studio
+# CreatorsForge Design Studio
 
 A professional visual-design workspace inside CreatorsForge: templates, an
 editable layer-based editor, AI design concepts, brand kits, exports, and a Live
@@ -224,7 +224,7 @@ DB catalogues.
 
 ## Safety
 
-Every generated concept carries: *"CreatorForge.io generates conceptual design,
+Every generated concept carries: *"CreatorsForge.io generates conceptual design,
 marketing, and visualization materials. Architectural, engineering, legal, and
 construction decisions should be reviewed by qualified professionals before use.
 AI-generated floor plan concepts are not certified drawings."* The wizard,

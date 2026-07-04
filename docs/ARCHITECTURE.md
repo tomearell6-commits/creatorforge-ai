@@ -1,6 +1,6 @@
-# CreatorForge.io — Master Platform Architecture
+# CreatorsForge.io — Master Platform Architecture
 
-CreatorForge.io is an **AI Business Operating System**: one platform to create,
+CreatorsForge.io is an **AI Business Operating System**: one platform to create,
 market, publish, automate, analyze, and grow a business. Every feature belongs to
 exactly one of **six flagship Studios**, so users navigate professional workspaces
 instead of hundreds of disconnected tools.
