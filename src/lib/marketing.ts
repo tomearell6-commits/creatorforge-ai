@@ -89,17 +89,8 @@ export const TEMPLATE_SECTIONS = [
   { id: "seo", label: "SEO Blog Posts", items: ["How-To Guide", "Listicle", "Product Review", "Comparison Post", "Ultimate Guide", "Buying Guide"] },
 ];
 
-/** Marketing pricing tiers (display only — billing logic uses lib/constants PLANS). */
-export const MARKETING_PLANS = [
-  { id: "basic", name: "Basic", monthly: 19, credits: 1900, tagline: "Good for beginners", highlight: false,
-    features: ["~40 AI shorts / mo", "Image-to-video access", "Caption generator", "Standard models"] },
-  { id: "pro", name: "Pro", monthly: 39, credits: 3900, tagline: "Good for regular creators", highlight: false,
-    features: ["~85 AI shorts / mo", "Product ad tools", "All standard models", "Priority rendering"] },
-  { id: "ultimate", name: "Ultimate", monthly: 69, credits: 8280, tagline: "Most popular", highlight: true,
-    features: ["~180 AI shorts / mo", "Premium AI models", "Image-to-video Pro", "Faster rendering"] },
-  { id: "creator", name: "Creator", monthly: 89, credits: 13350, tagline: "Best for scaling production", highlight: false,
-    features: ["~290 AI shorts / mo", "All premium models", "Bulk + series automation", "Top-priority rendering"] },
-];
+// NOTE: homepage pricing renders the REAL catalog (lib/constants PLANS) so the
+// advertised price always matches checkout. Never duplicate pricing here.
 
 /**
  * Testimonials (sample/placeholder content — replace with real, consented
