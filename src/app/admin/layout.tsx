@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { isPlatformAdmin } from "@/lib/admin";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { userHas2faEnabled, isAdmin2faEnforced } from "@/lib/security/twofactor";
 
 export const metadata = { title: "Admin Portal — CreatorsForge AI" };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { ok } = await isPlatformAdmin();
+  const { ok, user } = await isPlatformAdmin();
 
   if (!ok) {
     return (
@@ -22,10 +23,34 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
+  // Admins without 2FA see a standing warning (and a hard notice once
+  // enforcement is active — sensitive admin APIs already reject them).
+  const has2fa = user ? await userHas2faEnabled(user.id) : false;
+  const enforced = !has2fa ? await isAdmin2faEnforced() : false;
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 p-6">
+        {!has2fa && (
+          <div
+            className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
+              enforced
+                ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-400"
+                : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+            }`}
+          >
+            <strong>{enforced ? "2FA required:" : "Security recommendation:"}</strong>{" "}
+            {enforced
+              ? "Admin 2FA enforcement is active — sensitive admin actions are blocked until you enable two-factor authentication."
+              : "Your admin account does not have two-factor authentication enabled."}{" "}
+            <Link href="/dashboard/settings" className="font-semibold underline">
+              Enable 2FA in Settings →
+            </Link>
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

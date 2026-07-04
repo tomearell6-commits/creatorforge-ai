@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { logSecurityEvent } from "@/lib/security/events";
 import { validatePassword } from "@/lib/security/password";
+import { userHas2faEnabled } from "@/lib/security/twofactor";
+import { verifyActionToken } from "@/lib/security/twofactor-cookie";
 import { sendEmail } from "@/lib/email/send";
 import { passwordChangedEmail } from "@/lib/email/templates";
 
@@ -26,6 +28,16 @@ export async function POST(request: Request) {
   };
   if (!currentPassword || !newPassword) {
     return NextResponse.json({ error: "Current and new password are required." }, { status: 400 });
+  }
+
+  // High-risk action: accounts with 2FA must confirm with a fresh code
+  // (5-minute action token from /api/security/2fa/verify-action).
+  if (await userHas2faEnabled(user.id)) {
+    const token = request.headers.get("x-2fa-token");
+    if (!(await verifyActionToken(token, user.id))) {
+      await logSecurityEvent({ eventType: "2FA_REQUIRED_FOR_ACTION", req: request, userId: user.id, metadata: { action: "change_password", satisfied: false } });
+      return NextResponse.json({ error: "Two-factor confirmation required.", code: "2FA_REQUIRED" }, { status: 403 });
+    }
   }
 
   // Enforce the password policy server-side (never trust the client).

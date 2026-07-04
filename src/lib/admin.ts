@@ -33,14 +33,29 @@ export async function isPlatformAdmin(): Promise<{ ok: boolean; user: { id: stri
  * Use at the top of an admin API route:
  *   const gate = await requireAdmin(); if ("error" in gate) return gate.error;
  *   const { admin, user } = gate;
+ *
+ * When admin 2FA enforcement is active (security_settings.enforce_admin_2fa),
+ * admins without 2FA are rejected. Pass skip2faEnforcement for the few routes
+ * an admin needs to see WHY they're blocked (the security panel itself).
  */
-export async function requireAdmin(): Promise<
+export async function requireAdmin(opts?: { skip2faEnforcement?: boolean }): Promise<
   | { error: NextResponse }
   | { admin: ReturnType<typeof createAdminClient>; user: { id: string; email?: string } }
 > {
   const { ok, user } = await isPlatformAdmin();
   if (!ok || !user) {
     return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+  }
+  if (!opts?.skip2faEnforcement) {
+    const { isAdmin2faEnforced, userHas2faEnabled } = await import("@/lib/security/twofactor");
+    if ((await isAdmin2faEnforced()) && !(await userHas2faEnabled(user.id))) {
+      return {
+        error: NextResponse.json(
+          { error: "Two-factor authentication is required for admin actions. Enable 2FA in Settings → Security." },
+          { status: 403 }
+        ),
+      };
+    }
   }
   return { admin: createAdminClient(), user };
 }

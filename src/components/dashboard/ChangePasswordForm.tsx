@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Alert } from "@/components/ui/Alert";
 import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import { validatePassword } from "@/lib/security/password";
+import { HighRiskAction2FAModal } from "@/components/security/HighRiskAction2FAModal";
 
 export function ChangePasswordForm() {
   const [current, setCurrent] = useState("");
@@ -17,22 +18,29 @@ export function ChangePasswordForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [tfaOpen, setTfaOpen] = useState(false);
+
+  async function send(actionToken?: string) {
+    setLoading(true);
+    const res = await fetch("/api/auth/change-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(actionToken ? { "x-2fa-token": actionToken } : {}) },
+      body: JSON.stringify({ currentPassword: current, newPassword: next }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setLoading(false);
+    // Accounts with 2FA must confirm with a fresh code first.
+    if (res.status === 403 && data.code === "2FA_REQUIRED") { setTfaOpen(true); return; }
+    if (!res.ok) { setError(data.error || "Couldn't change your password."); return; }
+    setCurrent(""); setNext(""); setConfirm(""); setDone(true);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null); setDone(false);
     if (!validatePassword(next).ok) { setError("Your new password doesn't meet all the requirements below."); return; }
     if (next !== confirm) { setError("New passwords don't match."); return; }
-
-    setLoading(true);
-    const res = await fetch("/api/auth/change-password", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword: current, newPassword: next }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setLoading(false);
-    if (!res.ok) { setError(data.error || "Couldn't change your password."); return; }
-    setCurrent(""); setNext(""); setConfirm(""); setDone(true);
+    await send();
   }
 
   return (
@@ -66,6 +74,16 @@ export function ChangePasswordForm() {
           {loading ? <><Spinner size="sm" className="text-current" /> Updating…</> : "Update password"}
         </Button>
       </form>
+
+      <HighRiskAction2FAModal
+        open={tfaOpen}
+        actionLabel="changing your password"
+        onCancel={() => setTfaOpen(false)}
+        onVerified={(token) => {
+          setTfaOpen(false);
+          send(token);
+        }}
+      />
     </Card>
   );
 }

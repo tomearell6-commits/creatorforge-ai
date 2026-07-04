@@ -1,5 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  TWO_FACTOR_COOKIE,
+  verifyTwoFactorCookie,
+  verifyOffMarker,
+  issueOffMarker,
+  twoFactorCookieAvailable,
+} from "@/lib/security/twofactor-cookie";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -40,6 +47,41 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(url);
+  }
+
+  // Second factor: users with 2FA enabled must verify this browser before the
+  // dashboard loads. A signed cookie proves verification; a short-lived signed
+  // "off" marker avoids re-querying the DB for users without 2FA.
+  if (isDashboard && user && twoFactorCookieAvailable()) {
+    const cookieVal = request.cookies.get(TWO_FACTOR_COOKIE)?.value;
+    const verified = await verifyTwoFactorCookie(cookieVal, user.id);
+    if (!verified) {
+      const markedOff = await verifyOffMarker(cookieVal, user.id);
+      if (!markedOff) {
+        const { data: tfa } = await supabase
+          .from("user_2fa_settings")
+          .select("enabled")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (tfa?.enabled) {
+          const url = request.nextUrl.clone();
+          url.pathname = "/two-factor";
+          url.search = "";
+          url.searchParams.set("redirect", request.nextUrl.pathname);
+          return NextResponse.redirect(url);
+        }
+        const off = await issueOffMarker(user.id);
+        if (off) {
+          supabaseResponse.cookies.set(TWO_FACTOR_COOKIE, off, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 10 * 60,
+            path: "/",
+          });
+        }
+      }
+    }
   }
 
   return supabaseResponse;

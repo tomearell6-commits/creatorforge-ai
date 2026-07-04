@@ -219,3 +219,71 @@ export function weeklySummaryEmail(name: string | null, r: WeeklyEmailReport) {
     text: `Your weekly CreatorsForge.io summary (${r.weekStart}–${r.weekEnd}): ${r.creditsUsed} credits used, ${r.creditsRemaining} remaining, ${r.videosCreated} videos, ${r.postsPublished} posts published. Full report: ${APP_URL}/dashboard/reports/weekly`,
   };
 }
+
+// ---- Two-Factor Authentication emails ------------------------------------
+const SECURITY_URL = `${APP_URL}/dashboard/settings`;
+
+export function twoFactorEnabledEmail() {
+  return {
+    subject: "Two-factor authentication enabled on your CreatorsForge.io account",
+    html: layout({
+      heading: "Two-factor authentication is on",
+      body: "Two-factor authentication was just enabled on your CreatorsForge.io account. From now on, logging in requires your password plus a verification code. Save your backup codes somewhere safe — they can help you recover your account if you lose access to your authenticator app. If you did not enable this, secure your account immediately.",
+      buttonLabel: "Review Security Settings",
+      buttonUrl: SECURITY_URL,
+    }),
+    text: `Two-factor authentication was enabled on your CreatorsForge.io account. If this wasn't you, review your security now: ${SECURITY_URL}`,
+  };
+}
+
+export function twoFactorDisabledEmail() {
+  return {
+    subject: "Your CreatorsForge.io 2FA settings were changed",
+    html: layout({
+      heading: "Two-factor authentication was turned off",
+      body: "Two-factor authentication was just disabled on your CreatorsForge.io account. Your account is now protected by your password only. If you did not make this change, reset your password and re-enable 2FA immediately.",
+      buttonLabel: "Review Security Settings",
+      buttonUrl: SECURITY_URL,
+    }),
+    text: `Two-factor authentication was disabled on your CreatorsForge.io account. If this wasn't you, secure your account now: ${SECURITY_URL}`,
+  };
+}
+
+export function backupCodesRegeneratedEmail() {
+  return {
+    subject: "Your CreatorsForge.io 2FA settings were changed",
+    html: layout({
+      heading: "New backup codes generated",
+      body: "A new set of two-factor backup codes was just generated for your CreatorsForge.io account. All previous backup codes no longer work. If you did not request new codes, secure your account immediately.",
+      buttonLabel: "Review Security Settings",
+      buttonUrl: SECURITY_URL,
+    }),
+    text: `New 2FA backup codes were generated for your CreatorsForge.io account; old codes are now invalid. If this wasn't you: ${SECURITY_URL}`,
+  };
+}
+
+export function twoFactorFailedAttemptsEmail(count: number) {
+  return {
+    subject: "Security alert: Failed 2FA attempts detected",
+    html: layout({
+      heading: "Failed verification attempts on your account",
+      body: `We detected ${count} failed two-factor verification attempts on your CreatorsForge.io account. If this was you having trouble with your authenticator, you can use a backup code. If this wasn't you, your password may be compromised — change it now.`,
+      buttonLabel: "Secure My Account",
+      buttonUrl: SECURITY_URL,
+    }),
+    text: `${count} failed 2FA attempts were detected on your CreatorsForge.io account. If this wasn't you, change your password now: ${SECURITY_URL}`,
+  };
+}
+
+export function twoFactorEmailCode(code: string, purpose: "login" | "action" | "setup") {
+  const what = purpose === "login" ? "log in to" : purpose === "setup" ? "set up 2FA on" : "confirm a sensitive action on";
+  return {
+    subject: `${code} is your CreatorsForge.io verification code`,
+    html: layout({
+      heading: "Your verification code",
+      body: `Use this code to ${what} your CreatorsForge.io account:<br><br><span style="font-size:28px;font-weight:800;letter-spacing:6px">${code}</span><br><br>The code expires in 10 minutes. Never share it with anyone — CreatorsForge staff will never ask for it.`,
+      footnote: "If you didn't request this code, you can ignore this email, but consider changing your password.",
+    }),
+    text: `Your CreatorsForge.io verification code is ${code}. It expires in 10 minutes. Never share this code.`,
+  };
+}

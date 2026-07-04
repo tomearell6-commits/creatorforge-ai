@@ -11,7 +11,14 @@ export type SecurityEventType =
   | "PASSWORD_RESET_COMPLETED"
   | "PASSWORD_CHANGED"
   | "PASSWORD_CHANGE_FAILED"
-  | "SUSPICIOUS_ACTIVITY";
+  | "SUSPICIOUS_ACTIVITY"
+  | "2FA_ENABLED"
+  | "2FA_DISABLED"
+  | "2FA_LOGIN_SUCCESS"
+  | "2FA_LOGIN_FAILED"
+  | "2FA_BACKUP_CODE_USED"
+  | "2FA_BACKUP_CODES_REGENERATED"
+  | "2FA_REQUIRED_FOR_ACTION";
 
 export async function logSecurityEvent(params: {
   eventType: SecurityEventType;

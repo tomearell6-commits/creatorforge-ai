@@ -312,6 +312,7 @@ export const ADMIN_NAV = [
   { href: "/admin/support", label: "Support Tickets" },
   { href: "/admin/monitoring", label: "Platform Health" },
   { href: "/admin/audit", label: "Audit Logs" },
+  { href: "/admin/security", label: "Security & 2FA" },
   { href: "/admin/settings", label: "System Settings" },
 ];
 
