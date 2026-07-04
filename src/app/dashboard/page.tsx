@@ -8,7 +8,7 @@ import { getWalletSummary } from "@/lib/credits/wallet";
 import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard";
 import { WeeklySummaryCard } from "@/components/dashboard/WeeklySummaryCard";
 import { AssistantOnboardingCard } from "@/components/dashboard/AssistantOnboardingCard";
-import { StudioGrid } from "@/components/dashboard/StudioGrid";
+import { HomeAreaSections } from "@/components/dashboard/HomeAreaSections";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 
@@ -38,21 +38,18 @@ export default async function DashboardHome() {
         <h1 className="text-2xl font-bold">
           Welcome back{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ""} 👋
         </h1>
-        <p className="mt-1 text-muted-foreground">Your AI Business Operating System — pick a Studio to get started.</p>
+        <p className="mt-1 text-muted-foreground">
+          Create something, grow your business, or manage your account — everything starts here.
+          <span className="ml-2 text-xs">{count ?? 0} projects</span>
+        </p>
       </div>
 
       {wallet && <DashboardCreditCard summary={wallet} />}
 
       <WeeklySummaryCard />
 
-      {/* Six flagship Studios */}
-      <div className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">Studios</h2>
-          <span className="text-xs text-muted-foreground">{count ?? 0} projects</span>
-        </div>
-        <StudioGrid />
-      </div>
+      {/* Create · Grow · Manage */}
+      <HomeAreaSections />
 
       <AssistantOnboardingCard />
 

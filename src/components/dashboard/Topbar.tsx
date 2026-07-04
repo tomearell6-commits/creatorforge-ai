@@ -5,6 +5,8 @@ import { CreditBadge } from "./CreditBadge";
 import { NotificationBell } from "./NotificationBell";
 import { MobileNav } from "./MobileNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { QuickCreateButton } from "./QuickCreateButton";
+import { GlobalSearch } from "./GlobalSearch";
 
 /** Dashboard top bar: signed-in user + credit badge + sign-out. */
 export async function Topbar() {
@@ -29,11 +31,13 @@ export async function Topbar() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background px-4 sm:px-6">
       <div className="flex items-center gap-3">
-        <MobileNav isAdmin={isAdmin} />
+        <MobileNav isAdmin={isAdmin} plan={plan} />
+        <QuickCreateButton />
         <CreditBadge credits={credits} plan={plan} />
         <NotificationBell />
       </div>
       <div className="flex items-center gap-3">
+        <GlobalSearch />
         <span className="hidden text-sm text-muted-foreground sm:inline">{user?.email}</span>
         <ThemeToggle />
         <SignOutButton />
