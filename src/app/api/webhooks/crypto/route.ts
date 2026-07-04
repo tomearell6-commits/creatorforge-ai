@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCryptoProvider } from "@/lib/payments/providers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { planCredits } from "@/lib/constants";
+import { planCredits, PLANS } from "@/lib/constants";
+import { recordInvoice } from "@/lib/billing/invoices";
 import { creditWalletAdmin, notifyWallet } from "@/lib/credits/wallet";
 import { captureError } from "@/lib/logger";
 import { notify, clearCreditDedup } from "@/lib/notifications/service";
@@ -68,12 +69,36 @@ export async function POST(request: Request) {
       .from("crypto_transactions").select("id").eq("charge_id", chargeId).maybeSingle();
     if (existing) return NextResponse.json({ received: true, duplicate: true });
 
+    const { data: prior } = await admin.from("profiles").select("plan").eq("user_id", userId).maybeSingle();
     await creditWalletAdmin(admin, userId, planCredits(plan), "monthly", "topup_purchase", `crypto_plan:${plan}`, chargeId);
     await admin.from("profiles").update({ plan }).eq("user_id", userId);
     await admin.from("crypto_transactions").insert({
       user_id: userId, provider: provider.id, charge_id: chargeId,
       amount: result.amountCrypto ?? 0, currency: result.currency ?? null, status: "completed",
     });
+
+    // Billing Center: subscription state + numbered invoice + history entry.
+    const planObj = PLANS.find((p) => p.id === plan);
+    const priorPrice = PLANS.find((p) => p.id === prior?.plan)?.price ?? 0;
+    const subRow = {
+      user_id: userId, plan, status: "active", billing_cycle: "monthly",
+      provider: "crypto", current_period_end: new Date(Date.now() + 30 * 864e5).toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const { data: existingSub } = await admin
+      .from("subscriptions").select("id").eq("user_id", userId)
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (existingSub) await admin.from("subscriptions").update(subRow).eq("id", existingSub.id);
+    else await admin.from("subscriptions").insert(subRow);
+    await recordInvoice({
+      userId,
+      description: `${planObj?.name ?? plan} plan — ${planCredits(plan).toLocaleString()} credits (30 days)`,
+      amountUsd: planObj?.price ?? 0,
+      planId: plan,
+      paymentMethod: "crypto",
+      reference: chargeId,
+      eventType: prior?.plan === plan ? "renewal" : (planObj?.price ?? 0) >= priorPrice ? "upgrade" : "downgrade",
+    }).catch(() => {});
   } catch (e) {
     captureError(e, { category: "payment", provider: provider.id, stage: "plan_grant" });
     return NextResponse.json({ error: "Handler error" }, { status: 500 });
@@ -90,7 +115,7 @@ async function completeTopup(
 ) {
   try {
     const { data: purchase } = await admin
-      .from("credit_purchases").select("id, user_id, credits, status").eq("id", purchaseId).maybeSingle();
+      .from("credit_purchases").select("id, user_id, credits, status, usd_amount").eq("id", purchaseId).maybeSingle();
     if (!purchase) return NextResponse.json({ received: true, note: "purchase not found" });
     if (purchase.status === "completed") return NextResponse.json({ received: true, duplicate: true });
 
@@ -104,6 +129,16 @@ async function completeTopup(
 
     await notifyWallet(admin, purchase.user_id, "credits_added",
       "Credits added 🎉", `${purchase.credits.toLocaleString()} credits were added to your wallet.`);
+
+    // Billing Center: numbered invoice + history entry for the top-up.
+    await recordInvoice({
+      userId: purchase.user_id,
+      description: `Credit top-up — ${purchase.credits.toLocaleString()} credits`,
+      amountUsd: Number(purchase.usd_amount ?? 0),
+      paymentMethod: "crypto",
+      reference: chargeId || purchase.id,
+      eventType: "topup",
+    }).catch(() => {});
 
     // Bell + email via the notification system; refresh credit-alert dedup so a
     // later drop can re-alert this cycle.

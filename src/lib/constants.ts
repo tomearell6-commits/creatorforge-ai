@@ -129,17 +129,27 @@ export type Plan = {
   id: string;
   name: string;
   price: number; // USD / month
+  annualPrice?: number; // USD / year (2 months free)
   credits: number;
+  tagline?: string;
   features: string[];
   highlighted?: boolean;
+  badge?: string;
+  /** Enterprise: custom pricing — Contact Sales instead of checkout. */
+  custom?: boolean;
 };
 
+/**
+ * Plan catalog. IDs are stable (webhooks, planCredits and profiles.plan depend
+ * on them); display names follow the Billing Center tiers.
+ */
 export const PLANS: Plan[] = [
   {
     id: "free",
     name: "Free Trial",
     price: 0,
     credits: 50,
+    tagline: "Explore every studio",
     features: [
       "50 trial credits to explore",
       "Access every studio & tool",
@@ -151,25 +161,42 @@ export const PLANS: Plan[] = [
   },
   {
     id: "creator",
-    name: "Creator",
+    name: "Starter",
     price: 19,
+    annualPrice: 190,
     credits: 500,
-    features: ["500 credits / month", "All content categories", "Unlimited projects", "Email support"],
-    highlighted: true,
+    tagline: "For solo creators getting serious",
+    features: ["500 credits / month", "All studios & content categories", "Unlimited projects", "Credit top-ups", "Email support"],
   },
   {
     id: "pro",
-    name: "Pro",
+    name: "Professional",
     price: 49,
+    annualPrice: 490,
     credits: 2000,
-    features: ["2,000 credits / month", "Priority generation", "Team workspace (soon)", "Priority support"],
+    tagline: "For professionals and small teams",
+    features: ["2,000 credits / month", "Priority generation", "Lead Generator access", "Team workspace (soon)", "Priority support"],
+    highlighted: true,
+    badge: "Most Popular",
   },
   {
     id: "agency",
-    name: "Agency",
+    name: "Business",
     price: 149,
+    annualPrice: 1490,
     credits: 8000,
-    features: ["8,000 credits / month", "API access (soon)", "White-label (soon)", "Dedicated support"],
+    tagline: "For agencies and growing businesses",
+    features: ["8,000 credits / month", "Everything in Professional", "API access (soon)", "White-label (soon)", "Dedicated support"],
+    badge: "Recommended",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 0,
+    credits: 0,
+    custom: true,
+    tagline: "Custom volume, SLAs and onboarding",
+    features: ["Custom monthly credits", "Custom integrations", "Enterprise support & SLA", "Dedicated account manager", "Custom contracts & invoicing"],
   },
 ];
 
@@ -312,6 +339,7 @@ export const ADMIN_NAV = [
   { href: "/admin/support", label: "Support Tickets" },
   { href: "/admin/monitoring", label: "Platform Health" },
   { href: "/admin/audit", label: "Audit Logs" },
+  { href: "/admin/billing", label: "Billing & Plans" },
   { href: "/admin/security", label: "Security & 2FA" },
   { href: "/admin/settings", label: "System Settings" },
 ];

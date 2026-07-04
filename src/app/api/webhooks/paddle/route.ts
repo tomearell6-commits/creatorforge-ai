@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { verifyPaddleWebhook, priceToPlan } from "@/lib/payments/paddle";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { planCredits } from "@/lib/constants";
+import { planCredits, PLANS } from "@/lib/constants";
 import { creditWalletAdmin } from "@/lib/credits/wallet";
+import { recordInvoice } from "@/lib/billing/invoices";
 import { captureError } from "@/lib/logger";
 import { notify, clearCreditDedup } from "@/lib/notifications/service";
 import { subscriptionRenewedEmail, paymentFailedEmail, subscriptionExpiredEmail } from "@/lib/email/templates";
@@ -79,6 +80,18 @@ export async function POST(request: Request) {
         status: "completed",
       });
 
+      // Billing Center: numbered invoice + history entry.
+      const planObj = PLANS.find((p) => p.id === plan);
+      await recordInvoice({
+        userId,
+        description: `${planObj?.name ?? plan} plan — ${grant.toLocaleString()} credits (card via Paddle)`,
+        amountUsd: totals?.total ? Number(totals.total) / 100 : planObj?.price ?? 0,
+        planId: plan,
+        paymentMethod: "paddle",
+        reference: txnId,
+        eventType: "renewal",
+      }).catch(() => {});
+
       // Notify: subscription renewed + refresh credit-alert dedup for the new cycle.
       const email = await emailFor(admin, userId);
       await notify(admin, {
@@ -88,6 +101,11 @@ export async function POST(request: Request) {
       });
       await clearCreditDedup(admin, userId, new Date().toISOString().slice(0, 10)).catch(() => {});
     } else if (type === "transaction.payment_failed" && userId) {
+      await admin.from("billing_history").insert({
+        user_id: userId, event_type: "failed_payment",
+        description: `Payment failed for the ${plan ?? "current"} plan`,
+        plan_id: plan ?? null, metadata: { provider: "paddle" },
+      }).then(() => {}, () => {});
       const email = await emailFor(admin, userId);
       await notify(admin, {
         userId, email, type: "payment_failed", category: "payment",
