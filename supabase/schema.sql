@@ -1,5 +1,5 @@
 -- =====================================================================
--- CreatorForge AI — Database schema (Phase 1)
+-- CreatorsForge AI — Database schema (Phase 1)
 -- Run this in the Supabase SQL Editor (or `supabase db push`).
 -- Safe to re-run: uses IF NOT EXISTS / CREATE OR REPLACE where possible.
 -- =====================================================================
@@ -957,7 +957,7 @@ create policy "platform_notifications_read" on public.platform_notifications
 
 -- ---------- seed default platform settings + feature flags -----------
 insert into public.system_settings (key, value) values
-  ('white_label_default', '{"brandName":"CreatorForge AI","brandColor":"#7c3aed","logoUrl":null}'::jsonb),
+  ('white_label_default', '{"brandName":"CreatorsForge AI","brandColor":"#7c3aed","logoUrl":null}'::jsonb),
   ('billing', '{"coupons":[],"creditPackages":[]}'::jsonb)
 on conflict (key) do nothing;
 

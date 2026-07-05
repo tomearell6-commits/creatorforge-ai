@@ -1,5 +1,5 @@
 -- =====================================================================
--- CreatorForge Publishing Studio — AI book writing platform.
+-- CreatorsForge Publishing Studio — AI book writing platform.
 --
 -- Write, organize, edit, export and market original books. Owner-only RLS on all
 -- user tables; templates are public-read. Idempotent: safe to re-run.

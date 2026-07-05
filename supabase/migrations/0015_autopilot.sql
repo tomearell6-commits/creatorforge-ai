@@ -1,5 +1,5 @@
 -- =====================================================================
--- CreatorForge Autopilot — AI campaign automation.
+-- CreatorsForge Autopilot — AI campaign automation.
 --
 -- Namespaced with the autopilot_ prefix to avoid clobbering the Phase-6
 -- automation_rules table (different feature). Owner-only RLS throughout.

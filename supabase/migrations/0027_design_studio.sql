@@ -1,5 +1,5 @@
 -- =====================================================================
--- CreatorForge Design Studio (Content Studio).
+-- CreatorsForge Design Studio (Content Studio).
 --
 -- A professional design workspace: projects → editable layers → AI concepts →
 -- brand kits → versions → exports, plus live AI footage / video-graphic

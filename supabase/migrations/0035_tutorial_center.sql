@@ -94,7 +94,7 @@ do $$ begin
 end $$;
 
 -- ---- migrate the 11 existing videos into the new taxonomy + slugs -------------
-update public.tutorials set category='Getting Started', slug=coalesce(slug,'platform-overview'),      target_route='/dashboard',                cta_label='Create Your First Project', cta_url='/dashboard/create'          where title like 'Meet CreatorsForge%' or title like 'Meet CreatorForge%';
+update public.tutorials set category='Getting Started', slug=coalesce(slug,'platform-overview'),      target_route='/dashboard',                cta_label='Create Your First Project', cta_url='/dashboard/create'          where title like 'Meet CreatorsForge%' or title like 'Meet CreatorsForge%';
 update public.tutorials set category='Getting Started', slug=coalesce(slug,'full-walkthrough'),       target_route='/dashboard',                cta_label='Start Free',                cta_url='/dashboard'                 where title like 'Full walkthrough%';
 update public.tutorials set category='Create',          slug=coalesce(slug,'create-ai-video'),        target_route='/dashboard/create?group=video', cta_label='Create Your First Video', cta_url='/dashboard/create?group=video' where title='Create your first AI video';
 update public.tutorials set category='Create',          slug=coalesce(slug,'generate-seo-article'),   target_route='/dashboard/seo/new',        cta_label='Write an SEO Article',      cta_url='/dashboard/seo/new'         where title='Generate an SEO blog post';
