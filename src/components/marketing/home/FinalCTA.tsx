@@ -16,8 +16,8 @@ export function FinalCTA() {
         <Link href="/signup" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-300 px-7 py-3.5 text-base font-bold text-brand-900 transition-colors hover:bg-brand-400 sm:w-auto">
           Start Free <ArrowRight className="h-5 w-5" />
         </Link>
-        <Link href="#demo" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white/10 sm:w-auto">
-          <CalendarClock className="h-5 w-5" /> Book Live Demo
+        <Link href="/tutorials" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 px-7 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white/10 sm:w-auto">
+          <CalendarClock className="h-5 w-5" /> Watch the Demos
         </Link>
       </div>
     </div>

@@ -73,11 +73,25 @@ export default async function LandingPage() {
       <main className="flex-1">
         <Hero />
 
-        {/* Interactive AI demonstration */}
+        {/* Demo video + interactive AI demonstration */}
         <section id="demo" className="border-y border-border bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-4">
             <SectionHead eyebrow="See it in action" title="One prompt. A complete workflow." subtitle="Watch how CreatorsForge turns a single idea into finished content, published and measured — automatically." />
-            <AIDemoFlow />
+            <div className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-2xl border border-border shadow-lg">
+              <video
+                controls
+                preload="metadata"
+                playsInline
+                className="aspect-video w-full bg-black"
+                src="https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/full-walkthrough.mp4"
+              />
+            </div>
+            <p className="mt-3 text-center text-sm text-muted-foreground">
+              Want more? <a href="/tutorials" className="font-semibold text-brand-600 hover:underline">Browse all video tutorials →</a>
+            </p>
+            <div className="mt-12">
+              <AIDemoFlow />
+            </div>
           </div>
         </section>
 

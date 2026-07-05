@@ -46,7 +46,7 @@ export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
           ) : (
             <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-foreground hover:text-brand-600">Login</Link>
           )}
-          <Link href="#demo" className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted">Watch Demo</Link>
+          <Link href="/tutorials" className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted">Watch Demo</Link>
           <Link href="/signup" className="rounded-lg bg-brand-300 px-4 py-2 text-sm font-bold text-brand-900 transition-colors hover:bg-brand-400">Start Free</Link>
         </div>
 
@@ -65,7 +65,7 @@ export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
             ))}
             <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3">
               <Link href={isAuthed ? "/dashboard" : "/login"} onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-muted">{isAuthed ? "Dashboard" : "Login"}</Link>
-              <Link href="#demo" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold hover:bg-muted">Watch Demo</Link>
+              <Link href="/tutorials" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold hover:bg-muted">Watch Demo</Link>
               <Link href="/signup" onClick={() => setOpen(false)} className="rounded-lg bg-brand-300 px-4 py-2 text-center text-sm font-bold text-brand-900 hover:bg-brand-400">Start Free</Link>
             </div>
           </div>

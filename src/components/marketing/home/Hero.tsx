@@ -83,8 +83,8 @@ export function Hero() {
           <Link href="/signup" className="cf-glow inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-300 px-7 py-3.5 text-base font-bold text-brand-900 transition-colors hover:bg-brand-400 sm:w-auto">
             Start Creating Free <ArrowRight className="h-5 w-5" />
           </Link>
-          <Link href="#demo" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto">
-            <Play className="h-5 w-5" /> Watch Interactive Demo
+          <Link href="/#demo" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto">
+            <Play className="h-5 w-5" /> Watch Demo Video
           </Link>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">No credit card required · 50 free trial credits</p>
