@@ -3,6 +3,10 @@ import { requireAdmin } from "@/lib/admin";
 import { getAvatarProvider } from "@/lib/avatar";
 import { captureError } from "@/lib/logger";
 
+// Resolving an available avatar + voice makes extra HeyGen calls before the
+// render kicks off; give the function room so the platform doesn't abort it.
+export const maxDuration = 60;
+
 /** POST { script, avatarId?, voiceId? } — start an avatar tutorial render. */
 export async function POST(request: Request) {
   const gate = await requireAdmin();

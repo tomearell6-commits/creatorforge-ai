@@ -12,27 +12,36 @@ const API = "https://api.heygen.com";
  * HeyGen retires public avatars/voices over time (a hardcoded id caused
  * "RealAvatar ... not found" 500s). Resolve a currently-available avatar and
  * voice from the account's own lists, preferring env overrides when set.
+ * The lookups are cached for the process lifetime so only the first render
+ * pays the listing cost.
  */
+let cachedAvatarId: string | null = null;
+let cachedVoiceId: string | null = null;
+
 async function resolveAvatarId(key: string, preferred?: string): Promise<string> {
   if (preferred) return preferred;
-  const res = await fetchWithTimeout(`${API}/v2/avatars`, { headers: { "X-Api-Key": key } }, 30_000);
+  if (cachedAvatarId) return cachedAvatarId;
+  const res = await fetchWithTimeout(`${API}/v2/avatars`, { headers: { "X-Api-Key": key } }, 12_000);
   const json = await res.json().catch(() => null);
   const avatars: { avatar_id: string; premium?: boolean }[] = json?.data?.avatars ?? [];
   if (!res.ok || avatars.length === 0) {
-    throw new Error("HeyGen: could not list available avatars — set HEYGEN_AVATAR_ID to a valid avatar id.");
+    throw new Error("HeyGen: could not list available avatars — set HEYGEN_AVATAR_ID to a valid avatar id in Vercel.");
   }
-  return (avatars.find((a) => !a.premium) ?? avatars[0]).avatar_id;
+  cachedAvatarId = (avatars.find((a) => !a.premium) ?? avatars[0]).avatar_id;
+  return cachedAvatarId;
 }
 
 async function resolveVoiceId(key: string, preferred?: string): Promise<string> {
   if (preferred) return preferred;
-  const res = await fetchWithTimeout(`${API}/v2/voices`, { headers: { "X-Api-Key": key } }, 30_000);
+  if (cachedVoiceId) return cachedVoiceId;
+  const res = await fetchWithTimeout(`${API}/v2/voices`, { headers: { "X-Api-Key": key } }, 12_000);
   const json = await res.json().catch(() => null);
   const voices: { voice_id: string; language?: string }[] = json?.data?.voices ?? [];
   if (!res.ok || voices.length === 0) {
-    throw new Error("HeyGen: could not list available voices — set HEYGEN_VOICE_ID to a valid voice id.");
+    throw new Error("HeyGen: could not list available voices — set HEYGEN_VOICE_ID to a valid voice id in Vercel.");
   }
-  return (voices.find((v) => (v.language ?? "").toLowerCase().startsWith("en")) ?? voices[0]).voice_id;
+  cachedVoiceId = (voices.find((v) => (v.language ?? "").toLowerCase().startsWith("en")) ?? voices[0]).voice_id;
+  return cachedVoiceId;
 }
 
 export const heygenProvider: AvatarProvider = {
