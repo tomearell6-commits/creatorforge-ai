@@ -23,9 +23,16 @@ export function AvatarTutorialGenerator({ onCreated }: { onCreated?: () => void 
     setMsg(null);
     if (!title.trim() || !script.trim()) { setMsg("Title and script are required."); return; }
     setStage("rendering");
-    const r = await fetch("/api/admin/avatar/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ script }) });
-    const d = await r.json();
-    if (!r.ok) { setMsg(d.error || "Could not start render."); setStage("idle"); return; }
+    let d: { jobId?: string; error?: string };
+    try {
+      const r = await fetch("/api/admin/avatar/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ script }) });
+      d = await r.json().catch(() => ({ error: "The server took too long to respond. Try again — the first render initializes the presenter and is the slowest." }));
+      if (!r.ok || !d.jobId) { setMsg(d.error || "Could not start render."); setStage("idle"); return; }
+    } catch {
+      setMsg("The request timed out starting the render. Please try again — the first attempt is the slowest.");
+      setStage("idle");
+      return;
+    }
     setMsg("Rendering avatar video… this can take a few minutes.");
     poll.current = setInterval(async () => {
       const s = await fetch(`/api/admin/avatar/status?jobId=${encodeURIComponent(d.jobId)}`).then((x) => x.json());

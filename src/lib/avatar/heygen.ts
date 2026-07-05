@@ -21,7 +21,7 @@ let cachedVoiceId: string | null = null;
 async function resolveAvatarId(key: string, preferred?: string): Promise<string> {
   if (preferred) return preferred;
   if (cachedAvatarId) return cachedAvatarId;
-  const res = await fetchWithTimeout(`${API}/v2/avatars`, { headers: { "X-Api-Key": key } }, 12_000);
+  const res = await fetchWithTimeout(`${API}/v2/avatars`, { headers: { "X-Api-Key": key } }, 25_000);
   const json = await res.json().catch(() => null);
   const avatars: { avatar_id: string; premium?: boolean }[] = json?.data?.avatars ?? [];
   if (!res.ok || avatars.length === 0) {
@@ -34,7 +34,7 @@ async function resolveAvatarId(key: string, preferred?: string): Promise<string>
 async function resolveVoiceId(key: string, preferred?: string): Promise<string> {
   if (preferred) return preferred;
   if (cachedVoiceId) return cachedVoiceId;
-  const res = await fetchWithTimeout(`${API}/v2/voices`, { headers: { "X-Api-Key": key } }, 12_000);
+  const res = await fetchWithTimeout(`${API}/v2/voices`, { headers: { "X-Api-Key": key } }, 25_000);
   const json = await res.json().catch(() => null);
   const voices: { voice_id: string; language?: string }[] = json?.data?.voices ?? [];
   if (!res.ok || voices.length === 0) {
