@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PlayCircle, GraduationCap } from "lucide-react";
+import { tutorialThumbDataUri } from "@/lib/tutorials/thumb";
 
 export function TutorialLibrary({ tutorials }: { tutorials: any[] }) {
   const categories = Array.from(new Set(tutorials.map((t) => t.category)));
@@ -34,7 +35,7 @@ export function TutorialLibrary({ tutorials }: { tutorials: any[] }) {
               controls
               playsInline
               preload="metadata"
-              poster={selected.thumbnail_url || undefined}
+              poster={selected.thumbnail_url || tutorialThumbDataUri(selected.title, selected.category)}
             />
           )}
         </div>
