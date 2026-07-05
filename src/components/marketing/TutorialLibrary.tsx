@@ -23,7 +23,20 @@ export function TutorialLibrary({ tutorials }: { tutorials: any[] }) {
       {/* Player */}
       <div>
         <div className="overflow-hidden rounded-2xl border border-border bg-ink shadow-lg">
-          {selected && <video key={selected.id} className="aspect-video w-full" src={selected.video_url} controls autoPlay playsInline preload="metadata" poster={selected.thumbnail_url || undefined} />}
+          {/* No autoPlay: browsers block autoplay-with-sound, which left a black
+              box that looked broken. The #t=0.1 media fragment makes the browser
+              seek slightly in, so the first real frame shows as the preview. */}
+          {selected && (
+            <video
+              key={selected.id}
+              className="aspect-video w-full"
+              src={`${selected.video_url}#t=0.1`}
+              controls
+              playsInline
+              preload="metadata"
+              poster={selected.thumbnail_url || undefined}
+            />
+          )}
         </div>
         {selected && (
           <div className="mt-4">

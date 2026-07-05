@@ -83,7 +83,7 @@ export default async function LandingPage() {
                 preload="metadata"
                 playsInline
                 className="aspect-video w-full bg-black"
-                src="https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/full-walkthrough.mp4"
+                src="https://fbdfwisbjtpaifvsetfg.supabase.co/storage/v1/object/public/media/tutorials/full-walkthrough.mp4#t=0.1"
               />
             </div>
             <p className="mt-3 text-center text-sm text-muted-foreground">
