@@ -18,30 +18,38 @@ const API = "https://api.heygen.com";
 let cachedAvatarId: string | null = null;
 let cachedVoiceId: string | null = null;
 
-async function resolveAvatarId(key: string, preferred?: string): Promise<string> {
-  if (preferred) return preferred;
-  if (cachedAvatarId) return cachedAvatarId;
-  const res = await fetchWithTimeout(`${API}/v2/avatars`, { headers: { "X-Api-Key": key } }, 25_000);
-  const json = await res.json().catch(() => null);
-  const avatars: { avatar_id: string; premium?: boolean }[] = json?.data?.avatars ?? [];
-  if (!res.ok || avatars.length === 0) {
-    throw new Error("HeyGen: could not list available avatars — set HEYGEN_AVATAR_ID to a valid avatar id in Vercel.");
-  }
-  cachedAvatarId = (avatars.find((a) => !a.premium) ?? avatars[0]).avatar_id;
-  return cachedAvatarId;
-}
+type AvatarGroup = { id: string; default_voice_id?: string; looks_count?: number; premium?: boolean };
 
-async function resolveVoiceId(key: string, preferred?: string): Promise<string> {
-  if (preferred) return preferred;
-  if (cachedVoiceId) return cachedVoiceId;
-  const res = await fetchWithTimeout(`${API}/v2/voices`, { headers: { "X-Api-Key": key } }, 25_000);
-  const json = await res.json().catch(() => null);
-  const voices: { voice_id: string; language?: string }[] = json?.data?.voices ?? [];
-  if (!res.ok || voices.length === 0) {
-    throw new Error("HeyGen: could not list available voices — set HEYGEN_VOICE_ID to a valid voice id in Vercel.");
+/**
+ * Resolve an avatar + its default voice from /v3/avatars (paginated avatar
+ * groups — fast). The old /v2/avatars flat list returns hundreds of looks for
+ * established accounts and times out. Both are cached for the process.
+ */
+async function resolveAvatarAndVoice(
+  key: string,
+  preferredAvatar?: string,
+  preferredVoice?: string
+): Promise<{ avatarId: string; voiceId: string }> {
+  if ((preferredAvatar || cachedAvatarId) && (preferredVoice || cachedVoiceId)) {
+    return { avatarId: preferredAvatar || cachedAvatarId!, voiceId: preferredVoice || cachedVoiceId! };
   }
-  cachedVoiceId = (voices.find((v) => (v.language ?? "").toLowerCase().startsWith("en")) ?? voices[0]).voice_id;
-  return cachedVoiceId;
+
+  const res = await fetchWithTimeout(`${API}/v3/avatars?limit=20`, { headers: { "X-Api-Key": key } }, 25_000);
+  const json = await res.json().catch(() => null);
+  const groups: AvatarGroup[] =
+    json?.data?.avatars ?? json?.data?.avatar_group_list ?? json?.data?.avatar_groups ?? [];
+  const usable = groups.find((g) => (g.looks_count ?? 1) > 0 && g.default_voice_id) ?? groups[0];
+  if (!res.ok || !usable?.id) {
+    throw new Error(
+      "HeyGen: could not find an available avatar. Set HEYGEN_AVATAR_ID and HEYGEN_VOICE_ID in Vercel to specific ids from your HeyGen account."
+    );
+  }
+  cachedAvatarId = preferredAvatar || usable.id;
+  cachedVoiceId = preferredVoice || usable.default_voice_id || cachedVoiceId || "";
+  if (!cachedVoiceId) {
+    throw new Error("HeyGen: avatar found but no voice available — set HEYGEN_VOICE_ID in Vercel.");
+  }
+  return { avatarId: cachedAvatarId, voiceId: cachedVoiceId };
 }
 
 export const heygenProvider: AvatarProvider = {
@@ -51,10 +59,11 @@ export const heygenProvider: AvatarProvider = {
   async createVideo(input: AvatarCreateInput): Promise<AvatarJob> {
     const key = process.env.HEYGEN_API_KEY;
     if (!key) throw new Error("HEYGEN_API_KEY is not set");
-    const [avatarId, voiceId] = await Promise.all([
-      resolveAvatarId(key, input.avatarId || process.env.HEYGEN_AVATAR_ID),
-      resolveVoiceId(key, input.voiceId || process.env.HEYGEN_VOICE_ID),
-    ]);
+    const { avatarId, voiceId } = await resolveAvatarAndVoice(
+      key,
+      input.avatarId || process.env.HEYGEN_AVATAR_ID,
+      input.voiceId || process.env.HEYGEN_VOICE_ID
+    );
     const res = await fetchWithTimeout(`${API}/v2/video/generate`, {
       method: "POST",
       headers: { "X-Api-Key": key, "Content-Type": "application/json" },
