@@ -33,9 +33,10 @@ export function AvatarTutorialGenerator({ onCreated }: { onCreated?: () => void 
       setStage("idle");
       return;
     }
+    const jobId = d.jobId;
     setMsg("Rendering avatar video… this can take a few minutes.");
     poll.current = setInterval(async () => {
-      const s = await fetch(`/api/admin/avatar/status?jobId=${encodeURIComponent(d.jobId)}`).then((x) => x.json());
+      const s = await fetch(`/api/admin/avatar/status?jobId=${encodeURIComponent(jobId)}`).then((x) => x.json());
       if (s.status === "completed") {
         if (poll.current) clearInterval(poll.current);
         setStage("saving"); setMsg("Render done — saving to your library…");
