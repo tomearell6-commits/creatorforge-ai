@@ -8,6 +8,33 @@ import { fetchWithTimeout } from "@/lib/http";
 
 const API = "https://api.heygen.com";
 
+/**
+ * HeyGen retires public avatars/voices over time (a hardcoded id caused
+ * "RealAvatar ... not found" 500s). Resolve a currently-available avatar and
+ * voice from the account's own lists, preferring env overrides when set.
+ */
+async function resolveAvatarId(key: string, preferred?: string): Promise<string> {
+  if (preferred) return preferred;
+  const res = await fetchWithTimeout(`${API}/v2/avatars`, { headers: { "X-Api-Key": key } }, 30_000);
+  const json = await res.json().catch(() => null);
+  const avatars: { avatar_id: string; premium?: boolean }[] = json?.data?.avatars ?? [];
+  if (!res.ok || avatars.length === 0) {
+    throw new Error("HeyGen: could not list available avatars — set HEYGEN_AVATAR_ID to a valid avatar id.");
+  }
+  return (avatars.find((a) => !a.premium) ?? avatars[0]).avatar_id;
+}
+
+async function resolveVoiceId(key: string, preferred?: string): Promise<string> {
+  if (preferred) return preferred;
+  const res = await fetchWithTimeout(`${API}/v2/voices`, { headers: { "X-Api-Key": key } }, 30_000);
+  const json = await res.json().catch(() => null);
+  const voices: { voice_id: string; language?: string }[] = json?.data?.voices ?? [];
+  if (!res.ok || voices.length === 0) {
+    throw new Error("HeyGen: could not list available voices — set HEYGEN_VOICE_ID to a valid voice id.");
+  }
+  return (voices.find((v) => (v.language ?? "").toLowerCase().startsWith("en")) ?? voices[0]).voice_id;
+}
+
 export const heygenProvider: AvatarProvider = {
   id: "heygen",
   isConfigured() { return !!process.env.HEYGEN_API_KEY; },
@@ -15,13 +42,17 @@ export const heygenProvider: AvatarProvider = {
   async createVideo(input: AvatarCreateInput): Promise<AvatarJob> {
     const key = process.env.HEYGEN_API_KEY;
     if (!key) throw new Error("HEYGEN_API_KEY is not set");
+    const [avatarId, voiceId] = await Promise.all([
+      resolveAvatarId(key, input.avatarId || process.env.HEYGEN_AVATAR_ID),
+      resolveVoiceId(key, input.voiceId || process.env.HEYGEN_VOICE_ID),
+    ]);
     const res = await fetchWithTimeout(`${API}/v2/video/generate`, {
       method: "POST",
       headers: { "X-Api-Key": key, "Content-Type": "application/json" },
       body: JSON.stringify({
         video_inputs: [{
-          character: { type: "avatar", avatar_id: input.avatarId || process.env.HEYGEN_AVATAR_ID || "Daisy-inskirt-20220818", avatar_style: "normal" },
-          voice: { type: "text", input_text: input.script, voice_id: input.voiceId || process.env.HEYGEN_VOICE_ID || "1bd001e7e50f421d891986aad5158bc8" },
+          character: { type: "avatar", avatar_id: avatarId, avatar_style: "normal" },
+          voice: { type: "text", input_text: input.script, voice_id: voiceId },
         }],
         dimension: { width: 1280, height: 720 },
       }),
