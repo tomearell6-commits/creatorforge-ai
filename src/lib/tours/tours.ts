@@ -115,6 +115,34 @@ export const TOURS: Tour[] = [
     ],
   },
   {
+    id: "business-ops-setup",
+    title: "Set Up Your AI Business Manager",
+    steps: [
+      { href: "/dashboard/business", title: "Meet your Business Manager", body: "The Executive Dashboard shows your Business Health Score, inquiries, drafts and approvals — every number comes from your real activity." },
+      { href: "/dashboard/business/profile", title: "Teach the AI your business", body: "Fill in your Company Profile — description, target market, brand voice. This is the AI's brain: every reply, document and campaign is written from it." },
+      { href: "/dashboard/business/knowledge", title: "Add your knowledge", body: "Paste FAQs, policies and pricing into the Knowledge Base. The AI quotes YOUR facts instead of inventing answers." },
+      { href: "/dashboard/business/products", title: "Load your catalogue", body: "Add products, then generate a marketing pack per product — SEO description, captions, FAQ, and prompts for images and videos." },
+      { href: "/dashboard/business/health", title: "Watch your score climb", body: "The Health Score explains every point and tells you the next best improvement." },
+    ],
+  },
+  {
+    id: "business-inquiries",
+    title: "Handle Inquiries with AI",
+    steps: [
+      { href: "/dashboard/business/settings", title: "Connect your website form", body: "Copy the form snippet — submissions from your site (or forwarded marketplace inquiries) land in the Inquiry Center automatically." },
+      { href: "/dashboard/business/inquiries", title: "AI triage", body: "One click classifies every new inquiry: sales, support, quotation, partnership — with priority and sensitive-topic flags." },
+      { href: "/dashboard/business/inquiries", title: "Draft, approve, send", body: "AI drafts a professional reply from your profile and knowledge. You approve or edit, then copy it into your own email — nothing is ever sent without you." },
+    ],
+  },
+  {
+    id: "business-documents",
+    title: "Generate Business Documents",
+    steps: [
+      { href: "/dashboard/business/documents", title: "Pick a document type", body: "Quotations, invoices, proposals, purchase orders and more — numbered automatically." },
+      { href: "/dashboard/business/documents", title: "Brief the AI, review, print", body: "Give it the facts and line items — it drafts the document from your company profile. Review, then Print / Save as PDF." },
+    ],
+  },
+  {
     id: "ai-shorts",
     title: "Generate AI Shorts",
     steps: [

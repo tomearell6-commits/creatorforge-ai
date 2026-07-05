@@ -79,7 +79,7 @@ export function DesignEditor({ projectId }: { projectId?: string }) {
     } finally {
       setSaving(false);
     }
-  }, [projectId, ed.layers, meta]);
+  }, [projectId, ed.layers]);
 
   const exportAs = useCallback(async (format: ExportFormat) => {
     setMsg(null);

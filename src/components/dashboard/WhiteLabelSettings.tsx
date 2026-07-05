@@ -59,7 +59,9 @@ export function WhiteLabelSettings() {
         <div className="rounded-xl border border-border p-4">
           <div className="flex items-center gap-2 font-bold">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg text-white" style={{ background: c.brandColor }}>
-              {c.logoUrl ? <img src={c.logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" /> : "▲"}
+              {/* user-hosted logo URL from any domain — next/image would require whitelisting every host */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {c.logoUrl ? <img src={c.logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" /> : "▲"}
             </span>
             <span style={{ color: c.brandColor }}>{c.brandName}</span>
           </div>

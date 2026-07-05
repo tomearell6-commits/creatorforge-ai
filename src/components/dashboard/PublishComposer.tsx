@@ -51,7 +51,11 @@ export function PublishComposer() {
     setJobs(j.jobs ?? []);
     if (!assetId && a.assets?.[0]) setAssetId(a.assets[0].id);
   }
-  useEffect(() => { loadAll(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => {
+    loadAll();
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const connected = accounts.filter((a) => a.status === "connected").map((a) => a.platform);
 

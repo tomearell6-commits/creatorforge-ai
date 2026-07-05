@@ -33,7 +33,11 @@ export function AdminUsers() {
     const json = await res.json();
     setUsers(json.users ?? []);
   }
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => {
+    load();
+    // run once on mount; search re-runs load() explicitly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function act(userId: string, action: string, value?: unknown): Promise<boolean> {
     const res = await fetch("/api/admin/users", {

@@ -19,7 +19,11 @@ export function AdminAudit() {
     const json = await (await fetch(`/api/admin/audit?${sp}`)).json();
     setLogs(json.logs ?? []);
   }
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => {
+    load();
+    // run once on mount; "Filter" re-runs load() with the current inputs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function exportCsv() {
     const sp = new URLSearchParams({ format: "csv" });
