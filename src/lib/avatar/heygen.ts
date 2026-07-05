@@ -18,12 +18,39 @@ const API = "https://api.heygen.com";
 let cachedAvatarId: string | null = null;
 let cachedVoiceId: string | null = null;
 
-type AvatarGroup = { id: string; default_voice_id?: string; looks_count?: number; premium?: boolean };
+type AvatarGroup = { id: string; default_voice_id?: string; looks_count?: number };
+type AvatarLook = { avatar_id?: string; id?: string; is_default?: boolean };
+type Voice = { voice_id: string; language?: string };
+
+/** Pull an array out of a HeyGen `data` payload, whether it's the array itself
+ *  or nested under one of the given keys (their shapes vary v2 vs v3). */
+function pickArray<T>(data: unknown, ...keys: string[]): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object") {
+    for (const k of keys) {
+      const v = (data as Record<string, unknown>)[k];
+      if (Array.isArray(v)) return v as T[];
+    }
+  }
+  return [];
+}
+
+async function hgGet(key: string, path: string, ms = 20_000): Promise<{ data: unknown; raw: string }> {
+  const res = await fetchWithTimeout(`${API}${path}`, { headers: { "X-Api-Key": key } }, ms);
+  const text = await res.text();
+  let json: unknown = null;
+  try { json = JSON.parse(text); } catch { /* non-JSON */ }
+  if (!res.ok) throw new Error(`HeyGen ${path} → ${res.status}: ${text.slice(0, 180)}`);
+  return { data: (json as { data?: unknown })?.data ?? json, raw: text.slice(0, 180) };
+}
 
 /**
- * Resolve an avatar + its default voice from /v3/avatars (paginated avatar
- * groups — fast). The old /v2/avatars flat list returns hundreds of looks for
- * established accounts and times out. Both are cached for the process.
+ * Resolve a real avatar LOOK id + a voice id. HeyGen's generator needs a
+ * "look" id (e.g. Daisy-inskirt-…), NOT an avatar-group id — so we list groups
+ * (/v3/avatars, fast), then read a look from inside the first group
+ * (/v2/avatar_group/{id}/avatars, small). Voice comes from the group's default
+ * or /v3/voices. Env overrides skip all of this. Cached per process.
+ * Errors surface the raw HeyGen reply so problems are visible, not guessed.
  */
 async function resolveAvatarAndVoice(
   key: string,
@@ -34,22 +61,37 @@ async function resolveAvatarAndVoice(
     return { avatarId: preferredAvatar || cachedAvatarId!, voiceId: preferredVoice || cachedVoiceId! };
   }
 
-  const res = await fetchWithTimeout(`${API}/v3/avatars?limit=20`, { headers: { "X-Api-Key": key } }, 25_000);
-  const json = await res.json().catch(() => null);
-  const groups: AvatarGroup[] =
-    json?.data?.avatars ?? json?.data?.avatar_group_list ?? json?.data?.avatar_groups ?? [];
-  const usable = groups.find((g) => (g.looks_count ?? 1) > 0 && g.default_voice_id) ?? groups[0];
-  if (!res.ok || !usable?.id) {
-    throw new Error(
-      "HeyGen: could not find an available avatar. Set HEYGEN_AVATAR_ID and HEYGEN_VOICE_ID in Vercel to specific ids from your HeyGen account."
-    );
+  let avatarId = preferredAvatar || cachedAvatarId || "";
+  let voiceId = preferredVoice || cachedVoiceId || "";
+  let groupDefaultVoice = "";
+
+  // 1) Need an avatar look id → find a group, then a look inside it.
+  if (!avatarId) {
+    const g = await hgGet(key, "/v3/avatars?limit=10");
+    const groups = pickArray<AvatarGroup>(g.data, "avatars", "avatar_group_list", "avatar_groups");
+    const group = groups.find((x) => (x.looks_count ?? 1) > 0) ?? groups[0];
+    if (!group?.id) throw new Error(`HeyGen returned no avatar groups. Reply: ${g.raw}`);
+    groupDefaultVoice = group.default_voice_id || "";
+
+    const l = await hgGet(key, `/v2/avatar_group/${group.id}/avatars`);
+    const looks = pickArray<AvatarLook>(l.data, "avatar_list", "avatars", "looks");
+    const look = looks.find((x) => x.is_default) ?? looks[0];
+    avatarId = look?.avatar_id || look?.id || "";
+    if (!avatarId) throw new Error(`HeyGen returned no looks for the avatar group. Reply: ${l.raw}`);
   }
-  cachedAvatarId = preferredAvatar || usable.id;
-  cachedVoiceId = preferredVoice || usable.default_voice_id || cachedVoiceId || "";
-  if (!cachedVoiceId) {
-    throw new Error("HeyGen: avatar found but no voice available — set HEYGEN_VOICE_ID in Vercel.");
+
+  // 2) Voice: env → group default → first English public voice.
+  if (!voiceId) voiceId = groupDefaultVoice;
+  if (!voiceId) {
+    const v = await hgGet(key, "/v3/voices?type=public&limit=50");
+    const voices = pickArray<Voice>(v.data, "voices");
+    voiceId = (voices.find((x) => (x.language ?? "").toLowerCase().startsWith("en")) ?? voices[0])?.voice_id || "";
+    if (!voiceId) throw new Error(`HeyGen returned no voices. Reply: ${v.raw}`);
   }
-  return { avatarId: cachedAvatarId, voiceId: cachedVoiceId };
+
+  cachedAvatarId = avatarId;
+  cachedVoiceId = voiceId;
+  return { avatarId, voiceId };
 }
 
 export const heygenProvider: AvatarProvider = {
