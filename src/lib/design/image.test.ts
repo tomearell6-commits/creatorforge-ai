@@ -27,9 +27,9 @@ describe("design image generation (placeholder mode)", () => {
     expect(r.url).toContain("picsum.photos");
     expect(r.model).toBe("placeholder");
   });
-  it("defaults to FLUX 1.1 Pro Ultra unless overridden", () => {
+  it("defaults to the cost-optimized FLUX schnell unless overridden", () => {
     if (process.env.FAL_IMAGE_MODEL) return;
-    expect(falImageModel()).toBe("fal-ai/flux-pro/v1.1-ultra");
+    expect(falImageModel()).toBe("fal-ai/flux/schnell");
   });
 });
 
