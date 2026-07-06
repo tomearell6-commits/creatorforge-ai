@@ -94,14 +94,25 @@ export function SceneBuilder({
   }
 
   async function generateImage(scene: Scene) {
+    setError(null);
     patchLocal(scene.id, { image_url: "loading" });
-    const res = await fetch("/api/images", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ projectId, sceneId: scene.id, prompt: scene.image_prompt }),
-    });
-    const data = await res.json();
-    patchLocal(scene.id, { image_url: res.ok ? data.url : null });
+    try {
+      const res = await fetch("/api/images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, sceneId: scene.id, prompt: scene.image_prompt }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        patchLocal(scene.id, { image_url: null });
+        setError(data.error || `Image generation failed (${res.status}). Please try again.`);
+        return;
+      }
+      patchLocal(scene.id, { image_url: data.url });
+    } catch {
+      patchLocal(scene.id, { image_url: null });
+      setError("Couldn't reach the image generator. Please try again in a moment.");
+    }
   }
 
   async function move(index: number, dir: -1 | 1) {
