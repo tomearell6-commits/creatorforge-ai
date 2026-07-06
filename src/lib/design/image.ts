@@ -18,7 +18,11 @@
 import { fetchWithTimeout } from "@/lib/http";
 
 const SYNC = "https://fal.run";
-const DEFAULT_MODEL = "fal-ai/flux-pro/v1.1-ultra";
+// Cost-optimized default: FLUX schnell (~$0.003/image, ~20× cheaper than Ultra)
+// while still producing clean, professional images. Override per-deployment with
+// FAL_IMAGE_MODEL (e.g. fal-ai/flux/dev for higher fidelity, or
+// fal-ai/flux-pro/v1.1-ultra for premium real-estate renders).
+const DEFAULT_MODEL = "fal-ai/flux/schnell";
 
 function falKey(): string | undefined {
   return process.env.FAL_KEY || process.env.FAL_API_KEY;
