@@ -39,6 +39,7 @@ export function SceneBuilder({
   const [scenes, setScenes] = useState<Scene[]>(initialScenes);
   const [building, setBuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, string>>({});
   const { confirm, dialog } = useConfirm();
 
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 0), 0);
@@ -94,7 +95,7 @@ export function SceneBuilder({
   }
 
   async function generateImage(scene: Scene) {
-    setError(null);
+    setImageErrors((p) => { const n = { ...p }; delete n[scene.id]; return n; });
     patchLocal(scene.id, { image_url: "loading" });
     try {
       const res = await fetch("/api/images", {
@@ -105,13 +106,13 @@ export function SceneBuilder({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         patchLocal(scene.id, { image_url: null });
-        setError(data.error || `Image generation failed (${res.status}). Please try again.`);
+        setImageErrors((p) => ({ ...p, [scene.id]: data.error || `Image generation failed (${res.status}).` }));
         return;
       }
       patchLocal(scene.id, { image_url: data.url });
     } catch {
       patchLocal(scene.id, { image_url: null });
-      setError("Couldn't reach the image generator. Please try again in a moment.");
+      setImageErrors((p) => ({ ...p, [scene.id]: "Couldn't reach the image generator. Please try again." }));
     }
   }
 
@@ -243,13 +244,16 @@ export function SceneBuilder({
               </div>
               <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-muted">
                 {scene.image_url === "loading" ? (
-                  <span className="text-sm text-muted-foreground">Generating…</span>
+                  <span className="text-sm text-muted-foreground">Generating… (10–20s)</span>
                 ) : scene.image_url ? (
                   <Image src={scene.image_url} alt={scene.title ?? "Scene"} fill unoptimized className="object-cover" />
                 ) : (
                   <span className="text-sm text-muted-foreground">No image yet</span>
                 )}
               </div>
+              {imageErrors[scene.id] && (
+                <p className="mt-1 text-xs text-red-500">⚠ {imageErrors[scene.id]}</p>
+              )}
             </div>
           </div>
 
