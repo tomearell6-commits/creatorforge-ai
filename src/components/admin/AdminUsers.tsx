@@ -7,6 +7,7 @@ import { Input, Label } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PLANS } from "@/lib/constants";
 
 type Row = { user_id: string; full_name: string | null; plan: string; credits: number; status: string; created_at: string };
 
@@ -109,7 +110,7 @@ export function AdminUsers() {
                   <div className="font-medium">{u.full_name ?? "—"}</div>
                   <div className="text-xs text-muted-foreground">{u.user_id.slice(0, 8)}…</div>
                 </td>
-                <td className="p-3 capitalize">{u.plan}</td>
+                <td className="p-3">{PLANS.find((p) => p.id === u.plan)?.name ?? u.plan}</td>
                 <td className="p-3">{u.credits}</td>
                 <td className="p-3">
                   <Badge variant={USER_STATUS_VARIANT[u.status as keyof typeof USER_STATUS_VARIANT] ?? "default"}>{u.status}</Badge>
@@ -182,7 +183,7 @@ export function AdminUsers() {
                     onChange={(e) => setEditVal(e.target.value)}
                     className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   >
-                    {["free", "creator", "pro", "agency"].map((p) => <option key={p} value={p}>{p}</option>)}
+                    {PLANS.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.id})</option>)}
                   </select>
                 </>
               )}
