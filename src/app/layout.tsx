@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     title: "CreatorsForge AI",
     description: "AI scripts, voiceovers, captions, and faceless videos for any niche.",
   },
+  verification: {
+    google: "zVTq-u_IKv_DHxvACwfPAsmpEmimP7TUAPKit-jT08Y",
+  },
 };
 
 // Applies the saved theme before paint to avoid a flash of the wrong theme.
