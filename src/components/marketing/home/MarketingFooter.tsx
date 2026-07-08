@@ -8,7 +8,7 @@ const RESOURCES = [
   { label: "Help Center", href: "#faq" },
   { label: "API Docs", href: su("/dashboard/api") },
   { label: "Affiliate", href: su("/dashboard/affiliate") },
-  { label: "Blog", href: "#faq" },
+  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "#faq" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },

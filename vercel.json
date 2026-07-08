@@ -6,6 +6,7 @@
     { "path": "/api/jobs/check-subscription-alerts", "schedule": "0 8 * * *" },
     { "path": "/api/jobs/weekly-summary", "schedule": "0 * * * *" },
     { "path": "/api/cron/operations", "schedule": "0 7 * * *" },
-    { "path": "/api/cron/email-assistant", "schedule": "30 6 * * *" }
+    { "path": "/api/cron/email-assistant", "schedule": "30 6 * * *" },
+    { "path": "/api/cron/blog", "schedule": "0 * * * *" }
   ]
 }
