@@ -5,11 +5,11 @@ import { STUDIOS } from "@/config/studios";
 const su = (href: string) => `/signup?redirect=${encodeURIComponent(href)}`;
 
 const RESOURCES = [
-  { label: "Help Center", href: "#faq" },
+  { label: "Help Center", href: "/#faq" },
   { label: "API Docs", href: su("/dashboard/api") },
-  { label: "Affiliate", href: su("/dashboard/affiliate") },
+  { label: "Affiliate", href: "/affiliate" },
   { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "#faq" },
+  { label: "Contact", href: "/#faq" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
   { label: "Refund Policy", href: "/refund-policy" },

@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, X, Sparkles } from "lucide-react";
 
+// Absolute hrefs (leading "/") so anchor links work from ANY page (e.g. /blog),
+// not just the homepage. Real standalone pages (/pricing, /blog, /affiliate,
+// /tutorials) let visitors explore info before signing up.
 const LINKS = [
-  { label: "Studios", href: "#studios" },
-  { label: "Templates", href: "#templates" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Resources", href: "#features" },
-  { label: "Affiliate", href: "/signup?redirect=%2Fdashboard%2Faffiliate" },
-  { label: "Blog", href: "#faq" },
+  { label: "Studios", href: "/#studios" },
+  { label: "Templates", href: "/#templates" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Resources", href: "/tutorials" },
+  { label: "Affiliate", href: "/affiliate" },
+  { label: "Blog", href: "/blog" },
 ];
 
 export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
