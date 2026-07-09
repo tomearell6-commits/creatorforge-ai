@@ -45,8 +45,8 @@ export function StudioShowcase() {
                 <span className="truncate">{ACTIVITY[studio.id]}</span>
               </div>
 
-              <Link href={`/signup?redirect=${encodeURIComponent(`/dashboard/studio/${studio.id}`)}`} className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800">
-                Launch Studio <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <Link href={`/studios/${studio.id}`} className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800">
+                Explore Studio <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
           </Reveal>

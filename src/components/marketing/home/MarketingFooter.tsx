@@ -28,13 +28,13 @@ export function MarketingFooter() {
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">The AI Business Operating System — create, market, publish, automate, analyze, and grow.</p>
           </div>
 
-          {/* Studio columns (grouped by Studio per spec) */}
+          {/* Studio columns → public studio info pages (learn before signing up) */}
           {STUDIOS.map((studio) => (
             <div key={studio.id}>
-              <p className="text-sm font-semibold text-foreground">{studio.title}</p>
+              <Link href={`/studios/${studio.id}`} className="text-sm font-semibold text-foreground hover:text-brand-600">{studio.title}</Link>
               <ul className="mt-3 space-y-2">
                 {studio.sections[0].tools.slice(0, 5).map((t) => (
-                  <li key={t.label}><Link href={su(t.href)} className="text-sm text-muted-foreground hover:text-brand-600">{t.label}</Link></li>
+                  <li key={t.label}><Link href={`/studios/${studio.id}`} className="text-sm text-muted-foreground hover:text-brand-600">{t.label}</Link></li>
                 ))}
               </ul>
             </div>
