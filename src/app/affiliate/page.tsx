@@ -57,7 +57,7 @@ export default function AffiliatePage() {
               Become an affiliate
             </Link>
             <Link href="/#studios" className="rounded-xl border border-border px-6 py-3 font-semibold text-foreground transition hover:bg-muted">
-              See what you'll promote
+              See what you&rsquo;ll promote
             </Link>
           </div>
         </section>
