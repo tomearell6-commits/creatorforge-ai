@@ -1,5 +1,5 @@
 import { Header } from "@/components/marketing/Header";
-import { SiteFooter } from "@/components/marketing/SiteFooter";
+import { MarketingFooter } from "@/components/marketing/home/MarketingFooter";
 import { TutorialLibrary } from "@/components/marketing/TutorialLibrary";
 import { createClient } from "@/lib/supabase/server";
 
@@ -44,7 +44,7 @@ export default async function TutorialsPage() {
         </div>
         <div className="mt-12"><TutorialLibrary tutorials={tutorials} /></div>
       </main>
-      <SiteFooter />
+      <MarketingFooter />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Check, ArrowRight, Search } from "lucide-react";
 import { Header } from "@/components/marketing/Header";
-import { SiteFooter } from "@/components/marketing/SiteFooter";
+import { MarketingFooter } from "@/components/marketing/home/MarketingFooter";
 import { FloatingPromptBar } from "@/components/marketing/FloatingPromptBar";
 import { Button } from "@/components/ui/Button";
 
@@ -100,12 +100,29 @@ export default function SeoContentStudioPage() {
               <Button asChild className="mt-6"><Link href="/signup">Start free <ArrowRight className="h-4 w-4" /></Link></Button>
             </div>
             <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
-              <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: 28 }).map((_, i) => (
-                  <div key={i} className="aspect-square rounded-md bg-muted/60 p-1 text-[10px] text-muted-foreground">
-                    {i % 5 === 0 && <span className="block rounded bg-brand-200 px-1 text-brand-800">📝</span>}
-                  </div>
+              <div className="mb-2 flex items-center justify-between px-1">
+                <span className="text-sm font-semibold text-foreground">Content Calendar</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Monthly</span>
+              </div>
+              <div className="mb-1 grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-muted-foreground">
+                {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                  <div key={i}>{d}</div>
                 ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {Array.from({ length: 28 }).map((_, i) => {
+                  const day = i + 1;
+                  const posts: Record<number, string> = { 3: "Blog", 8: "How-to", 12: "Guide", 17: "Listicle", 22: "Review", 26: "News" };
+                  const label = posts[day];
+                  return (
+                    <div key={i} className="flex aspect-square flex-col rounded-md border border-border/60 bg-muted/40 p-1">
+                      <span className="text-[9px] leading-none text-muted-foreground">{day}</span>
+                      {label && (
+                        <span className="mt-auto block truncate rounded bg-brand-300 px-1 text-[8px] font-semibold text-brand-900">{label}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -129,7 +146,7 @@ export default function SeoContentStudioPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
+      <MarketingFooter />
       <FloatingPromptBar />
     </div>
   );

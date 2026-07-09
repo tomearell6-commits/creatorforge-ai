@@ -9,13 +9,15 @@ import { getServerLocale } from "@/lib/i18n-server";
 export async function Header() {
   const locale = await getServerLocale();
   const t = getDictionary(locale);
+  // Absolute paths / real pages so every link works from ANY page and lets
+  // visitors explore before signing up (no anchor-only or signup-wall links).
   const nav = [
-    { label: t.nav.tools, href: "#tools" },
+    { label: t.nav.tools, href: "/#studios" },
     { label: t.nav.seo, href: "/tools/seo-content-studio" },
     { label: t.nav.tutorials, href: "/tutorials" },
-    { label: t.nav.resources, href: "#templates" },
-    { label: t.nav.pricing, href: "#pricing" },
-    { label: t.nav.affiliate, href: "/signup" },
+    { label: t.nav.resources, href: "/blog" },
+    { label: t.nav.pricing, href: "/pricing" },
+    { label: t.nav.affiliate, href: "/affiliate" },
   ];
 
   return (
