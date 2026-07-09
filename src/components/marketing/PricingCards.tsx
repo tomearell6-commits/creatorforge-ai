@@ -72,7 +72,7 @@ export function PricingCards() {
               </ul>
               <Button asChild variant={p.highlighted ? "accent" : "outline"} className="mt-6">
                 {p.custom ? (
-                  <Link href="/signup?redirect=%2Fdashboard%2Fbilling%2Fsupport">Contact Sales</Link>
+                  <a href="mailto:hello@creatorsforge.io?subject=Enterprise%20plan%20inquiry">Contact Sales</a>
                 ) : p.price === 0 ? (
                   <Link href="/signup">Start free</Link>
                 ) : (
