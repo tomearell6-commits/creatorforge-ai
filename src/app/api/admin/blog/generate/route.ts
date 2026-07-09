@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { apiError } from "@/lib/api/respond";
 import { generateSeoPackage, type SeoArticleInput } from "@/lib/seo/generate";
 import { slugifyBlog, estimateReadingMinutes, sanitizeBlogHtml } from "@/lib/blog/blog";
+import { generateBlogCover } from "@/lib/blog/cover";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
@@ -68,7 +69,21 @@ export async function POST(request: Request) {
 
   const { data, error } = await gate.admin.from("blog_posts").insert(row).select("id,slug,title,status").single();
   if (error) return apiError(error.message || "Could not save the draft.", 500);
-  return NextResponse.json({ ok: true, usedAI, post: data, featuredImagePrompt: pkg.featuredImagePrompt });
+
+  // Best-effort: auto-generate a cover image (platform-funded). Never fails the
+  // article if the image render/upload has a problem — the post keeps the
+  // branded placeholder and a cover can be added later from the admin panel.
+  let cover: string | null = null;
+  try {
+    const r = await generateBlogCover(
+      gate.admin,
+      { id: data.id, title: row.title, focus_keyword: row.focus_keyword, ownerId: gate.user.id },
+      pkg.featuredImagePrompt
+    );
+    cover = r?.url ?? null;
+  } catch { /* keep placeholder */ }
+
+  return NextResponse.json({ ok: true, usedAI, post: data, cover_image_url: cover });
 }
 
 async function ensureUniqueSlug(admin: AdminClient, base: string): Promise<string> {

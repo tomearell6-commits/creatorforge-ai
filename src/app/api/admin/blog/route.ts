@@ -12,7 +12,7 @@ export async function GET() {
   if ("error" in gate) return gate.error;
   const { data, error } = await gate.admin
     .from("blog_posts")
-    .select("id,slug,title,status,category,source,scheduled_for,published_at,reading_minutes,updated_at")
+    .select("id,slug,title,status,category,source,cover_image_url,scheduled_for,published_at,reading_minutes,updated_at")
     .order("updated_at", { ascending: false })
     .limit(500);
   if (error) return apiError("Could not load posts.", 500);

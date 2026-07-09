@@ -47,9 +47,18 @@ saved (clearly noted in the admin success message) so the flow always works.
 - After publishing a few posts, use Google Search Console → URL Inspection →
   Request Indexing on the new `/blog/<slug>` URLs to speed up first indexing.
 
+## Cover images (AI-generated)
+Each article gets an AI cover image via fal.ai FLUX (Design Studio's provider),
+rehosted to Supabase Storage. Generated automatically when an article is written
+(best-effort — the post still saves if the image fails, keeping the branded
+gradient placeholder). For existing posts: **Admin → Blog & SEO** → per-post
+**Add cover / New cover**, or **Generate missing covers** (bulk, up to 12 at a
+time). Platform-funded (no user credits). Helpers: `src/lib/blog/cover.ts`
+(`generateBlogCover`, `coverPromptFor`); route `/api/admin/blog/cover`
+(`{id}` single or `{all:true}` bulk). Requires `FAL_KEY`; without it, posts keep
+the placeholder.
+
 ## Not included (future)
 - Auto-generation from a keyword queue on a schedule (currently the AI writes on
   demand; scheduling applies to publishing, not generation).
-- Per-post AI cover-image generation button (posts render a branded gradient
-  placeholder when `cover_image_url` is null).
 - Categories/tag archive pages and pagination beyond the latest 60.
