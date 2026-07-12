@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Wand2, Globe, Check, AlertTriangle } from "lucide-react";
+import { Wand2, Globe, Check, AlertTriangle, Download } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -100,14 +100,17 @@ export function WpFixer() {
         <p className="mt-2 text-xs text-muted-foreground">Reviews your pages for meta title/description issues and proposes AI-written fixes. Nothing changes until you approve. You&rsquo;re charged 3 credits only for fixes that are verified as actually applied.</p>
         <details className="mt-2 text-xs text-muted-foreground">
           <summary className="cursor-pointer font-medium text-brand-600">Fixes not applying? One-time setup for Rank Math / Yoast →</summary>
-          <div className="mt-2 space-y-1">
-            <p>Rank Math and Yoast block SEO-meta writes over the REST API by default. To allow it, add our free helper (a &ldquo;must-use&rdquo; plugin — no activation needed):</p>
+          <div className="mt-2 space-y-2">
+            <p>Rank Math and Yoast block SEO-meta writes over the REST API by default. To let us apply fixes, install our free helper plugin — a one-time, 3-click setup:</p>
+            <a href="/downloads/creatorsforge-seo-helper.zip" download className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 font-medium text-white hover:bg-brand-700">
+              <Download className="h-3.5 w-3.5" /> Download helper plugin (.zip)
+            </a>
             <ol className="ml-4 list-decimal space-y-0.5">
-              <li>In your hosting file manager, open <code>wp-content/</code> and create a folder <code>mu-plugins</code> if it isn&rsquo;t there.</li>
-              <li>Add a file <code>creatorsforge-seo-rest.php</code> with the helper code (ask CreatorsForge support for the file, or find it in your account docs).</li>
-              <li>Done — no &ldquo;activate&rdquo; step. Re-run the audit and apply.</li>
+              <li>Download the plugin above.</li>
+              <li>In WordPress: <strong>Plugins → Add New Plugin → Upload Plugin</strong>.</li>
+              <li>Choose the downloaded <code>creatorsforge-seo-helper.zip</code>, click <strong>Install Now</strong>, then <strong>Activate Plugin</strong>.</li>
             </ol>
-            <p>The helper only exposes the SEO title/description fields, and only to logged-in editors.</p>
+            <p>That&rsquo;s it — re-run the audit and apply. The helper only exposes the SEO title/description fields, and only to logged-in editors. It writes no data and phones home to nothing.</p>
           </div>
         </details>
       </Card>
