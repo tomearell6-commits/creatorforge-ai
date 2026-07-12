@@ -63,7 +63,11 @@ export function WpFixer() {
       const okIds = new Set<number>([...applied, ...(j.results ?? []).filter((r: { ok: boolean }) => r.ok).map((r: { postId: number }) => r.postId)]);
       setApplied(okIds);
       const fails = (j.results ?? []).filter((r: { ok: boolean }) => !r.ok).length;
-      setMsg({ kind: fails ? "error" : "success", text: `Applied ${j.applied} fix${j.applied === 1 ? "" : "es"} to WordPress (${j.charged} credits).${fails ? ` ${fails} failed.` : ""}` });
+      const firstErr = (j.results ?? []).find((r: { ok: boolean; error?: string }) => !r.ok)?.error;
+      setMsg({
+        kind: fails && !j.applied ? "error" : "success",
+        text: `Applied ${j.applied} fix${j.applied === 1 ? "" : "es"} to WordPress (${j.charged} credits, only verified changes are charged).${fails ? ` ${fails} couldn't be applied${firstErr ? ` — ${firstErr}` : ""}` : ""}`,
+      });
     } finally { setApplying(false); }
   }
 
@@ -93,7 +97,19 @@ export function WpFixer() {
           <Button onClick={audit} disabled={auditing}>{auditing ? <><Spinner className="h-4 w-4" /> Auditing…</> : <><Wand2 className="h-4 w-4" /> Audit &amp; propose fixes</>}</Button>
           <Link href="/dashboard/seo/sites" className="ml-auto text-sm text-brand-600 hover:underline">Manage sites</Link>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Reviews your pages for meta title/description issues and proposes AI-written fixes. Nothing changes until you approve. Applying costs 3 credits per page.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Reviews your pages for meta title/description issues and proposes AI-written fixes. Nothing changes until you approve. You&rsquo;re charged 3 credits only for fixes that are verified as actually applied.</p>
+        <details className="mt-2 text-xs text-muted-foreground">
+          <summary className="cursor-pointer font-medium text-brand-600">Fixes not applying? One-time setup for Rank Math / Yoast →</summary>
+          <div className="mt-2 space-y-1">
+            <p>Rank Math and Yoast block SEO-meta writes over the REST API by default. To allow it, add our free helper (a &ldquo;must-use&rdquo; plugin — no activation needed):</p>
+            <ol className="ml-4 list-decimal space-y-0.5">
+              <li>In your hosting file manager, open <code>wp-content/</code> and create a folder <code>mu-plugins</code> if it isn&rsquo;t there.</li>
+              <li>Add a file <code>creatorsforge-seo-rest.php</code> with the helper code (ask CreatorsForge support for the file, or find it in your account docs).</li>
+              <li>Done — no &ldquo;activate&rdquo; step. Re-run the audit and apply.</li>
+            </ol>
+            <p>The helper only exposes the SEO title/description fields, and only to logged-in editors.</p>
+          </div>
+        </details>
       </Card>
 
       {msg && <Alert variant={msg.kind}>{msg.text}</Alert>}

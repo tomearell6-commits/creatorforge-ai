@@ -106,7 +106,12 @@ export async function proposeFixes(siteUrl: string, auth: string, limit = 8): Pr
   return out;
 }
 
-/** Apply a meta fix to one post/page via the WP REST API (Yoast + Rank Math). */
+const HELPER_HINT = "Change didn't take effect — your SEO plugin (Rank Math/Yoast) blocks REST meta writes. Install the free CreatorsForge SEO helper plugin (WordPress SEO Fixer → setup) and retry.";
+
+/** Apply a meta fix to one post/page via the WP REST API (Yoast + Rank Math),
+ *  then VERIFY the change actually landed before reporting success. WordPress
+ *  returns 200 even when it silently ignores unregistered meta keys, so we
+ *  re-read the meta and confirm — the caller charges only on a verified ok. */
 export async function applyMetaFix(
   siteUrl: string, auth: string,
   fix: { postId: number; postType: "post" | "page"; metaTitle?: string | null; metaDescription?: string | null }
@@ -116,17 +121,26 @@ export async function applyMetaFix(
   const meta: Record<string, string> = {};
   if (fix.metaTitle) { meta._yoast_wpseo_title = fix.metaTitle; meta.rank_math_title = fix.metaTitle; }
   if (fix.metaDescription) { meta._yoast_wpseo_metadesc = fix.metaDescription; meta.rank_math_description = fix.metaDescription; }
-  const body: Record<string, unknown> = { meta };
-  if (fix.metaDescription) body.excerpt = fix.metaDescription; // also update excerpt as a fallback
 
   try {
     const res = await fetchWithTimeout(
       `${site}/wp-json/wp/v2/${endpoint}/${fix.postId}`,
-      { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA }, body: JSON.stringify(body) },
+      { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA }, body: JSON.stringify({ meta }) },
       20_000
     );
     if (!res.ok) return { ok: false, error: `WordPress error ${res.status}: ${(await res.text()).slice(0, 150)}` };
-    return { ok: true };
+
+    // Verify: re-read the meta and confirm the new value is actually stored.
+    const check = await fetchWithTimeout(
+      `${site}/wp-json/wp/v2/${endpoint}/${fix.postId}?_fields=meta`,
+      { headers: { Authorization: auth, "User-Agent": UA } }, 15_000
+    );
+    if (!check.ok) return { ok: false, error: HELPER_HINT };
+    const m = ((await check.json())?.meta ?? {}) as Record<string, string>;
+    const titleOk = !fix.metaTitle || m.rank_math_title === fix.metaTitle || m._yoast_wpseo_title === fix.metaTitle;
+    const descOk = !fix.metaDescription || m.rank_math_description === fix.metaDescription || m._yoast_wpseo_metadesc === fix.metaDescription;
+    if (titleOk && descOk) return { ok: true };
+    return { ok: false, error: HELPER_HINT };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "apply failed" };
   }
