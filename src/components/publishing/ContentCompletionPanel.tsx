@@ -6,6 +6,7 @@ import { Eye, Download, Send, CalendarClock, Megaphone, Save, Copy, Pencil, Spar
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PublishPromoteDrawer } from "./PublishPromoteDrawer";
+import { UnifiedWorkflowStepper } from "@/components/workflow/UnifiedWorkflowStepper";
 import { getCapability, type ContentTypeId, type CompletionActionId } from "@/config/publishingCapabilities";
 
 export type CompletionPanelProps = {
@@ -73,7 +74,11 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
           <PartyPopper className="h-5 w-5 text-brand-600" />
           <h2 className="text-base font-semibold">{props.title ? `"${props.title}" is ready` : `Your ${cap.label.toLowerCase()} is ready`}</h2>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">Publish, schedule, promote, or export — all from here. You don&rsquo;t need to leave this page.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Here&rsquo;s your journey — Create and Review are done. Next: connect, publish, promote, and analyze. All from here.</p>
+
+        <div className="mt-3 rounded-lg border border-border bg-muted/30 p-2">
+          <UnifiedWorkflowStepper contentType={props.contentType} currentStep="publish" completedSteps={["create", "review"]} />
+        </div>
 
         <div className="mt-4 flex flex-wrap gap-2">{cap.primaryActions.map((a) => renderBtn(a, true))}</div>
         {cap.secondaryActions.length > 0 && (

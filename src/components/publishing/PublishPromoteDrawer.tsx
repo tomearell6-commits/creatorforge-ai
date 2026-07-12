@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Input } from "@/components/ui/Input";
 import { BrandIcon, hasBrandIcon } from "@/components/icons/BrandIcon";
+import { ConnectAccountModal, type ConnectItem } from "@/components/integrations/ConnectAccountModal";
 import type { ContentTypeId } from "@/config/publishingCapabilities";
 
 type DestStatus = { id: string; label: string; brandIcon: string | null; accountType: string; live: boolean; connected: boolean; permissions: string };
@@ -63,6 +64,11 @@ export function PublishPromoteDrawer(props: DrawerProps) {
   const [busy, setBusy] = useState<string | null>(null);
   const [results, setResults] = useState<PubResult[]>([]);
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [connectOpen, setConnectOpen] = useState(false);
+
+  function reloadCaps() {
+    fetch(`/api/publishing/capabilities?contentType=${contentType}`).then((r) => r.json()).then((j) => { if (j.summary) setSummary(j.summary); });
+  }
 
   useEffect(() => { if (props.initialTab) setTab(props.initialTab); }, [props.initialTab, open]);
 
@@ -201,7 +207,10 @@ export function PublishPromoteDrawer(props: DrawerProps) {
               {/* PUBLISH / SCHEDULE destinations */}
               {(tab === "publish" || tab === "schedule") && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground">Destinations</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-muted-foreground">Destinations</p>
+                    <button onClick={() => setConnectOpen(true)} className="text-xs font-medium text-brand-600 hover:underline">Connect an account</button>
+                  </div>
                   {summary.destinations.map((d) => (
                     <label key={d.id} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
                       <input type="checkbox" checked={!!picked[d.id]} onChange={(e) => setPicked((p) => ({ ...p, [d.id]: e.target.checked }))} className="h-4 w-4" />
@@ -311,6 +320,17 @@ export function PublishPromoteDrawer(props: DrawerProps) {
           )}
         </div>
       </div>
+
+      <ConnectAccountModal
+        open={connectOpen}
+        onClose={() => setConnectOpen(false)}
+        title="Connect an account"
+        items={[
+          ...(summary?.destinations ?? []),
+          ...(summary?.adPlatforms ?? []),
+        ].filter((d) => !d.connected).map((d): ConnectItem => ({ id: d.id, label: d.label, brandIcon: d.brandIcon, accountType: d.accountType, live: d.live, connected: d.connected, permissions: d.permissions }))}
+        onConnected={() => { setConnectOpen(false); reloadCaps(); }}
+      />
     </div>
   );
 }
