@@ -109,6 +109,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("build-saas", "SaaS App Planner", "/dashboard/build/new?builder=webapp", Rocket, "Plan a SaaS product", 5),
           c("build-funnel", "Marketing Funnel Builder", "/dashboard/build/new?builder=funnel", Target, "Plan a conversion funnel", 6),
           c("build-briefs", "Export Briefs", "/dashboard/build/projects", FileDown, "Developer briefs & prompt packages", 7),
+          c("browser-studio", "Browser Studio", "/dashboard/browser", Globe, "Inspect, preview & optimize any web page", 8),
         ],
       },
       {
@@ -296,6 +297,7 @@ export const QUICK_CREATE_ITEMS = [
   { label: "Write SEO Article", route: "/dashboard/seo/new", icon: Search, area: "create" as const },
   { label: "Design Graphic", route: "/dashboard/design/new", icon: Palette, area: "create" as const },
   { label: "Build Website", route: "/dashboard/build/new", icon: Hammer, area: "create" as const },
+  { label: "Browser Studio", route: "/dashboard/browser", icon: Globe, area: "create" as const },
   { label: "Create Book", route: "/dashboard/books/new", icon: BookOpen, area: "create" as const },
   { label: "Launch Ad Campaign", route: "/dashboard/ads/create", icon: Megaphone, area: "grow" as const },
   { label: "Run SEO Audit", route: "/dashboard/seo/audit", icon: FileSearch, area: "grow" as const },
@@ -308,6 +310,7 @@ export const HOME_QUICK_ACTIONS: Record<NavAreaId, { label: string; route: strin
     { label: "Create AI Video", route: "/dashboard/create?group=video", icon: Video },
     { label: "Design Graphic", route: "/dashboard/design/new", icon: Palette },
     { label: "Build Website", route: "/dashboard/build/new", icon: Hammer },
+    { label: "Browser Studio", route: "/dashboard/browser", icon: Globe },
     { label: "Write Book", route: "/dashboard/books/new", icon: BookOpen },
   ],
   grow: [
