@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -187,6 +188,18 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
           </div>
           {msg && <Alert variant={msg.kind} className="break-all">{msg.text}</Alert>}
         </Card>
+      </div>
+
+      <div className="lg:col-span-3">
+        <ContentCompletionPanel
+          contentType="seo_article"
+          title={article.seo_title}
+          sourceKind="article"
+          sourceId={article.id}
+          contentHtml={article.article_content}
+          baseMetadata={{ title: article.seo_title, description: article.meta_description }}
+          analyticsHref="/dashboard/seo"
+        />
       </div>
 
       <ConfirmDialog
