@@ -73,3 +73,21 @@ workflows.
   annotation + version compare.
 - Live cross-origin DOM editing (impossible from a sandboxed web app — by design).
 - Broken-link status checking (in the full SEO Audit; heavy for the live workspace).
+
+## Screenshots (rendering API)
+Vercel can't run full Chromium, so capture is delegated to a hosted screenshot
+API. Default provider: **ScreenshotOne** (`SCREENSHOT_PROVIDER=screenshotone`,
+also supports `apiflash`, `urlbox`).
+
+**Enable:**
+1. Create an account at screenshotone.com (free tier ~100 shots/mo) and copy the
+   **Access key**.
+2. Vercel → env: `SCREENSHOT_API_KEY` = that key. Redeploy.
+3. In Browser Studio → Screenshot Center → **Full page** / **Viewport**.
+
+**How it works:** the route builds the provider URL (carrying the key)
+server-side, `uploadFromUrl` fetches the PNG and stores it in Supabase Storage
+(the key never reaches the browser), then a `browser_screenshots` row is saved.
+Costs **3 credits** per capture (covers the rendering API). Dormant + returns
+501 until `SCREENSHOT_API_KEY` is set. Files: `src/lib/browser/screenshot.ts`,
+`src/app/api/browser/screenshot/route.ts` (POST capture + GET list).

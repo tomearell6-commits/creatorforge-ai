@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Monitor, Tablet, Smartphone, Star, History as HistoryIcon, Sparkles, X, RefreshCw } from "lucide-react";
+import { Search, Monitor, Tablet, Smartphone, Star, History as HistoryIcon, Sparkles, X, RefreshCw, Camera } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,6 +12,7 @@ import { ASSISTANT_ACTIONS, DEVICE_PRESETS, type InspectionReport, type Assistan
 
 type Bookmark = { id: string; url: string; title: string | null };
 type HistoryItem = { id: string; url: string; title: string | null; seo_score: number | null; visited_at: string };
+type Shot = { id: string; url: string; kind: string; image_url: string; width: number | null; created_at: string };
 type Device = (typeof DEVICE_PRESETS)[number]["id"];
 type Tab = "inspector" | "preview" | "social";
 
@@ -32,14 +33,35 @@ export function BrowserStudio() {
 
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [shots, setShots] = useState<Shot[]>([]);
+  const [shotConfigured, setShotConfigured] = useState(true);
+  const [capturing, setCapturing] = useState(false);
 
   useEffect(() => { loadSide(); }, []);
   async function loadSide() {
-    const [b, h] = await Promise.all([
+    const [b, h, s] = await Promise.all([
       fetch("/api/browser/bookmarks").then((r) => r.json()).catch(() => ({ bookmarks: [] })),
       fetch("/api/browser/history").then((r) => r.json()).catch(() => ({ history: [] })),
+      fetch("/api/browser/screenshot").then((r) => r.json()).catch(() => ({ screenshots: [], configured: true })),
     ]);
     setBookmarks(b.bookmarks ?? []); setHistory(h.history ?? []);
+    setShots(s.screenshots ?? []); setShotConfigured(s.configured !== false);
+  }
+
+  async function capture(fullPage: boolean) {
+    if (!report?.ok) { setMsg("Inspect a page first."); return; }
+    setCapturing(true); setMsg(null);
+    try {
+      const res = await fetch("/api/browser/screenshot", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: report.url, fullPage, device }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (res.status === 501) { setShotConfigured(false); setMsg(j.error || "Screenshots aren't enabled yet."); return; }
+      if (res.status === 402) { setMsg("Out of credits for screenshots — top up in the Credit Wallet."); return; }
+      if (!res.ok) { setMsg(j.error || "Capture failed."); return; }
+      if (j.screenshot) setShots((prev) => [j.screenshot, ...prev]);
+    } finally { setCapturing(false); }
   }
 
   async function inspect(target?: string) {
@@ -197,6 +219,32 @@ export function BrowserStudio() {
                 </li>
               ))}
             </ul>
+          </Card>
+
+          {/* Screenshot Center */}
+          <Card className="p-4">
+            <div className="flex items-center gap-2 font-semibold"><Camera className="h-4 w-4 text-brand-600" /> Screenshot Center</div>
+            {!shotConfigured ? (
+              <p className="mt-2 text-sm text-muted-foreground">Add a <code>SCREENSHOT_API_KEY</code> in Vercel to enable full-page &amp; viewport capture.</p>
+            ) : (
+              <>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => capture(true)} disabled={!report?.ok || capturing}>{capturing ? "Capturing…" : "Full page"}</Button>
+                  <Button size="sm" variant="outline" onClick={() => capture(false)} disabled={!report?.ok || capturing}>Viewport</Button>
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">3 credits per capture.</p>
+              </>
+            )}
+            {shots.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {shots.slice(0, 6).map((s) => (
+                  <a key={s.id} href={s.image_url} target="_blank" rel="noreferrer" className="group block overflow-hidden rounded border border-border" title={`${s.kind} · ${new URL(s.url).hostname}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={s.image_url} alt={`Screenshot of ${s.url}`} className="h-20 w-full object-cover object-top transition group-hover:opacity-80" />
+                  </a>
+                ))}
+              </div>
+            )}
           </Card>
         </div>
       </div>
