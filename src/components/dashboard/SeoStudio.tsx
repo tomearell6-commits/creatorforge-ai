@@ -55,8 +55,20 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
     });
     const j = await res.json();
     if (!res.ok) setMsg({ kind: "error", text: j.error || "Generation failed." });
-    else { setArticle(j.article); setMsg({ kind: "success", text: j.usedAI ? "Generated with AI." : "Generated (placeholder — set ANTHROPIC_API_KEY for real AI)." }); }
+    else {
+      setArticle(j.article);
+      setMsg({ kind: "success", text: j.usedAI ? "Generated with AI." : "Generated (placeholder — set ANTHROPIC_API_KEY for real AI)." });
+      recordWorkflow(j.article.id, j.article.seo_title, ["create"], "review", "Generated article");
+    }
     setGenerating(false);
+  }
+
+  // Record six-stage workflow progress (Create → Review → … ) — fire-and-forget.
+  function recordWorkflow(projectId: string, title: string, completedSteps: string[], currentStep: string, lastAction: string) {
+    fetch("/api/workflow/state", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectType: "seo_article", projectId, title, completedSteps, currentStep, lastAction }),
+    }).catch(() => {});
   }
 
   function setField<K extends keyof Article>(k: K, v: Article[K]) {
@@ -93,8 +105,11 @@ export function SeoStudio({ initialArticleId }: { initialArticleId?: string } = 
       body: JSON.stringify({ articleId: article.id, siteId, mode, scheduledAt: mode === "schedule" ? new Date(scheduledAt).toISOString() : null }),
     });
     const j = await res.json();
-    if (res.ok) setMsg({ kind: "success", text: mode === "now" ? `Published! ${j.url}` : mode === "schedule" ? "Scheduled on WordPress." : "Saved as WordPress draft." });
-    else setMsg({ kind: "error", text: j.error || "Publish failed." });
+    if (res.ok) {
+      setMsg({ kind: "success", text: mode === "now" ? `Published! ${j.url}` : mode === "schedule" ? "Scheduled on WordPress." : "Saved as WordPress draft." });
+      recordWorkflow(article.id, article.seo_title, ["create", "review", "connect", "publish"], "analyze",
+        mode === "now" ? "Published to WordPress" : mode === "schedule" ? "Scheduled on WordPress" : "Saved WordPress draft");
+    } else setMsg({ kind: "error", text: j.error || "Publish failed." });
     setBusy(false);
     setConfirmPublish(false);
   }

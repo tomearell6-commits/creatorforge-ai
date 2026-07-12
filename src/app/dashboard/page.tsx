@@ -9,6 +9,7 @@ import { DashboardCreditCard } from "@/components/dashboard/DashboardCreditCard"
 import { WeeklySummaryCard } from "@/components/dashboard/WeeklySummaryCard";
 import { AssistantOnboardingCard } from "@/components/dashboard/AssistantOnboardingCard";
 import { HomeAreaSections } from "@/components/dashboard/HomeAreaSections";
+import { ContinueWorkflows } from "@/components/workflow/ContinueWorkflows";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 
@@ -45,6 +46,9 @@ export default async function DashboardHome() {
       </div>
 
       {wallet && <DashboardCreditCard summary={wallet} />}
+
+      {/* Continue where you left off — the six-stage workflow */}
+      <ContinueWorkflows />
 
       <WeeklySummaryCard />
 
