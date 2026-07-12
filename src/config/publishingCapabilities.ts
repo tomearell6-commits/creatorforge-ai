@@ -194,7 +194,7 @@ export const PUBLISH_DESTINATIONS: Record<PublishDestinationId, DestinationMeta>
   shopify: { id: "shopify", label: "Shopify", brandIcon: null, accountType: "website", live: false, permissions: "Create blog articles & pages" },
   webflow: { id: "webflow", label: "Webflow", brandIcon: null, accountType: "website", live: false, permissions: "Publish CMS items (coming soon)" },
   custom_webhook: { id: "custom_webhook", label: "Custom Webhook", brandIcon: null, accountType: "website", live: true, permissions: "POST content JSON to your endpoint" },
-  brevo: { id: "brevo", label: "Brevo", brandIcon: "brevo", accountType: "email", live: true, permissions: "Send / schedule email campaigns" },
+  brevo: { id: "brevo", label: "Brevo", brandIcon: "brevo", accountType: "email", live: false, permissions: "Prepare a ready-to-send campaign (hand off to Email Studio)" },
   mailchimp: { id: "mailchimp", label: "Mailchimp", brandIcon: null, accountType: "email", live: false, permissions: "Create email campaigns (coming soon)" },
 };
 
