@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { AiImageRender } from "@/components/design/AiImageRender";
 import type { RealEstateConcept } from "@/lib/design/realestate";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -186,6 +187,16 @@ export function RealEstateConceptView({
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
         {concept.disclaimer}
       </div>
+
+      {projectId && (
+        <ContentCompletionPanel
+          contentType="real_estate"
+          title={projectName}
+          sourceKind="real_estate"
+          sourceId={projectId}
+          baseMetadata={{ title: projectName, description: concept.projectSummary }}
+        />
+      )}
     </div>
   );
 }

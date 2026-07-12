@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { AD_OBJECTIVES, AD_CREATIVE_TYPES, AD_PLATFORMS, adPlatform } from "@/lib/constants";
 import { AdCreativeStudio } from "./AdCreativeStudio";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 
 const STEPS = ["Business", "Objective", "Platforms", "Creative", "Audience", "Review", "Create"];
 function toggle(a: string[], v: string) { return a.includes(v) ? a.filter((x) => x !== v) : [...a, v]; }
@@ -53,6 +54,13 @@ export function AdCampaignWizard() {
           <p className="mt-1 text-sm text-muted-foreground">Now generate ad creatives for &ldquo;{f.name}&rdquo;. They&apos;ll be saved to this campaign.</p>
         </Card>
         <AdCreativeStudio campaignId={createdId} />
+        <ContentCompletionPanel
+          contentType="advertisement"
+          title={f.name}
+          sourceKind="ad_campaign"
+          sourceId={createdId}
+          baseMetadata={{ title: f.name }}
+        />
       </div>
     );
   }

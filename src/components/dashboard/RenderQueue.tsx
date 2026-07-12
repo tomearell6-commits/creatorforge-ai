@@ -10,6 +10,7 @@ import { Alert } from "@/components/ui/Alert";
 import { cn, formatDate } from "@/lib/utils";
 import { RENDER_TIERS } from "@/lib/constants";
 import type { RenderJob } from "@/lib/types";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 
 const STATUS_VARIANT = {
   queued: "warning",
@@ -194,6 +195,13 @@ export function RenderQueue({
                   >
                     <Download className="h-4 w-4" /> Download MP4
                   </button>
+                  <ContentCompletionPanel
+                    contentType="ai_video"
+                    sourceKind="video"
+                    sourceId={job.project_id ?? job.id}
+                    assetUrl={job.output_url}
+                    downloadUrl={job.output_url}
+                  />
                 </div>
               )}
 
