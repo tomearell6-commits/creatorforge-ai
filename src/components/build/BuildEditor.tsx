@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { packageToMarkdown, BUILD_DISCLAIMER, type BuildPackage } from "@/lib/build/package";
 import { BUILD_CREDIT_COSTS } from "@/config/buildStudio";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 
 type Project = {
   id: string; title: string; category: string | null; project_type: string | null; idea: string | null;
@@ -328,6 +329,15 @@ export function BuildEditor() {
             </div>
           )}
         </>
+      )}
+      {project && project.status === "generated" && (
+        <ContentCompletionPanel
+          contentType={project.project_type?.toLowerCase().includes("app") ? "app" : "website"}
+          title={project.title}
+          sourceKind="build"
+          sourceId={project.id}
+          baseMetadata={{ title: project.title, description: project.idea ?? undefined }}
+        />
       )}
       <p className="text-[11px] text-muted-foreground">{BUILD_DISCLAIMER}</p>
     </div>

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Eye, Download, Send, CalendarClock, Megaphone, Save, Copy, Pencil, Sparkles, PlusCircle, Users, BarChart3, PartyPopper } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PublishPromoteDrawer } from "./PublishPromoteDrawer";
 import { UnifiedWorkflowStepper } from "@/components/workflow/UnifiedWorkflowStepper";
+import { AnalyzePanel } from "@/components/workflow/AnalyzePanel";
 import { getCapability, type ContentTypeId, type CompletionActionId } from "@/config/publishingCapabilities";
 
 export type CompletionPanelProps = {
@@ -38,6 +39,24 @@ const LABELS: Record<CompletionActionId, string> = {
 export function ContentCompletionPanel(props: CompletionPanelProps) {
   const cap = getCapability(props.contentType);
   const [drawer, setDrawer] = useState<null | "publish" | "schedule" | "promote" | "export">(null);
+  const [analyzeOpen, setAnalyzeOpen] = useState(false);
+
+  // Adopting the six-stage workflow: mounting this panel records that the project
+  // reached "created, ready for review" so it surfaces in "Continue where you
+  // left off". Fire-and-forget, once. (Studios that publish update it further.)
+  const recorded = useRef(false);
+  useEffect(() => {
+    if (recorded.current || !props.sourceId || !cap) return;
+    recorded.current = true;
+    fetch("/api/workflow/state", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projectType: props.contentType, projectId: props.sourceId, title: props.title ?? cap.label,
+        completedSteps: ["create"], currentStep: "review", lastAction: "Content created",
+      }),
+    }).catch(() => {});
+  }, [props.sourceId, props.contentType, props.title, cap]);
+
   if (!cap) return null;
 
   function handle(action: CompletionActionId) {
@@ -59,7 +78,10 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
   const renderBtn = (action: CompletionActionId, primary: boolean) => {
     const Icon = ICONS[action];
     if (action === "share_team") return <Button key={action} asChild variant="outline" size="sm"><Link href="/dashboard/manage/settings"><Icon className="h-4 w-4" /> {LABELS[action]}</Link></Button>;
-    if (action === "view_analytics") return <Button key={action} asChild variant="outline" size="sm"><Link href={props.analyticsHref ?? "/dashboard/grow/analytics"}><Icon className="h-4 w-4" /> {LABELS[action]}</Link></Button>;
+    if (action === "view_analytics") {
+      if (props.sourceId) return <Button key={action} variant="outline" size="sm" onClick={() => setAnalyzeOpen(true)}><Icon className="h-4 w-4" /> {LABELS[action]}</Button>;
+      return <Button key={action} asChild variant="outline" size="sm"><Link href={props.analyticsHref ?? "/dashboard/grow/analytics"}><Icon className="h-4 w-4" /> {LABELS[action]}</Link></Button>;
+    }
     return (
       <Button key={action} variant={primary ? (action === "publish" ? "primary" : "secondary") : "outline"} size="sm" onClick={() => handle(action)}>
         <Icon className="h-4 w-4" /> {LABELS[action]}
@@ -74,10 +96,10 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
           <PartyPopper className="h-5 w-5 text-brand-600" />
           <h2 className="text-base font-semibold">{props.title ? `"${props.title}" is ready` : `Your ${cap.label.toLowerCase()} is ready`}</h2>
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">Here&rsquo;s your journey — Create and Review are done. Next: connect, publish, promote, and analyze. All from here.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Here&rsquo;s your journey — your content is created. Review it, then connect, publish, promote, and analyze. All from here.</p>
 
         <div className="mt-3 rounded-lg border border-border bg-muted/30 p-2">
-          <UnifiedWorkflowStepper contentType={props.contentType} currentStep="publish" completedSteps={["create", "review"]} />
+          <UnifiedWorkflowStepper contentType={props.contentType} currentStep="review" completedSteps={["create"]} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">{cap.primaryActions.map((a) => renderBtn(a, true))}</div>
@@ -98,6 +120,16 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
         downloadUrl={props.downloadUrl}
         baseMetadata={props.baseMetadata}
       />
+
+      {props.sourceId && (
+        <AnalyzePanel
+          open={analyzeOpen}
+          onClose={() => setAnalyzeOpen(false)}
+          contentType={props.contentType}
+          projectId={props.sourceId}
+          title={props.title}
+        />
+      )}
     </>
   );
 }

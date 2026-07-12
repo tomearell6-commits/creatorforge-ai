@@ -13,6 +13,7 @@ import { AiImageBar } from "./AiImageBar";
 import { blankCanvas } from "@/lib/design/layers";
 import { renderToDataUrl, downloadDataUrl, printImageAsPdf } from "@/lib/design/render";
 import type { ExportFormat } from "@/lib/design/types";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 
 /**
  * The Design Studio editor. Loads a project (or a blank canvas), composes the
@@ -129,6 +130,15 @@ export function DesignEditor({ projectId }: { projectId?: string }) {
           <DesignLayerPanel ed={ed} />
         </div>
       </div>
+      {projectId && (
+        <ContentCompletionPanel
+          contentType="design"
+          title={meta.title}
+          sourceKind="design"
+          sourceId={projectId}
+          baseMetadata={{ title: meta.title }}
+        />
+      )}
     </div>
   );
 }
