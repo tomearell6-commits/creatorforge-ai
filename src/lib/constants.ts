@@ -298,6 +298,11 @@ export const NOTIFICATION_META: Partial<Record<NotificationType, { emoji: string
   credits_low:          { emoji: "🪙", label: "Credits low" },
   subscription_renewed: { emoji: "🔁", label: "Subscription renewed" },
   storage_full:         { emoji: "💾", label: "Storage nearly full" },
+  reconnect_required:   { emoji: "🔌", label: "Reconnect account" },
+  ad_draft_ready:       { emoji: "📣", label: "Ad draft ready" },
+  approval_required:    { emoji: "🕓", label: "Approval required" },
+  schedule_reminder:    { emoji: "⏰", label: "Scheduled post soon" },
+  automation_paused:    { emoji: "⏸️", label: "Automation paused" },
 };
 
 export const AUTOMATION_TRIGGERS = [

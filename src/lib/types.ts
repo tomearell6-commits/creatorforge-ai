@@ -234,7 +234,10 @@ export type NotificationType =
   | "subscription_reminder" | "payment_failed" | "subscription_expired"
   | "subscription_cancelled" | "topup_success" | "weekly_summary"
   // AI Email Assistant
-  | "email_attention" | "email_summary";
+  | "email_attention" | "email_summary"
+  // Unified publishing & promotion
+  | "reconnect_required" | "ad_draft_ready" | "approval_required"
+  | "schedule_reminder" | "automation_paused";
 
 export type Notification = {
   id: string;
