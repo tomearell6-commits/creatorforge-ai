@@ -5,6 +5,7 @@ import { FileDown, Printer } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { BookPicker } from "./BookPicker";
+import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 
 const NATIVE = [
   { fmt: "md", label: "Markdown (.md)" },
@@ -27,6 +28,15 @@ export function BookExport() {
         <Button variant="ghost" disabled={!bookId} onClick={() => download("html")} title="Open the HTML export, then use your browser's Print → Save as PDF"><Printer className="h-4 w-4" /> PDF (print HTML)</Button>
       </div>
       <p className="text-xs text-muted-foreground">TXT, Markdown, HTML, and Word exports are free. For PDF, open the HTML export and use your browser&apos;s Print → Save as PDF. EPUB / native DOCX packaging is on the roadmap.</p>
+
+      {bookId && (
+        <ContentCompletionPanel
+          contentType="book"
+          sourceKind="book"
+          sourceId={bookId}
+          downloadUrl={`/api/books/export?bookId=${bookId}&format=pdf`}
+        />
+      )}
     </Card>
   );
 }
