@@ -167,7 +167,8 @@ export const DASHBOARD_NAV: DashNavArea[] = [
         description: "Audits, performance and growth insight.",
         children: [
           c("seo-audit", "SEO & Website Audit", "/dashboard/seo/audit", FileSearch, "Full site audit with scores + fix plan", 1),
-          c("analytics", "Campaign Analytics", "/dashboard/analytics", BarChart3, "Views, engagement and growth", 2),
+          c("wp-seo-fixer", "WordPress SEO Fixer", "/dashboard/seo/fixer", Globe, "AI audits & applies approved SEO fixes to your WordPress", 2),
+          c("analytics", "Campaign Analytics", "/dashboard/analytics", BarChart3, "Views, engagement and growth", 3),
           c("seo-reports", "SEO Reports", "/dashboard/seo", Search, "Article and publishing performance", 3),
           c("content-performance", "Content Performance", "/dashboard/reports/weekly", FileText, "Weekly content reports", 4),
           c("credit-usage", "Credit Usage Reports", "/dashboard/billing/usage", Wallet, "Where your credits go", 5),

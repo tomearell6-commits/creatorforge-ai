@@ -132,7 +132,8 @@ export function BrowserStudio() {
           {report?.ok && (
             <div className="ml-auto flex flex-wrap gap-2 text-xs">
               <a href={`/dashboard/seo/audit?url=${encodeURIComponent(report.url)}`} className="rounded-md border border-border px-2 py-1 hover:bg-muted">Full SEO Audit →</a>
-              <a href="/dashboard/seo/sites" className="rounded-md border border-border px-2 py-1 hover:bg-muted">Publish (WordPress) →</a>
+              <a href="/dashboard/seo/fixer" className="rounded-md border border-brand-400 px-2 py-1 text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/20">Auto-fix on WordPress →</a>
+              <a href="/dashboard/seo/sites" className="rounded-md border border-border px-2 py-1 hover:bg-muted">WordPress Sites →</a>
               <a href="/dashboard/build" className="rounded-md border border-border px-2 py-1 hover:bg-muted">Build Studio →</a>
             </div>
           )}
