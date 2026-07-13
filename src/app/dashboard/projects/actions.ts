@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Server Action: create a new project for the signed-in user, then redirect
- * to the script generator pre-loaded with the new project.
+ * Server Action: create a new project for the signed-in user, then drop them
+ * into the guided Create Studio (Script → Voiceover → Video → Preview →
+ * Publish) rather than the standalone script form.
  */
 export async function createProject(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
@@ -32,7 +33,7 @@ export async function createProject(formData: FormData) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/projects");
-  redirect(`/dashboard/generate?project=${data.id}`);
+  redirect(`/dashboard/create-studio/${data.id}`);
 }
 
 /** Server Action: delete a project the user owns. */
