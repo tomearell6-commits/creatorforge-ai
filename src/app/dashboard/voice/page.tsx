@@ -42,6 +42,9 @@ export default async function VoicePage({
       <div>
         <h1 className="text-2xl font-bold">Voice Studio</h1>
         <p className="mt-1 text-muted-foreground">Generate and manage AI voiceovers for your project.</p>
+        <Link href={`/dashboard/studio/${selectedId}?step=voiceover`} className="mt-1 inline-block text-sm font-medium text-brand-600 hover:underline">
+          Prefer the guided flow? Open Create Studio →
+        </Link>
       </div>
       <ProjectPicker projects={projects} selectedId={selectedId} />
       <VoiceStudio projectId={selectedId} defaultText={script?.content ?? ""} voiceovers={voiceovers ?? []} />

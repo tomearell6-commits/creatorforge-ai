@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Sparkles, Trash2 } from "lucide-react";
+import { Clapperboard, Sparkles, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -46,8 +46,13 @@ export default async function ProjectDetailPage({
         <span className="rounded-full bg-muted px-3 py-1 text-xs capitalize">{project.status}</span>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button asChild>
+          <Link href={`/dashboard/studio/${project.id}`}>
+            <Clapperboard className="h-4 w-4" /> Open Create Studio
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
           <Link href={`/dashboard/generate?project=${project.id}`}>
             <Sparkles className="h-4 w-4" /> Generate script
           </Link>
@@ -59,6 +64,16 @@ export default async function ProjectDetailPage({
           </Button>
         </form>
       </div>
+
+      <Card className="flex flex-col gap-3 border-brand-500/25 bg-brand-50/40 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold">One guided flow, start to finish</p>
+          <p className="text-sm text-muted-foreground">Script → Voiceover → Video → Preview → Schedule &amp; Publish, all in the Create Studio.</p>
+        </div>
+        <Button asChild variant="secondary" className="shrink-0">
+          <Link href={`/dashboard/studio/${project.id}`}>Open Create Studio</Link>
+        </Button>
+      </Card>
 
       <div className="space-y-4">
         <CardTitle>Generated scripts</CardTitle>
