@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { LocalBusinessConnectionManager } from "@/components/local-business/LocalBusinessConnectionManager";
+import { AutomationSettings } from "@/components/local-business/AutomationSettings";
 
 export const metadata = { title: "Local Business Settings — CreatorsForge AI" };
 
@@ -13,6 +14,7 @@ export default function LocalBusinessSettingsPage() {
         <p className="mt-1 text-muted-foreground">Connect, review permissions, reconnect, or disconnect your Google account. Official sign-in only — we never store your password.</p>
       </div>
       <LocalBusinessConnectionManager />
+      <AutomationSettings />
     </div>
   );
 }

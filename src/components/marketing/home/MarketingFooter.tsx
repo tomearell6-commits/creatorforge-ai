@@ -8,6 +8,7 @@ const RESOURCES = [
   { label: "Help Center", href: "/#faq" },
   { label: "API Docs", href: su("/dashboard/api") },
   { label: "Affiliate", href: "/affiliate" },
+  { label: "Google Business Profile Manager", href: "/tools/local-business-studio" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/#faq" },
   { label: "Privacy Policy", href: "/privacy" },

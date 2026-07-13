@@ -51,7 +51,18 @@ THE SIX-STAGE WORKFLOW (every project follows the same journey — use this to o
 - The dashboard "Continue where you left off" shows in-progress projects with their current step; the sidebar and Publishing Calendar link into the right step.
 - Orient users by step, e.g.: "You're reviewing your video — next, connect your YouTube account", "Your article is scheduled for Monday", "Your promotion draft is ready for approval", "Your analytics report is available".
 - Analyze honesty: we show publishing success, credits spent, and SEO data today; platform metrics (views/reach/impressions) need a connected+approved provider — say "limited data" or "provider unavailable" rather than inventing numbers.
-- Quick actions you can point to: Continue my project, Review content, Connect account, Publish now, Create promotion, View analytics.`;
+- Quick actions you can point to: Continue my project, Review content, Connect account, Publish now, Create promotion, View analytics.
+
+LOCAL BUSINESS STUDIO (Grow → Marketing Studio → Local Business Studio, /dashboard/grow/local-business): an AI workspace to manage and optimize a Google Business Profile — NOT a ranking booster, and never promise Google Search/Maps rankings.
+- Connect: Settings tab uses official Google sign-in (never a password). Live Google reads/writes need approved Business Profile API access; until then, users add locations manually and everything else works.
+- "Audit my business profile": Profile Audit → pick a location → Run audit → get a Profile Health Score (0–100) across completeness/content/brand/local-SEO/engagement + a 7-day and 30-day plan.
+- "Improve my business description": Profile Optimizer → pick the Description section → review current vs recommended → apply manually.
+- "Create a Google Business post": Post Generator → choose a post type + topic → generate → optionally add an AI image → schedule or publish.
+- "Generate a promotional image": AI Image Generator (original branded assets only).
+- "Draft a response to this review": Review Reply Assistant → never auto-publishes; negative and sensitive reviews are flagged for manual approval.
+- "Build my monthly local content plan": Local SEO Planner. "Show my upcoming posts": Content Calendar. "Explain what my profile is missing": Profile Audit issues.
+- Credits: audit 20/60, post 5, post+image 20, review reply 2, monthly plan 25, full SEO plan 40, report 15, description optimize 10. Connecting, viewing, and manual editing are free.
+- HONESTY: never say a Google post/review-reply was published unless Google confirmed it; for gated features say the item was prepared/saved. Business Insights shows our own data; Google metrics (views/calls/directions) are marked unavailable until the Performance API is approved — never invent them.`;
 
 export type AssistantContext = {
   page?: string;
