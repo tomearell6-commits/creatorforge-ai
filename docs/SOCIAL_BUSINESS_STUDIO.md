@@ -27,6 +27,14 @@ Reuses `social_accounts` (Phase 6) + `lib/publishing/oauth.ts`. Official OAuth p
 platform; tokens encrypted, never sent to the client. Connect via `/api/social`;
 capability + connection status surfaced by `/api/social-business/capabilities`.
 
+**Live provider env (Vercel), e.g. YouTube:** `YOUTUBE_CLIENT_ID` /
+`YOUTUBE_CLIENT_SECRET`; redirect `https://www.creatorsforge.io/api/social/callback?platform=youtube`;
+scopes `youtube.upload` + `youtube.readonly`. YouTube reuses the same Google Cloud
+project + OAuth client as the Business Profile setup (add the extra redirect URI +
+scopes). `youtube.upload` is sensitive — works in Testing for the developer; other
+users need Google app verification. Real video upload adapter:
+`lib/publishing/providers/youtube.ts` (videos.insert).
+
 ## 4. Provider capability matrix
 
 `config/socialProviderCapabilities.ts` — each provider defines per-capability
