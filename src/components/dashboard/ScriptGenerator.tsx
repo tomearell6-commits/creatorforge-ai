@@ -111,9 +111,16 @@ export function ScriptGenerator({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Save failed.");
       setSaved(true);
-      router.refresh();
-      // In Studio: advance to the next step (Voiceover) as soon as it's saved.
-      if (onSaved) onSaved();
+      if (onSaved) {
+        // In Studio: advance to the next step (Voiceover) in place.
+        router.refresh();
+        onSaved();
+      } else if (projectId) {
+        // Standalone: save AND continue into the guided Create Studio wizard.
+        router.push(`/dashboard/create-studio/${projectId}?step=voiceover`);
+      } else {
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");
     } finally {
@@ -221,9 +228,9 @@ export function ScriptGenerator({
                 </select>
               </div>
             )}
-            <Button onClick={save} disabled={saving} className={lockedProjectId ? "w-full" : "mt-6"} variant={lockedProjectId ? "primary" : "secondary"}>
-              {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {saved ? (lockedProjectId ? "Saved — opening Voiceover…" : "Saved") : saving ? "Saving…" : lockedProjectId ? "Save script & continue →" : "Save script"}
+            <Button onClick={save} disabled={saving} className={lockedProjectId ? "w-full" : "mt-6"} variant="primary">
+              {saved ? <Check className="h-4 w-4" /> : saving ? <Save className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+              {saved ? "Saved — opening Studio…" : saving ? "Saving…" : "Save & continue →"}
             </Button>
           </div>
 
