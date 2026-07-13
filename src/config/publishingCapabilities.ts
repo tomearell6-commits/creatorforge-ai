@@ -179,8 +179,8 @@ export interface DestinationMeta {
 }
 
 export const PUBLISH_DESTINATIONS: Record<PublishDestinationId, DestinationMeta> = {
-  youtube: { id: "youtube", label: "YouTube", brandIcon: "youtube", accountType: "social", live: false, permissions: "Upload & manage your videos" },
-  youtube_shorts: { id: "youtube_shorts", label: "YouTube Shorts", brandIcon: "youtube", accountType: "social", live: false, permissions: "Upload short-form videos" },
+  youtube: { id: "youtube", label: "YouTube", brandIcon: "youtube", accountType: "social", live: true, permissions: "Upload & manage your videos" },
+  youtube_shorts: { id: "youtube_shorts", label: "YouTube Shorts", brandIcon: "youtube", accountType: "social", live: true, permissions: "Upload short-form videos" },
   tiktok: { id: "tiktok", label: "TikTok", brandIcon: "tiktok", accountType: "social", live: false, permissions: "Post videos to your account" },
   instagram: { id: "instagram", label: "Instagram", brandIcon: "instagram", accountType: "social", live: false, permissions: "Publish posts to your Business account" },
   instagram_reels: { id: "instagram_reels", label: "Instagram Reels", brandIcon: "instagram", accountType: "social", live: false, permissions: "Publish Reels to your Business account" },

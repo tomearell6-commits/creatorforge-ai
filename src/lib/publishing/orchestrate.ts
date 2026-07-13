@@ -15,6 +15,7 @@ import {
   type ContentTypeId, type PublishDestinationId,
 } from "@/config/publishingCapabilities";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
+import { publishVideoToYouTube } from "@/lib/publishing/youtube-live";
 import { decryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
 import { emitNotification } from "@/lib/notifications";
@@ -124,6 +125,17 @@ async function publishLive(
     } catch (e) {
       return { status: "failed", error: e instanceof Error ? e.message : "Webhook call failed" };
     }
+  }
+
+  // YouTube / Shorts — real video upload (videos.insert) when a rendered video exists.
+  if (destination === "youtube" || destination === "youtube_shorts") {
+    if (req.scheduleFor) return { status: "scheduled" }; // native scheduling handled by the queue
+    const r = await publishVideoToYouTube(supabase, {
+      videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description,
+      hashtags: req.metadata.hashtags, tags: req.metadata.tags, visibility: req.metadata.visibility,
+    });
+    if (!r.ok) return { status: "failed", error: r.error };
+    return { status: "published", url: r.url };
   }
 
   return { status: "failed", error: "This destination has no live adapter yet." };

@@ -69,15 +69,15 @@ export const SOCIAL_PROVIDERS: Record<SocialProviderId, SocialProvider> = {
   },
   youtube: {
     id: "youtube", name: "YouTube", brandIcon: "youtube", accountTypes: ["channel"],
-    oauthSupported: true, content: SUP, publishing: M, scheduling: M, analytics: M, inbox: NA, comments: LIM, ads: M, profileEditing: LIM,
-    tokenRefresh: true, live: false, requiredPermissions: ["youtube.upload", "youtube.readonly"],
-    knownLimits: "Live upload needs Google OAuth verification + quota. Community posts API is limited.",
+    oauthSupported: true, content: SUP, publishing: SUP, scheduling: M, analytics: M, inbox: NA, comments: LIM, ads: M, profileEditing: LIM,
+    tokenRefresh: true, live: true, requiredPermissions: ["youtube.upload", "youtube.readonly"],
+    knownLimits: "Live upload of rendered videos works (videos.insert). Public use for other channels needs Google verification. Community posts API is limited.",
   },
   youtube_shorts: {
     id: "youtube_shorts", name: "YouTube Shorts", brandIcon: "youtube", accountTypes: ["channel"],
-    oauthSupported: true, content: SUP, publishing: M, scheduling: M, analytics: M, inbox: NA, comments: NA, ads: M, profileEditing: NA,
-    tokenRefresh: true, live: false, requiredPermissions: ["youtube.upload"],
-    knownLimits: "Uploaded as a short video via the YouTube Data API (same approval as YouTube).",
+    oauthSupported: true, content: SUP, publishing: SUP, scheduling: M, analytics: M, inbox: NA, comments: NA, ads: M, profileEditing: NA,
+    tokenRefresh: true, live: true, requiredPermissions: ["youtube.upload"],
+    knownLimits: "Uploaded as a short video via the YouTube Data API. Public use for other channels needs Google verification.",
   },
   pinterest: {
     id: "pinterest", name: "Pinterest Business", brandIcon: "pinterest", accountTypes: ["business"],
