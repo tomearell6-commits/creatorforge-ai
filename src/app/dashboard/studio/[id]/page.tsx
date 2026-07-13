@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CreateStudioFlow } from "@/components/studio/CreateStudioFlow";
 
 export const metadata = { title: "Create Studio — CreatorsForge AI" };
+// Per-user, per-project data — never statically prerender. Keeps this heavy
+// route out of the build-time static-generation phase.
+export const dynamic = "force-dynamic";
 
 /**
  * The unified Create Studio — one guided template that carries a project

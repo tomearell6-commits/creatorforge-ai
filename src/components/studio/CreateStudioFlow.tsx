@@ -1,20 +1,32 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import nextDynamic from "next/dynamic";
 import Link from "next/link";
 import {
   FileText, Mic, Film, Eye, Send, Check, Lock, ArrowRight,
   CalendarClock, Sparkles, Download, CheckCircle2, Circle,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { Spinner } from "@/components/ui/Spinner";
 import { WorkflowActionBar, type WorkflowAction } from "@/components/workflow/WorkflowActionBar";
-import { ScriptGenerator } from "@/components/dashboard/ScriptGenerator";
-import { VoiceStudio } from "@/components/dashboard/VoiceStudio";
-import { SceneBuilder } from "@/components/dashboard/SceneBuilder";
-import { RenderQueue } from "@/components/dashboard/RenderQueue";
-import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
 import { cn } from "@/lib/utils";
 import type { Scene, Subtitle, Voiceover, RenderJob } from "@/lib/types";
+
+// Lazy-load the heavy step editors CLIENT-SIDE. This keeps their large
+// component graphs out of this route's SSR/build-time static-generation path
+// (which previously bloated the shared build and broke public pages). Each is
+// interactive-only, so client rendering is the right call regardless.
+const StepLoading = () => (
+  <Card className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
+    <Spinner className="h-4 w-4" /> Loading…
+  </Card>
+);
+const ScriptGenerator = nextDynamic(() => import("@/components/dashboard/ScriptGenerator").then((m) => m.ScriptGenerator), { ssr: false, loading: StepLoading });
+const VoiceStudio = nextDynamic(() => import("@/components/dashboard/VoiceStudio").then((m) => m.VoiceStudio), { ssr: false, loading: StepLoading });
+const SceneBuilder = nextDynamic(() => import("@/components/dashboard/SceneBuilder").then((m) => m.SceneBuilder), { ssr: false, loading: StepLoading });
+const RenderQueue = nextDynamic(() => import("@/components/dashboard/RenderQueue").then((m) => m.RenderQueue), { ssr: false, loading: StepLoading });
+const ContentCompletionPanel = nextDynamic(() => import("@/components/publishing/ContentCompletionPanel").then((m) => m.ContentCompletionPanel), { ssr: false, loading: StepLoading });
 
 export type StudioProject = { id: string; title: string; category: string; idea: string | null; status: string };
 
