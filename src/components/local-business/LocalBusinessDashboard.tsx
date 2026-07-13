@@ -15,7 +15,7 @@ type Account = { id: string; google_email: string | null; status: string; expire
 type Location = { id: string; business_name: string; address: string | null; primary_category: string | null; profile_status: string; audit_score: number | null; connection_status: string };
 
 // Sections with real pages today; the rest render as "coming soon" (no 404).
-const BUILT = new Set(["overview", "settings"]);
+const BUILT = new Set(["overview", "settings", "audit", "optimizer"]);
 
 export function LocalBusinessDashboard() {
   const [accounts, setAccounts] = useState<Account[]>([]);
