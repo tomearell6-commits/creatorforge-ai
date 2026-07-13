@@ -9,7 +9,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { gbpApiConfigured, logLbConnection } from "@/lib/local-business/service";
 
-const GBP_SCOPE = "https://www.googleapis.com/auth/business.manage";
+// business.manage for the profile + openid/email/profile so we can show which
+// Google account is connected (populates google_email in the callback).
+const GBP_SCOPE = "openid email profile https://www.googleapis.com/auth/business.manage";
 
 export async function POST() {
   const supabase = await createClient();
