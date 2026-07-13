@@ -27,7 +27,7 @@ const SECTIONS = [
   { id: "analytics", label: "Analytics" }, { id: "reports", label: "Reports" },
   { id: "automation", label: "Automation Rules" }, { id: "settings", label: "Settings" },
 ];
-const BUILT = new Set(["accounts", "settings", "profile-optimization", "content", "images", "videos", "campaigns", "calendar", "publishing"]);
+const BUILT = new Set(["accounts", "settings", "profile-optimization", "content", "images", "videos", "campaigns", "calendar", "publishing", "inbox", "replies", "analytics", "reports"]);
 const SOCIAL_OAUTH = new Set(["youtube", "youtube_shorts", "tiktok", "instagram", "facebook", "linkedin", "x", "pinterest"]);
 
 function Icon({ slug, className }: { slug: string | null; className?: string }) {
