@@ -15,6 +15,7 @@ import {
   Music, FileText, Clapperboard, Library, Server, LayoutTemplate, Building2, Sparkles,
   CalendarDays, ListChecks, Rocket, Globe, Share2, Mail, Search, Users, Handshake,
   Gift, KeyRound, LifeBuoy, PenLine, FileDown, Target, FileSearch, Type, Send,
+  MapPin,
 } from "lucide-react";
 
 export type NavAreaId = "create" | "grow" | "manage";
@@ -145,6 +146,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("email-campaigns", "Email Campaigns", "/dashboard/autopilot/campaigns/new", Send, "Automated email & newsletter campaigns", 5),
           c("creative-library", "Creative Library", "/dashboard/assets", Library, "All your marketing assets", 6),
           c("campaign-reports", "Campaign Reports", "/dashboard/autopilot/reports", BarChart3, "Campaign performance reports", 7),
+          c("local-business", "Local Business Studio", "/dashboard/grow/local-business", MapPin, "Manage & optimize your Google Business Profile", 8),
         ],
       },
       {
@@ -180,6 +182,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
         description: "AI Business Operations Manager — profile, inquiries, documents, leads and teams.",
         children: [
           c("biz-ops", "AI Business Manager", "/dashboard/business", Briefcase, "Executive dashboard, health score & automation", 1),
+          c("biz-local-business", "Local Business Studio", "/dashboard/grow/local-business", MapPin, "Google Business Profile management & optimization", 1),
           c("biz-inquiries", "Inquiry Center", "/dashboard/business/inquiries", Send, "Enquiries with AI triage and draft replies", 2),
           c("biz-documents", "Document Generator", "/dashboard/business/documents", FileText, "Quotations, invoices, proposals", 3),
           c("leads", "Lead Generator", "/dashboard/leads", Target, "Find and qualify B2B leads", 4, { requiredPlan: "pro" }),
@@ -250,7 +253,8 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("wordpress", "WordPress", "/dashboard/seo/sites", Globe, "Connected WordPress sites", 1, { tour: "wordpress-connect" }),
           c("social-accounts", "Social Accounts", "/dashboard/social", Share2, "YouTube, TikTok, Instagram and more", 2, { tour: "social-accounts" }),
           c("email-accounts", "Email Accounts", "/dashboard/email/settings", Mail, "Connected inboxes (Email Assistant)", 3),
-          c("api-keys", "API Keys", "/dashboard/api", KeyRound, "Developer API access", 4),
+          c("google-business", "Google Business Profile", "/dashboard/grow/local-business/settings", MapPin, "Google Business Profile Manager", 4),
+          c("api-keys", "API Keys", "/dashboard/api", KeyRound, "Developer API access", 5),
         ],
       },
       {
