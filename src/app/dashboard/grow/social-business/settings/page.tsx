@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { SocialAutomationRuleBuilder } from "@/components/social-business/SocialAutomationRuleBuilder";
 
 export const metadata = { title: "Settings — Social Business Studio" };
 
@@ -26,6 +27,8 @@ export default function SocialSettingsPage() {
         </ol>
         <p className="mt-2 text-xs text-muted-foreground">Until a platform&rsquo;s app is approved, its live publishing/reads are gated — you can still create, schedule, and export content. We never simulate a successful post.</p>
       </Card>
+
+      <SocialAutomationRuleBuilder />
     </div>
   );
 }
