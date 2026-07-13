@@ -29,6 +29,13 @@ stores the connection; `gbpApiConfigured()` gates all live calls. Connect return
 a real Google authorize URL when configured, and an honest "unavailable" response
 otherwise — **never a simulated connection**. Disconnect deletes stored tokens.
 
+**Environment variables (set in Vercel):** `GOOGLE_BUSINESS_CLIENT_ID`,
+`GOOGLE_BUSINESS_CLIENT_SECRET`, `GOOGLE_BUSINESS_API_ENABLED=true`. OAuth
+redirect URI: `https://www.creatorsforge.io/api/local-business/callback`. NOTE:
+OAuth connect works once these are set; live Business Profile API reads/writes
+additionally require Google's approved access to the Business Profile APIs
+(separate request form — reviewed by Google).
+
 ## 4. Multi-location
 
 `local_business_locations` (name, address, phone, website, categories,
