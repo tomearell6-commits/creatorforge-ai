@@ -34,9 +34,6 @@ export default async function RenderPage({
       <div>
         <h1 className="text-2xl font-bold">Render Queue</h1>
         <p className="mt-1 text-muted-foreground">Queue and monitor render jobs for your project.</p>
-        <Link href={`/dashboard/studio/${selectedId}?step=video`} className="mt-1 inline-block text-sm font-medium text-brand-600 hover:underline">
-          Prefer the guided flow? Open Create Studio →
-        </Link>
       </div>
       <ProjectPicker projects={projects} selectedId={selectedId} />
       <RenderQueue projectId={selectedId} jobs={jobs ?? []} live={!!process.env.SHOTSTACK_API_KEY} />
