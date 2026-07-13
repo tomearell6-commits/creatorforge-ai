@@ -147,6 +147,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("creative-library", "Creative Library", "/dashboard/assets", Library, "All your marketing assets", 6),
           c("campaign-reports", "Campaign Reports", "/dashboard/autopilot/reports", BarChart3, "Campaign performance reports", 7),
           c("local-business", "Local Business Studio", "/dashboard/grow/local-business", MapPin, "Manage & optimize your Google Business Profile", 8),
+          c("social-business", "Social Business Studio", "/dashboard/grow/social-business", Share2, "Connect, create, schedule & analyze across social platforms", 9),
         ],
       },
       {
@@ -254,7 +255,8 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("social-accounts", "Social Accounts", "/dashboard/social", Share2, "YouTube, TikTok, Instagram and more", 2, { tour: "social-accounts" }),
           c("email-accounts", "Email Accounts", "/dashboard/email/settings", Mail, "Connected inboxes (Email Assistant)", 3),
           c("google-business", "Google Business Profile", "/dashboard/grow/local-business/settings", MapPin, "Google Business Profile Manager", 4),
-          c("api-keys", "API Keys", "/dashboard/api", KeyRound, "Developer API access", 5),
+          c("social-business-accounts", "Social Accounts", "/dashboard/grow/social-business/accounts", Share2, "Connect Facebook, Instagram, LinkedIn, TikTok & more", 5),
+          c("api-keys", "API Keys", "/dashboard/api", KeyRound, "Developer API access", 6),
         ],
       },
       {
