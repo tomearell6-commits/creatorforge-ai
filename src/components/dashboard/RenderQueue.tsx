@@ -23,14 +23,10 @@ export function RenderQueue({
   projectId,
   jobs: initial,
   live = false,
-  showCompletionPanel = true,
 }: {
   projectId: string;
   jobs: RenderJob[];
   live?: boolean;
-  /** In the unified Create Studio the Preview/Publish steps own the completion
-   *  panel, so we hide the inline one to avoid a duplicate publish surface. */
-  showCompletionPanel?: boolean;
 }) {
   const [jobs, setJobs] = useState(initial);
   const [starting, setStarting] = useState(false);

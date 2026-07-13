@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, Save, Check, Coins, ArrowRight } from "lucide-react";
+import { Sparkles, Save, Check, Coins } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Input";
@@ -216,20 +216,6 @@ export function ScriptGenerator({
               {saved ? "Saved" : saving ? "Saving…" : "Save script"}
             </Button>
           </div>
-
-          {saved && projectId && (
-            <div className="flex flex-col gap-3 rounded-xl border border-brand-500/30 bg-brand-50/50 p-4 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold">Script saved. Next: turn it into a video.</p>
-                <p className="text-sm text-muted-foreground">Add a voiceover, build scenes, preview, then schedule &amp; publish — all in one place.</p>
-              </div>
-              <Button asChild className="shrink-0">
-                <Link href={`/dashboard/studio/${projectId}?step=voiceover`}>
-                  Continue in Studio <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          )}
         </Card>
       )}
     </div>

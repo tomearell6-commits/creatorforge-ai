@@ -49,9 +49,6 @@ export default async function ScenesPage({
         <p className="mt-1 text-muted-foreground">
           Break the script into scenes, edit each beat, build the timeline, and generate captions.
         </p>
-        <Link href={`/dashboard/studio/${selectedId}?step=video`} className="mt-1 inline-block text-sm font-medium text-brand-600 hover:underline">
-          Prefer the guided flow? Open Create Studio →
-        </Link>
       </div>
       <ProjectPicker projects={projects} selectedId={selectedId} />
       <SceneBuilder
