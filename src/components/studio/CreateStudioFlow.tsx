@@ -155,6 +155,8 @@ export function CreateStudioFlow({
           <ScriptGenerator
             projects={[{ id: project.id, title: project.title, category: project.category, idea: project.idea }]}
             initialProjectId={project.id}
+            lockedProjectId={project.id}
+            onSaved={() => go("voiceover")}
           />
         )}
 

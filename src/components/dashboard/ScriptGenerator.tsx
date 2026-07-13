@@ -15,14 +15,20 @@ type ProjectOption = { id: string; title: string; category: string; idea: string
 export function ScriptGenerator({
   projects,
   initialProjectId,
+  lockedProjectId,
+  onSaved,
 }: {
   projects: ProjectOption[];
   initialProjectId?: string;
+  /** In Create Studio the project is fixed — hide the picker + Continue CTA. */
+  lockedProjectId?: string;
+  /** Called after a successful save (Studio uses it to advance to the next step). */
+  onSaved?: () => void;
 }) {
   const router = useRouter();
-  const initial = projects.find((p) => p.id === initialProjectId);
+  const initial = projects.find((p) => p.id === (lockedProjectId ?? initialProjectId));
 
-  const [projectId, setProjectId] = useState(initial?.id ?? "");
+  const [projectId, setProjectId] = useState(lockedProjectId ?? initial?.id ?? "");
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0].slug);
   const [title, setTitle] = useState(initial?.title ?? "");
   const [idea, setIdea] = useState(initial?.idea ?? "");
@@ -106,6 +112,8 @@ export function ScriptGenerator({
       if (!res.ok) throw new Error(data.error || "Save failed.");
       setSaved(true);
       router.refresh();
+      // In Studio: advance to the next step (Voiceover) as soon as it's saved.
+      if (onSaved) onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");
     } finally {
@@ -200,24 +208,26 @@ export function ScriptGenerator({
           </pre>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex-1">
-              <Label htmlFor="project">Save to project</Label>
-              <select id="project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className={selectClass}>
-                <option value="">Select a project…</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Button onClick={save} disabled={saving} variant="secondary" className="mt-6">
+            {!lockedProjectId && (
+              <div className="flex-1">
+                <Label htmlFor="project">Save to project</Label>
+                <select id="project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className={selectClass}>
+                  <option value="">Select a project…</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <Button onClick={save} disabled={saving} className={lockedProjectId ? "w-full" : "mt-6"} variant={lockedProjectId ? "primary" : "secondary"}>
               {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {saved ? "Saved" : saving ? "Saving…" : "Save script"}
+              {saved ? (lockedProjectId ? "Saved — opening Voiceover…" : "Saved") : saving ? "Saving…" : lockedProjectId ? "Save script & continue →" : "Save script"}
             </Button>
           </div>
 
-          {saved && projectId && (
+          {saved && projectId && !lockedProjectId && (
             <div className="flex flex-col gap-3 rounded-xl border border-brand-500/30 bg-brand-50/50 p-4 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold">Script saved. Next: turn it into a video.</p>
