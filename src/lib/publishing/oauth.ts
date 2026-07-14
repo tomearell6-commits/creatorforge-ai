@@ -297,19 +297,28 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
           case "instagram": {
             const ig = input.account.metadata?.ig_user_id as string;
             if (!ig) return { status: "failed", error: "Missing Instagram business account id." };
+            // A video → Reel; otherwise a single-image feed post (books, designs, covers).
+            const isVideo = !!input.videoUrl;
+            const imageUrl = input.thumbnailUrl;
+            if (!isVideo && !imageUrl) {
+              return { status: "failed", error: "Instagram needs a video (Reel) or an image to publish." };
+            }
+            const container = isVideo
+              ? { media_type: "REELS", video_url: input.videoUrl, caption: caption(input), access_token: token }
+              : { image_url: imageUrl, caption: caption(input), access_token: token };
             const create = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/${ig}/media`, {
               method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ media_type: "REELS", video_url: input.videoUrl, caption: caption(input), access_token: token }),
+              body: JSON.stringify(container),
             }, 30_000)).json();
             if (create.error) return { status: "failed", error: `Instagram: ${create.error.message}` };
-            // Brief wait for the container to finish processing.
-            await new Promise((r) => setTimeout(r, 4000));
+            // Videos need time to transcode; images are ready right away.
+            await new Promise((r) => setTimeout(r, isVideo ? 6000 : 1500));
             const pub = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/${ig}/media_publish`, {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ creation_id: create.id, access_token: token }),
             }, 30_000)).json();
             if (pub.error) return { status: "failed", error: `Instagram publish: ${pub.error.message}` };
-            return { status: "published", externalPostId: pub.id, externalUrl: `https://instagram.com/reel/${pub.id}` };
+            return { status: "published", externalPostId: pub.id, externalUrl: isVideo ? `https://instagram.com/reel/${pub.id}` : `https://instagram.com/p/${pub.id}` };
           }
           case "pinterest": {
             const boardId = input.account.metadata?.board_id as string;

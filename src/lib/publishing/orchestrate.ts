@@ -152,10 +152,12 @@ async function publishLive(
 
   // Social platforms — real post via the user's connected account. Only reached
   // when the destination is flagged live (per-platform, as each app is set up).
-  const SOCIAL: PublishDestinationId[] = ["facebook", "instagram", "linkedin", "x", "pinterest", "tiktok"];
+  // instagram_reels maps to the same Instagram provider (it detects the video).
+  const SOCIAL: PublishDestinationId[] = ["facebook", "instagram", "instagram_reels", "linkedin", "x", "pinterest", "tiktok"];
   if (SOCIAL.includes(destination)) {
     if (req.scheduleFor) return { status: "scheduled" }; // queued by the scheduler
-    const r = await publishToSocialPlatform(supabase, destination as SocialPlatform, {
+    const platform = (destination === "instagram_reels" ? "instagram" : destination) as SocialPlatform;
+    const r = await publishToSocialPlatform(supabase, platform, {
       videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description,
       hashtags: req.metadata.hashtags, thumbnailUrl: req.metadata.featuredImage, visibility: req.metadata.visibility,
     });
