@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -9,12 +11,15 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Input, Label, Textarea } from "@/components/ui/Input";
 import { BookPicker } from "./BookPicker";
 import { BOOK_CREDIT_COSTS } from "@/lib/constants";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
+import { BOOK_JOURNEY } from "@/config/bookJourney";
 
 const STYLES = ["Minimalist", "Photographic", "Illustrated", "Bold typographic backdrop", "Watercolor", "Abstract gradient", "Vintage", "Children's storybook"];
 type Cover = { id: string; image_url: string; prompt: string | null; style: string | null };
 
 export function BookCover() {
-  const [bookId, setBookId] = useState("");
+  const initialBook = useSearchParams().get("book") ?? "";
+  const [bookId, setBookId] = useState(initialBook);
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState(STYLES[0]);
   const [busy, setBusy] = useState(false);
@@ -37,6 +42,16 @@ export function BookCover() {
 
   return (
     <div className="space-y-4">
+      <GuidedStepper steps={BOOK_JOURNEY} activeId="cover" doneIds={["concept", "chapters"]} />
+      <div className="flex flex-col gap-3 rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm">
+          <span className="font-semibold">Step 3 of 4: Cover</span>
+          <span className="text-muted-foreground"> — design your cover, then export &amp; publish.</span>
+        </p>
+        <Button asChild size="sm" variant="secondary" className="shrink-0">
+          <Link href={bookId ? `/dashboard/books/export?book=${bookId}` : "/dashboard/books/export"}>Next: Export &amp; Publish →</Link>
+        </Button>
+      </div>
       <Card className="space-y-3">
         <CardTitle className="text-sm">Cover Studio</CardTitle>
         <BookPicker value={bookId} onChange={(id) => setBookId(id)} />

@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { BOOK_CATEGORIES, BOOK_WRITING_STYLES, BOOK_TONES, BOOK_READING_LEVELS, BOOK_CREDIT_COSTS } from "@/lib/constants";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
+import { BOOK_JOURNEY } from "@/config/bookJourney";
 
 export function BookWizard() {
   const router = useRouter();
@@ -33,7 +35,13 @@ export function BookWizard() {
   }
 
   return (
-    <Card className="space-y-4">
+    <div className="space-y-4">
+      <GuidedStepper steps={BOOK_JOURNEY} activeId="concept" />
+      <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
+        <span className="font-semibold">Step 1 of 4: Concept</span>
+        <span className="text-muted-foreground"> — set up your book below. Next you&rsquo;ll write chapters, design a cover, then export &amp; publish.</span>
+      </div>
+      <Card className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2"><Label htmlFor="bw-book-title">Book title</Label><Input id="bw-book-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="The Lean Founder" /></div>
         <div><Label htmlFor="bw-subtitle">Subtitle</Label><Input id="bw-subtitle" value={f.subtitle} onChange={(e) => setF({ ...f, subtitle: e.target.value })} /></div>
@@ -54,6 +62,7 @@ export function BookWizard() {
         <Button variant="outline" disabled={!!busy} onClick={() => create(false)}>Create blank book</Button>
       </div>
       <p className="text-xs text-muted-foreground">Generating the concept + outline uses credits (only when AI is enabled). Creating a blank book is free.</p>
-    </Card>
+      </Card>
+    </div>
   );
 }

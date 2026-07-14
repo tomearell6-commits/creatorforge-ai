@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FileDown, Printer } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { BookPicker } from "./BookPicker";
 import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
+import { BOOK_JOURNEY } from "@/config/bookJourney";
 
 const NATIVE = [
   { fmt: "md", label: "Markdown (.md)" },
@@ -15,12 +18,19 @@ const NATIVE = [
 ];
 
 export function BookExport() {
-  const [bookId, setBookId] = useState("");
+  const initialBook = useSearchParams().get("book") ?? "";
+  const [bookId, setBookId] = useState(initialBook);
 
   function download(fmt: string) { if (bookId) window.open(`/api/books/export?bookId=${bookId}&format=${fmt}`, "_blank"); }
 
   return (
-    <Card className="space-y-4">
+    <div className="space-y-4">
+      <GuidedStepper steps={BOOK_JOURNEY} activeId="publish" doneIds={["concept", "chapters", "cover"]} />
+      <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
+        <span className="font-semibold">Step 4 of 4: Export &amp; Publish</span>
+        <span className="text-muted-foreground"> — download your book, or publish/schedule it below.</span>
+      </div>
+      <Card className="space-y-4">
       <CardTitle className="text-sm">Choose a book to export</CardTitle>
       <BookPicker value={bookId} onChange={(id) => setBookId(id)} />
       <div className="flex flex-wrap gap-2">
@@ -37,6 +47,7 @@ export function BookExport() {
           downloadUrl={`/api/books/export?bookId=${bookId}&format=pdf`}
         />
       )}
-    </Card>
+      </Card>
+    </div>
   );
 }

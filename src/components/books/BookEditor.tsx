@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
 import { BOOK_CREDIT_COSTS } from "@/lib/constants";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
+import { BOOK_JOURNEY } from "@/config/bookJourney";
 
 type Book = { id: string; title: string; subtitle: string | null; status: string };
 type Chapter = { id: string; title: string; content: string; word_count: number; position: number; status: string; notes: string | null };
@@ -107,6 +109,18 @@ export function BookEditor({ bookId }: { bookId: string }) {
       <div>
         <h1 className="text-2xl font-bold">{book?.title ?? "Book"}</h1>
         {book?.subtitle && <p className="text-muted-foreground">{book.subtitle}</p>}
+      </div>
+
+      <GuidedStepper steps={BOOK_JOURNEY} activeId="chapters" doneIds={["concept"]} />
+      <div className="flex flex-col gap-3 rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm">
+          <span className="font-semibold">Step 2 of 4: Write chapters</span>
+          <span className="text-muted-foreground"> — draft your chapters, then design a cover and publish.</span>
+        </p>
+        <div className="flex shrink-0 gap-2">
+          <Button asChild size="sm" variant="secondary"><Link href={`/dashboard/books/cover?book=${bookId}`}>Next: Cover →</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link href={`/dashboard/books/export?book=${bookId}`}>Export &amp; Publish</Link></Button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
