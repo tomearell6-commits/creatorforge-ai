@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${back}?error=not_configured`);
     }
 
-    await supabase.from("social_accounts").upsert(
+    const { error: upsertError } = await supabase.from("social_accounts").upsert(
       {
         user_id: user.id,
         platform,
@@ -61,6 +61,11 @@ export async function GET(request: Request) {
       },
       { onConflict: "user_id,platform,external_id" }
     );
+    // Don't report a false success: if the row didn't save, surface the reason.
+    if (upsertError) {
+      captureError(upsertError, { category: "publishing", platform, stage: "oauth_upsert" });
+      return NextResponse.redirect(`${back}?error=${platform}_connect_failed&detail=${encodeURIComponent(`Saved-to-account failed: ${upsertError.message}`.slice(0, 300))}`);
+    }
 
     const res = NextResponse.redirect(`${back}?connected=${platform}`);
     res.cookies.delete(`pkce_${platform}`);
