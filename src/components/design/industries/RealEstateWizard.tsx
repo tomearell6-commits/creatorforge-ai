@@ -5,6 +5,13 @@ import { Building2, Coins, Sparkles, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
+
+const RE_STEPS = [
+  { id: "details", label: "Property details" },
+  { id: "concept", label: "Concept" },
+  { id: "publish", label: "Schedule & Publish" },
+];
 import {
   RE_OUTPUT_TYPES, RE_PROJECT_TYPES, RE_PROPERTY_TYPES, RE_DESIGN_STYLES, RE_ROOF_STYLES,
   RE_DISCLAIMER, getReOutputType,
@@ -93,6 +100,11 @@ export function RealEstateWizard({ template, category }: { template?: IndustryTe
   if (result) {
     return (
       <div className="space-y-4">
+        <GuidedStepper steps={RE_STEPS} activeId="concept" doneIds={["details"]} />
+        <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
+          <span className="font-semibold">Step 2 of 3: Concept</span>
+          <span className="text-muted-foreground"> — review your concept below, then use <strong>Publish</strong> to schedule or post it.</span>
+        </div>
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">{form.projectName || "Property concept"}</h2>
@@ -126,6 +138,11 @@ export function RealEstateWizard({ template, category }: { template?: IndustryTe
 
   return (
     <form onSubmit={generate} className="space-y-5">
+      <GuidedStepper steps={RE_STEPS} activeId="details" />
+      <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
+        <span className="font-semibold">Step 1 of 3: Property details</span>
+        <span className="text-muted-foreground"> — fill in the brief, then generate your concept. You&rsquo;ll review it and publish next.</span>
+      </div>
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
           <Building2 className="h-4 w-4 text-brand-600" /> Project basics
@@ -189,7 +206,7 @@ export function RealEstateWizard({ template, category }: { template?: IndustryTe
         </span>
         <Button type="submit" disabled={busy || !form.projectName.trim()}>
           {busy ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />}
-          {busy ? "Generating concept…" : "Generate concept"}
+          {busy ? "Generating concept…" : "Generate concept & continue →"}
         </Button>
       </div>
 
