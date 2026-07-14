@@ -322,11 +322,30 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
               body: JSON.stringify(container),
             }, 30_000)).json();
             if (create.error) return { status: "failed", error: `Instagram: ${create.error.message}` };
-            // Videos need time to transcode; images are ready right away.
-            await new Promise((r) => setTimeout(r, isVideo ? 6000 : 1500));
+            const creationId = create.id as string;
+
+            // Poll the container until Instagram finishes processing it. Reels are
+            // transcoded server-side and aren't publishable until status_code is
+            // FINISHED — publishing early gives "Media ID is not available".
+            // Budget stays under the route's 60s maxDuration.
+            const maxPolls = isVideo ? 11 : 3;
+            const gap = isVideo ? 4000 : 1500;
+            let finished = false;
+            for (let i = 0; i < maxPolls; i++) {
+              await new Promise((r) => setTimeout(r, gap));
+              const st = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/${creationId}?fields=status_code&access_token=${token}`, {}, 20_000)).json();
+              if (st.status_code === "FINISHED") { finished = true; break; }
+              if (st.status_code === "ERROR" || st.status_code === "EXPIRED") {
+                return { status: "failed", error: `Instagram: media processing ${String(st.status_code).toLowerCase()}. Check the video meets Instagram's format requirements.` };
+              }
+            }
+            if (!finished) {
+              return { status: "failed", error: "Instagram: the video is still processing after 45s. Give it a moment and publish again." };
+            }
+
             const pub = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/${ig}/media_publish`, {
               method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ creation_id: create.id, access_token: token }),
+              body: JSON.stringify({ creation_id: creationId, access_token: token }),
             }, 30_000)).json();
             if (pub.error) return { status: "failed", error: `Instagram publish: ${pub.error.message}` };
             return { status: "published", externalPostId: pub.id, externalUrl: isVideo ? `https://instagram.com/reel/${pub.id}` : `https://instagram.com/p/${pub.id}` };
