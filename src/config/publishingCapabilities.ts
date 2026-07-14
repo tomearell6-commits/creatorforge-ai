@@ -184,7 +184,7 @@ export const PUBLISH_DESTINATIONS: Record<PublishDestinationId, DestinationMeta>
   tiktok: { id: "tiktok", label: "TikTok", brandIcon: "tiktok", accountType: "social", live: false, permissions: "Post videos to your account" },
   instagram: { id: "instagram", label: "Instagram", brandIcon: "instagram", accountType: "social", live: false, permissions: "Publish posts to your Business account" },
   instagram_reels: { id: "instagram_reels", label: "Instagram Reels", brandIcon: "instagram", accountType: "social", live: false, permissions: "Publish Reels to your Business account" },
-  facebook: { id: "facebook", label: "Facebook Page", brandIcon: "facebook", accountType: "social", live: false, permissions: "Publish posts to your Page" },
+  facebook: { id: "facebook", label: "Facebook Page", brandIcon: "facebook", accountType: "social", live: true, permissions: "Publish posts to your Page" },
   facebook_reels: { id: "facebook_reels", label: "Facebook Reels", brandIcon: "facebook", accountType: "social", live: false, permissions: "Publish Reels to your Page" },
   linkedin: { id: "linkedin", label: "LinkedIn", brandIcon: "linkedin", accountType: "social", live: false, permissions: "Share posts on your profile or Page" },
   x: { id: "x", label: "X", brandIcon: "x", accountType: "social", live: false, permissions: "Post to your account" },

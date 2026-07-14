@@ -279,10 +279,16 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
           }
           case "facebook": {
             const pageId = (input.account.metadata?.page_id as string) ?? input.account.externalId;
-            const res = await fetchWithTimeout(`https://graph.facebook.com/v21.0/${pageId}/videos`, {
+            const msg = caption(input) || input.title;
+            // Video → /videos; otherwise a text post to the Page feed (books, articles, promos).
+            const endpoint = input.videoUrl ? "videos" : "feed";
+            const payload = input.videoUrl
+              ? { file_url: input.videoUrl, description: msg, access_token: token }
+              : { message: msg, access_token: token };
+            const res = await fetchWithTimeout(`https://graph.facebook.com/v21.0/${pageId}/${endpoint}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ file_url: input.videoUrl, description: caption(input), access_token: token }),
+              body: JSON.stringify(payload),
             }, 30_000);
             const j = await res.json();
             if (!res.ok || j.error) return { status: "failed", error: `Facebook: ${j.error?.message ?? res.status}` };

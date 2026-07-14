@@ -16,6 +16,8 @@ import {
 } from "@/config/publishingCapabilities";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { publishVideoToYouTube } from "@/lib/publishing/youtube-live";
+import { publishToSocialPlatform } from "@/lib/publishing/social-live";
+import type { SocialPlatform } from "@/lib/types";
 import { decryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
 import { emitNotification } from "@/lib/notifications";
@@ -133,6 +135,19 @@ async function publishLive(
     const r = await publishVideoToYouTube(supabase, {
       videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description,
       hashtags: req.metadata.hashtags, tags: req.metadata.tags, visibility: req.metadata.visibility,
+    });
+    if (!r.ok) return { status: "failed", error: r.error };
+    return { status: "published", url: r.url };
+  }
+
+  // Social platforms — real post via the user's connected account. Only reached
+  // when the destination is flagged live (per-platform, as each app is set up).
+  const SOCIAL: PublishDestinationId[] = ["facebook", "instagram", "linkedin", "x", "pinterest", "tiktok"];
+  if (SOCIAL.includes(destination)) {
+    if (req.scheduleFor) return { status: "scheduled" }; // queued by the scheduler
+    const r = await publishToSocialPlatform(supabase, destination as SocialPlatform, {
+      videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description,
+      hashtags: req.metadata.hashtags, thumbnailUrl: req.metadata.featuredImage, visibility: req.metadata.visibility,
     });
     if (!r.ok) return { status: "failed", error: r.error };
     return { status: "published", url: r.url };
