@@ -16,7 +16,7 @@ import {
 } from "@/config/publishingCapabilities";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { publishVideoToYouTube } from "@/lib/publishing/youtube-live";
-import { publishToSocialPlatform } from "@/lib/publishing/social-live";
+import { publishToSocialPlatform, publishFacebookReel } from "@/lib/publishing/social-live";
 import type { SocialPlatform } from "@/lib/types";
 import { decryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
@@ -135,6 +135,16 @@ async function publishLive(
     const r = await publishVideoToYouTube(supabase, {
       videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description,
       hashtags: req.metadata.hashtags, tags: req.metadata.tags, visibility: req.metadata.visibility,
+    });
+    if (!r.ok) return { status: "failed", error: r.error };
+    return { status: "published", url: r.url };
+  }
+
+  // Facebook Reels — dedicated Reels API (reuses the connected Facebook Page).
+  if (destination === "facebook_reels") {
+    if (req.scheduleFor) return { status: "scheduled" };
+    const r = await publishFacebookReel(supabase, {
+      videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description, hashtags: req.metadata.hashtags,
     });
     if (!r.ok) return { status: "failed", error: r.error };
     return { status: "published", url: r.url };
