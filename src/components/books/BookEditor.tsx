@@ -114,7 +114,7 @@ export function BookEditor({ bookId }: { bookId: string }) {
       <GuidedStepper steps={BOOK_JOURNEY} activeId="chapters" doneIds={["concept"]} />
       <div className="flex flex-col gap-3 rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm">
-          <span className="font-semibold">Step 2 of 4: Write chapters</span>
+          <span className="font-semibold">Step 2 of 5: Write chapters</span>
           <span className="text-muted-foreground"> — draft your chapters, then design a cover and publish.</span>
         </p>
         <div className="flex shrink-0 gap-2">

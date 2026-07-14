@@ -5,4 +5,5 @@ export const BOOK_JOURNEY = [
   { id: "chapters", label: "Write chapters" },
   { id: "cover", label: "Cover" },
   { id: "publish", label: "Export & Publish" },
+  { id: "marketing", label: "Marketing & Ads" },
 ];

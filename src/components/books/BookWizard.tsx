@@ -38,7 +38,7 @@ export function BookWizard() {
     <div className="space-y-4">
       <GuidedStepper steps={BOOK_JOURNEY} activeId="concept" />
       <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
-        <span className="font-semibold">Step 1 of 4: Concept</span>
+        <span className="font-semibold">Step 1 of 5: Concept</span>
         <span className="text-muted-foreground"> — set up your book below. Next you&rsquo;ll write chapters, design a cover, then export &amp; publish.</span>
       </div>
       <Card className="space-y-4">

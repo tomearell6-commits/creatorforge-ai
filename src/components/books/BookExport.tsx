@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FileDown, Printer } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
@@ -26,9 +27,14 @@ export function BookExport() {
   return (
     <div className="space-y-4">
       <GuidedStepper steps={BOOK_JOURNEY} activeId="publish" doneIds={["concept", "chapters", "cover"]} />
-      <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
-        <span className="font-semibold">Step 4 of 4: Export &amp; Publish</span>
-        <span className="text-muted-foreground"> — download your book, or publish/schedule it below.</span>
+      <div className="flex flex-col gap-3 rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm">
+          <span className="font-semibold">Step 4 of 5: Export &amp; Publish</span>
+          <span className="text-muted-foreground"> — download your book, connect accounts, and publish below. Then market it &amp; run ads.</span>
+        </p>
+        <Button asChild size="sm" variant="secondary" className="shrink-0">
+          <Link href={bookId ? `/dashboard/books/marketing?book=${bookId}` : "/dashboard/books/marketing"}>Next: Marketing &amp; Ads →</Link>
+        </Button>
       </div>
       <Card className="space-y-4">
       <CardTitle className="text-sm">Choose a book to export</CardTitle>

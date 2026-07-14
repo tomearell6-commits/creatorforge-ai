@@ -45,7 +45,7 @@ export function BookCover() {
       <GuidedStepper steps={BOOK_JOURNEY} activeId="cover" doneIds={["concept", "chapters"]} />
       <div className="flex flex-col gap-3 rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm">
-          <span className="font-semibold">Step 3 of 4: Cover</span>
+          <span className="font-semibold">Step 3 of 5: Cover</span>
           <span className="text-muted-foreground"> — design your cover, then export &amp; publish.</span>
         </p>
         <Button asChild size="sm" variant="secondary" className="shrink-0">
