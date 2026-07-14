@@ -14,6 +14,8 @@ import { blankCanvas } from "@/lib/design/layers";
 import { renderToDataUrl, downloadDataUrl, printImageAsPdf } from "@/lib/design/render";
 import type { ExportFormat } from "@/lib/design/types";
 import { ContentCompletionPanel } from "@/components/publishing/ContentCompletionPanel";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
+import { DESIGN_JOURNEY } from "./DesignProjectWizard";
 
 /**
  * The Design Studio editor. Loads a project (or a blank canvas), composes the
@@ -114,6 +116,15 @@ export function DesignEditor({ projectId }: { projectId?: string }) {
 
   return (
     <div className="space-y-3">
+      {projectId && (
+        <div className="space-y-2">
+          <GuidedStepper steps={DESIGN_JOURNEY} activeId="edit" doneIds={["setup"]} />
+          <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
+            <span className="font-semibold">Step 2 of 3: Edit</span>
+            <span className="text-muted-foreground"> — refine your design, then use <strong>Publish</strong> below to schedule or post it.</span>
+          </div>
+        </div>
+      )}
       <DesignToolbar ed={ed} onSave={save} onExport={exportAs} saving={saving} />
       <AiImageBar
         projectId={projectId}

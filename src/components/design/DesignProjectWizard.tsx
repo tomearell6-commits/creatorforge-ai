@@ -8,8 +8,16 @@ import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
 import { DESIGN_GROUPS, DESIGN_FORMATS, DESIGN_STYLES, getCategoriesForGroup, getDesignCategoryBySlug, getDesignFormat } from "@/config/designStudio";
 import { BrandKitSelector, type BrandKit } from "./BrandKitSelector";
+import { GuidedStepper } from "@/components/studio/GuidedStepper";
 
 const STEPS = ["Category", "Format", "Goal", "Style", "Brand Kit", "Generate"];
+
+/** Macro journey shared with the editor page (Set up → Edit → Publish). */
+export const DESIGN_JOURNEY = [
+  { id: "setup", label: "Set up" },
+  { id: "edit", label: "Edit" },
+  { id: "publish", label: "Schedule & Publish" },
+];
 
 export function DesignProjectWizard() {
   const router = useRouter();
@@ -77,7 +85,14 @@ export function DesignProjectWizard() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      {/* Progress */}
+      {/* Macro journey */}
+      <GuidedStepper steps={DESIGN_JOURNEY} activeId="setup" />
+      <div className="rounded-xl border border-brand-500/25 bg-brand-50/50 p-3 text-sm dark:bg-brand-900/10">
+        <span className="font-semibold">Step 1 of 3: Set up</span>
+        <span className="text-muted-foreground"> — choose your design below and generate it. You&rsquo;ll edit it, then publish.</span>
+      </div>
+
+      {/* Set-up sub-steps */}
       <ol className="flex flex-wrap items-center gap-2 text-xs">
         {STEPS.map((s, i) => (
           <li key={s} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${i === step ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : i < step ? "text-brand-600" : "text-muted-foreground"}`}>
@@ -168,7 +183,7 @@ export function DesignProjectWizard() {
             {error && <Alert variant="error">{error}</Alert>}
             <Button onClick={generate} disabled={busy} className="w-full">
               {busy ? <Spinner size="sm" className="text-current" /> : <Sparkles className="h-4 w-4" />}
-              {busy ? "Generating your design…" : "Generate design concept"}
+              {busy ? "Generating your design…" : "Generate & continue to editor →"}
             </Button>
           </div>
         )}
