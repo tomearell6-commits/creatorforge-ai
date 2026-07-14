@@ -31,7 +31,22 @@ const OAUTH_PLATFORMS: SocialPlatform[] = ["linkedin", "facebook", "instagram", 
 
 function creds(platform: SocialPlatform) {
   const up = platform.toUpperCase();
-  return { id: process.env[`${up}_CLIENT_ID`], secret: process.env[`${up}_CLIENT_SECRET`] };
+  let id = process.env[`${up}_CLIENT_ID`];
+  let secret = process.env[`${up}_CLIENT_SECRET`];
+  // Instagram shares the same Meta app as Facebook — fall back to FACEBOOK_* so
+  // only one set of credentials needs configuring.
+  if (platform === "instagram") {
+    id = id ?? process.env.FACEBOOK_CLIENT_ID;
+    secret = secret ?? process.env.FACEBOOK_CLIENT_SECRET;
+  }
+  return { id, secret };
+}
+
+/** Facebook Login for Business configuration id (bundles the permissions/assets).
+ *  When set, the authorize URL uses config_id instead of a raw scope list. */
+function configId(platform: SocialPlatform): string | undefined {
+  const up = platform.toUpperCase();
+  return process.env[`${up}_CONFIG_ID`] ?? (platform === "instagram" ? process.env.FACEBOOK_CONFIG_ID : undefined);
 }
 
 export function oauthConfigured(platform: SocialPlatform): boolean {
@@ -61,11 +76,17 @@ export function buildAuthorizeUrl(platform: SocialPlatform, state: string): { ur
       return { url: `https://www.linkedin.com/oauth/v2/authorization?${p}` };
     }
     case "facebook": {
-      const p = new URLSearchParams({ client_id: id!, redirect_uri: rd, state, scope: "pages_show_list,pages_manage_posts,pages_read_engagement" });
+      const p = new URLSearchParams({ client_id: id!, redirect_uri: rd, state, response_type: "code" });
+      const cfg = configId("facebook");
+      if (cfg) p.set("config_id", cfg);
+      else p.set("scope", "pages_show_list,pages_manage_posts,pages_read_engagement");
       return { url: `https://www.facebook.com/v21.0/dialog/oauth?${p}` };
     }
     case "instagram": {
-      const p = new URLSearchParams({ client_id: id!, redirect_uri: rd, state, scope: "instagram_basic,instagram_content_publish,pages_show_list,business_management" });
+      const p = new URLSearchParams({ client_id: id!, redirect_uri: rd, state, response_type: "code" });
+      const cfg = configId("instagram");
+      if (cfg) p.set("config_id", cfg);
+      else p.set("scope", "instagram_basic,instagram_content_publish,pages_show_list,business_management");
       return { url: `https://www.facebook.com/v21.0/dialog/oauth?${p}` };
     }
     case "pinterest": {
