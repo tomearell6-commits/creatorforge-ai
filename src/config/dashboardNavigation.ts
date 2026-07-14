@@ -15,7 +15,7 @@ import {
   Music, FileText, Clapperboard, Library, Server, LayoutTemplate, Building2, Sparkles,
   CalendarDays, ListChecks, Rocket, Globe, Share2, Mail, Search, Users, Handshake,
   Gift, KeyRound, LifeBuoy, PenLine, FileDown, Target, FileSearch, Type, Send,
-  MapPin,
+  MapPin, FolderKanban,
 } from "lucide-react";
 
 export type NavAreaId = "create" | "grow" | "manage";
@@ -71,6 +71,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
         route: "/dashboard/studio/content", icon: Video, order: 1,
         description: "Videos, articles, images, voiceovers and every content format.",
         children: [
+          c("my-projects", "My Projects", "/dashboard/projects", FolderKanban, "All your saved content projects — open, publish or edit", 0),
           c("ai-video", "AI Video Studio", "/dashboard/create?group=video", Video, "Faceless videos, shorts and long-form", 1, { tour: "ai-video-studio" }),
           c("scene-builder", "Scene Builder", "/dashboard/scenes", Clapperboard, "Turn a script into video scenes: images, narration, captions", 2),
           c("ai-shorts", "AI Shorts", "/dashboard/create/ai-shorts", Clapperboard, "Vertical short-form for Reels/Shorts/TikTok", 3),
