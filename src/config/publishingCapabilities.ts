@@ -219,7 +219,7 @@ export const AD_PLATFORM_DESTINATIONS: Record<AdPlatformId, AdPlatformMeta> = {
 // Shared building blocks
 // ---------------------------------------------------------------------------
 
-const VIDEO_SOCIALS: PublishDestinationId[] = ["youtube", "tiktok", "instagram_reels", "facebook_reels", "linkedin", "x", "pinterest"];
+const VIDEO_SOCIALS: PublishDestinationId[] = ["youtube", "facebook", "tiktok", "instagram_reels", "facebook_reels", "linkedin", "x", "pinterest"];
 const SHORT_SOCIALS: PublishDestinationId[] = ["youtube_shorts", "tiktok", "instagram_reels", "facebook_reels"];
 const IMAGE_SOCIALS: PublishDestinationId[] = ["instagram", "facebook", "linkedin", "pinterest", "x"];
 const ALL_AD_PLATFORMS: AdPlatformId[] = ["meta", "google_ads", "youtube_ads", "tiktok_ads", "linkedin_ads", "pinterest_ads"];
