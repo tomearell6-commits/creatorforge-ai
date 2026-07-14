@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Eye, Download, Send, CalendarClock, Megaphone, Save, Copy, Pencil, Sparkles, PlusCircle, Users, BarChart3, PartyPopper } from "lucide-react";
+import { Eye, Download, Send, CalendarClock, Megaphone, Save, Copy, Pencil, Sparkles, PlusCircle, Users, BarChart3, PartyPopper, Plug, Check } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PublishPromoteDrawer } from "./PublishPromoteDrawer";
+import { ConnectAccountModal, type ConnectItem } from "@/components/integrations/ConnectAccountModal";
 import { UnifiedWorkflowStepper } from "@/components/workflow/UnifiedWorkflowStepper";
 import { AnalyzePanel } from "@/components/workflow/AnalyzePanel";
 import { getCapability, type ContentTypeId, type CompletionActionId } from "@/config/publishingCapabilities";
@@ -40,6 +41,30 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
   const cap = getCapability(props.contentType);
   const [drawer, setDrawer] = useState<null | "publish" | "schedule" | "promote" | "export">(null);
   const [analyzeOpen, setAnalyzeOpen] = useState(false);
+  const [connectOpen, setConnectOpen] = useState(false);
+  // Connectable accounts (social + ad platforms) for this content type, with
+  // their connected status — powers the prominent "Connect accounts" step.
+  const [connectItems, setConnectItems] = useState<ConnectItem[] | null>(null);
+  const connectedCount = connectItems ? connectItems.filter((i) => i.connected).length : null;
+
+  function loadConnectItems() {
+    fetch(`/api/publishing/capabilities?contentType=${props.contentType}`)
+      .then((r) => r.json())
+      .then((j) => {
+        const all = [...(j.summary?.destinations ?? []), ...(j.summary?.adPlatforms ?? [])];
+        setConnectItems(
+          all.map((d: ConnectItem) => ({ id: d.id, label: d.label, brandIcon: d.brandIcon, accountType: d.accountType, live: d.live, connected: d.connected, permissions: d.permissions }))
+        );
+      })
+      .catch(() => {});
+  }
+  const capsFetched = useRef(false);
+  useEffect(() => {
+    if (capsFetched.current || !cap) return;
+    capsFetched.current = true;
+    loadConnectItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.contentType, cap]);
 
   // Adopting the six-stage workflow: mounting this panel records that the project
   // reached "created, ready for review" so it surfaces in "Continue where you
@@ -102,7 +127,27 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
           <UnifiedWorkflowStepper contentType={props.contentType} currentStep="review" completedSteps={["create"]} />
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">{cap.primaryActions.map((a) => renderBtn(a, true))}</div>
+        {/* Connect step — link social/publishing accounts before publishing. */}
+        <div className="mt-4 flex flex-col gap-2 rounded-lg border border-brand-500/30 bg-brand-50/40 p-3 dark:bg-brand-900/10 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 text-sm">
+            <Plug className="h-4 w-4 text-brand-600" />
+            <span>
+              <span className="font-semibold">Connect your accounts</span>
+              <span className="text-muted-foreground"> to publish, schedule, or promote.</span>
+              {connectedCount != null && connectedCount > 0 && (
+                <span className="ml-1 inline-flex items-center gap-1 text-brand-700 dark:text-brand-300"><Check className="h-3.5 w-3.5" /> {connectedCount} connected</span>
+              )}
+            </span>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setConnectOpen(true)}>
+              <Plug className="h-4 w-4" /> Connect accounts
+            </Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/dashboard/manage/integrations">Manage</Link></Button>
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">{cap.primaryActions.map((a) => renderBtn(a, true))}</div>
         {cap.secondaryActions.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">{cap.secondaryActions.map((a) => renderBtn(a, false))}</div>
         )}
@@ -119,6 +164,15 @@ export function ContentCompletionPanel(props: CompletionPanelProps) {
         contentHtml={props.contentHtml}
         downloadUrl={props.downloadUrl}
         baseMetadata={props.baseMetadata}
+      />
+
+      <ConnectAccountModal
+        open={connectOpen}
+        onClose={() => setConnectOpen(false)}
+        title="Connect your accounts"
+        subtitle="Link your social, WordPress, ads, or email accounts to publish and promote. Official sign-in only — never your password."
+        items={(connectItems ?? []).filter((i) => !i.connected)}
+        onConnected={() => { setConnectOpen(false); loadConnectItems(); }}
       />
 
       {props.sourceId && (
