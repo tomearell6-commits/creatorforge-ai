@@ -11,7 +11,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { encryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
-import { logLbConnection } from "@/lib/local-business/service";
+import { gbpApiConfigured, logLbConnection } from "@/lib/local-business/service";
+import { syncLocationsForAccount } from "@/lib/local-business/gbp-api";
 
 const SETTINGS = "/dashboard/grow/local-business/settings";
 
@@ -58,6 +59,17 @@ export async function GET(request: Request) {
       status: "connected", expires_at: expiresAt, last_success_at: new Date().toISOString(),
     }).select("id").single();
     await logLbConnection(supabase, user.id, acct?.id ?? null, "connect", email ?? undefined);
+
+    // Best-effort: pull the account's real locations right after connecting so the
+    // studio is immediately populated. Never blocks the redirect on failure.
+    if (acct?.id && gbpApiConfigured()) {
+      try {
+        await syncLocationsForAccount(supabase, user.id, {
+          id: acct.id, access_token: encryptSecret(tok.access_token),
+          refresh_token: tok.refresh_token ? encryptSecret(tok.refresh_token) : null, expires_at: expiresAt,
+        });
+      } catch { /* location sync is best-effort */ }
+    }
 
     return NextResponse.redirect(`${base}${SETTINGS}?gbp=connected`);
   } catch (e) {

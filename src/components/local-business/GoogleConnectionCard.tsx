@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Check, AlertTriangle, Info } from "lucide-react";
+import { MapPin, Check, AlertTriangle, Info, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -27,6 +27,15 @@ export function GoogleConnectionCard({ accounts, liveApi, onChange }: { accounts
     setBusy(true);
     try { await fetch("/api/local-business/disconnect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accountId: id }) }); onChange?.(); }
     finally { setBusy(false); }
+  }
+  async function sync(id: string) {
+    setBusy(true); setMsg(null);
+    try {
+      const res = await fetch("/api/local-business/locations/sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accountId: id }) });
+      const j = await res.json().catch(() => ({}));
+      setMsg(j.error || j.message || "Sync complete.");
+      onChange?.();
+    } finally { setBusy(false); }
   }
 
   return (
@@ -62,9 +71,17 @@ export function GoogleConnectionCard({ accounts, liveApi, onChange }: { accounts
                 </p>
               </div>
               {a.status !== "connected" && <Badge variant="warning"><AlertTriangle className="h-3 w-3" /> {a.status}</Badge>}
+              {liveApi && <Button variant="outline" size="sm" onClick={() => sync(a.id)} disabled={busy}>{busy ? <Spinner className="h-3.5 w-3.5" /> : <RefreshCw className="h-3.5 w-3.5" />} Sync from Google</Button>}
               <Button variant="ghost" size="sm" onClick={() => disconnect(a.id)} disabled={busy}>Disconnect</Button>
             </div>
           ))}
+          {!liveApi && (
+            <div className="flex gap-2 rounded-lg border border-amber-500/40 bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>Connected. Live location sync + publishing to Google activate once approved Business Profile API access is enabled. Until then, add locations manually and prepare posts.</p>
+            </div>
+          )}
+          {msg && <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">{msg}</p>}
         </div>
       )}
     </Card>
