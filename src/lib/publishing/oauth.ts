@@ -140,15 +140,26 @@ export async function oauthExchange(
     case "instagram": {
       const t = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/oauth/access_token?${new URLSearchParams({ client_id: id!, client_secret: secret!, redirect_uri: rd, code })}`)).json();
       if (t.error) throw new Error(t.error.message);
-      const accounts = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${t.access_token}`)).json();
-      const page = accounts.data?.[0];
-      if (!page) throw new Error("No Facebook Page found on this account.");
+      const accounts = await (await fetchWithTimeout(`https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username}&access_token=${t.access_token}`)).json();
+      if (accounts.error) throw new Error(accounts.error.message);
+      const pages: Array<{ id: string; name: string; access_token: string; instagram_business_account?: { id: string; username?: string } }> = accounts.data ?? [];
+      if (!pages.length) throw new Error("No Facebook Page found on this account. Create/select a Page, then reconnect.");
       if (platform === "facebook") {
+        const page = pages[0];
         return { accessToken: page.access_token, refreshToken: null, externalId: page.id, accountName: page.name, metadata: { page_id: page.id } };
       }
+      // Instagram: pick the Page that actually has a linked IG Business account
+      // (the user may manage several Pages; the first isn't always the IG one).
+      const page = pages.find((p) => p.instagram_business_account?.id) ?? pages[0];
       const igId = page.instagram_business_account?.id;
-      if (!igId) throw new Error("No Instagram Business account linked to your Page.");
-      return { accessToken: page.access_token, refreshToken: null, externalId: igId, accountName: page.name, metadata: { ig_user_id: igId, page_id: page.id } };
+      if (!igId) {
+        throw new Error(
+          `No Instagram Business account is linked to your Page "${page.name}". ` +
+          "Open the Page → Settings → Linked accounts → Instagram, connect your Instagram Business/Creator account to the Page, then reconnect."
+        );
+      }
+      const igName = page.instagram_business_account?.username ? `@${page.instagram_business_account.username}` : page.name;
+      return { accessToken: page.access_token, refreshToken: null, externalId: igId, accountName: igName, metadata: { ig_user_id: igId, ig_username: page.instagram_business_account?.username ?? null, page_id: page.id } };
     }
     case "pinterest": {
       const basic = Buffer.from(`${id}:${secret}`).toString("base64");

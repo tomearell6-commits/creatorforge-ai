@@ -26,7 +26,7 @@ function prettyPlatform(id?: string) {
   return PLATFORMS.find((p) => p.id === id)?.name ?? id ?? "the platform";
 }
 
-export function SocialAccounts({ connected, error }: { connected?: string; error?: string } = {}) {
+export function SocialAccounts({ connected, error, detail }: { connected?: string; error?: string; detail?: string } = {}) {
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ export function SocialAccounts({ connected, error }: { connected?: string; error
     connected
       ? { kind: "ok", text: `${prettyPlatform(connected)} connected successfully.` }
       : error
-        ? { kind: "error", text: ERROR_MESSAGES[error] ?? `Couldn't connect ${prettyPlatform(error.replace(/_connect_failed$/, ""))}. Please try again.` }
+        ? { kind: "error", text: detail && detail.trim() ? detail : (ERROR_MESSAGES[error] ?? `Couldn't connect ${prettyPlatform(error.replace(/_connect_failed$/, ""))}. Please try again.`) }
         : null
   );
 

@@ -67,6 +67,7 @@ export async function GET(request: Request) {
     return res;
   } catch (err) {
     captureError(err, { category: "publishing", platform, stage: "oauth_callback" });
-    return NextResponse.redirect(`${back}?error=${platform}_connect_failed`);
+    const detail = err instanceof Error ? err.message : "";
+    return NextResponse.redirect(`${back}?error=${platform}_connect_failed&detail=${encodeURIComponent(detail.slice(0, 300))}`);
   }
 }

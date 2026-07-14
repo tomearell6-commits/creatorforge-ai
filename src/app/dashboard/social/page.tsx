@@ -5,9 +5,9 @@ export const metadata = { title: "Social Accounts" };
 export default async function SocialPage({
   searchParams,
 }: {
-  searchParams: Promise<{ connected?: string; error?: string }>;
+  searchParams: Promise<{ connected?: string; error?: string; detail?: string }>;
 }) {
-  const { connected, error } = await searchParams;
+  const { connected, error, detail } = await searchParams;
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
@@ -16,7 +16,7 @@ export default async function SocialPage({
           Connect the platforms you publish to. Connections, status, and expiry are shown per account.
         </p>
       </div>
-      <SocialAccounts connected={connected} error={error} />
+      <SocialAccounts connected={connected} error={error} detail={detail} />
     </div>
   );
 }
