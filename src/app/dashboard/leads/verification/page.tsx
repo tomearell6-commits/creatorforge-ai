@@ -1,5 +1,6 @@
 import { EmailVerificationPanel } from "@/components/leads/EmailVerificationPanel";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
+import { LeadStepNav } from "@/components/leads/LeadStepNav";
 
 export const metadata = { title: "Email Verification — CreatorsForge AI" };
 
@@ -13,6 +14,7 @@ export default function Page() {
       <LeadAccessGate need="search">
         <EmailVerificationPanel />
       </LeadAccessGate>
+      <LeadStepNav current="verify" />
     </div>
   );
 }

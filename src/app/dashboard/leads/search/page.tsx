@@ -1,5 +1,6 @@
 import { LeadCampaignForm } from "@/components/leads/LeadCampaignForm";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
+import { LeadStepNav } from "@/components/leads/LeadStepNav";
 
 export const metadata = { title: "New Lead Search — CreatorsForge AI" };
 
@@ -13,6 +14,7 @@ export default function Page() {
       <LeadAccessGate need="search">
         <LeadCampaignForm />
       </LeadAccessGate>
+      <LeadStepNav current="find" />
     </div>
   );
 }

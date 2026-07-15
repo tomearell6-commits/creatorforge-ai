@@ -1,5 +1,6 @@
 import { BrevoCampaigns } from "@/components/leads/BrevoCampaigns";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
+import { LeadStepNav } from "@/components/leads/LeadStepNav";
 
 export const metadata = { title: "Email Campaigns — CreatorsForge AI" };
 
@@ -13,6 +14,7 @@ export default function Page() {
       <LeadAccessGate need="send">
         <BrevoCampaigns />
       </LeadAccessGate>
+      <LeadStepNav current="send" />
     </div>
   );
 }

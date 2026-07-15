@@ -1,6 +1,7 @@
 import { LeadCampaignDashboard } from "@/components/leads/LeadCampaignDashboard";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
 import { ComplianceDashboard } from "@/components/leads/ComplianceDashboard";
+import { LeadJourney } from "@/components/leads/LeadJourney";
 
 export const metadata = { title: "Lead Generator — CreatorsForge AI" };
 
@@ -13,6 +14,7 @@ export default function Page() {
       </div>
       <LeadAccessGate need="view">
         <ComplianceDashboard />
+        <LeadJourney />
         <LeadCampaignDashboard />
       </LeadAccessGate>
     </div>

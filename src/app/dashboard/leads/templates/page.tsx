@@ -1,5 +1,6 @@
 import { OutreachTemplateEditor } from "@/components/leads/OutreachTemplateEditor";
 import { LeadAccessGate } from "@/components/leads/LeadAccessGate";
+import { LeadStepNav } from "@/components/leads/LeadStepNav";
 
 export const metadata = { title: "Outreach Templates — CreatorsForge AI" };
 
@@ -13,6 +14,7 @@ export default function Page() {
       <LeadAccessGate need="send">
         <OutreachTemplateEditor />
       </LeadAccessGate>
+      <LeadStepNav current="write" />
     </div>
   );
 }
