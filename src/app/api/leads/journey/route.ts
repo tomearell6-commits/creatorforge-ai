@@ -21,7 +21,7 @@ export async function GET() {
   const [sender, leads, verified, lists, templates, campaigns] = await Promise.all([
     supabase.from("lead_sender_profiles").select("id", head),
     supabase.from("leads").select("id", head),
-    supabase.from("leads").select("id", head).in("status", VERIFIED_STATUSES),
+    supabase.from("leads").select("id", head).in("lead_status", VERIFIED_STATUSES),
     supabase.from("lead_lists").select("id", head),
     supabase.from("lead_outreach_templates").select("id", head),
     supabase.from("lead_campaigns").select("id", head),

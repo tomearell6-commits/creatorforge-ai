@@ -32,6 +32,8 @@ export function BrevoCampaigns() {
   const [name, setName] = useState("");
   const [templateId, setTemplateId] = useState("");
   const [listId, setListId] = useState("");
+  // Brevo contact-list id per lead list, captured when the user syncs (above).
+  const [brevoListByLead, setBrevoListByLead] = useState<Record<string, number>>({});
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +77,13 @@ export function BrevoCampaigns() {
 
   async function createAndSend(send: boolean) {
     if (!name.trim() || !templateId || !listId) return;
+    // The campaign must target the Brevo contact list created by the sync step.
+    const brevoListId = brevoListByLead[listId];
+    if (!brevoListId) {
+      setError(null);
+      setNotice({ variant: "warning", text: "Sync this lead list to Brevo first (in the “Sync to Brevo” box above), then create the campaign." });
+      return;
+    }
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -83,12 +92,16 @@ export function BrevoCampaigns() {
       const createRes = await fetch("/api/leads/brevo/create-campaign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId, listId, name: name.trim() }),
+        body: JSON.stringify({ templateId, listId, name: name.trim(), brevoListId }),
       });
       if (!createRes.ok) throw new Error((await createRes.json().catch(() => ({})))?.error || "Could not create campaign.");
       const { campaign, configured } = await createRes.json();
       if (!configured) {
         setNotice({ variant: "warning", text: "Connect Brevo (BREVO_API_KEY) to enable outreach." });
+        return;
+      }
+      if (!campaign?.brevo_campaign_id) {
+        setError("Brevo didn't accept the campaign — make sure the list has synced contacts and your sender email is verified in Brevo, then try again.");
         return;
       }
 
@@ -118,7 +131,7 @@ export function BrevoCampaigns() {
 
   return (
     <div className="space-y-6">
-      <BrevoSyncPanel />
+      <BrevoSyncPanel onSynced={(leadListId, bId) => setBrevoListByLead((m) => ({ ...m, [leadListId]: bId }))} />
 
       <Card className="space-y-4">
         <div>

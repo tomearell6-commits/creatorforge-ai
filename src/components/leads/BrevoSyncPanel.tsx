@@ -10,7 +10,7 @@ import { LEAD_CREDIT_COSTS } from "@/lib/leads/constants";
 
 type LeadList = { id: string; name: string; member_count?: number };
 
-export function BrevoSyncPanel() {
+export function BrevoSyncPanel({ onSynced }: { onSynced?: (leadListId: string, brevoListId: number) => void } = {}) {
   const [lists, setLists] = useState<LeadList[] | null>(null);
   const [listId, setListId] = useState("");
   const [syncing, setSyncing] = useState(false);
@@ -39,7 +39,10 @@ export function BrevoSyncPanel() {
         body: JSON.stringify({ listId }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error || "Sync failed.");
-      setResult((await res.json()) as { configured: boolean; synced: number });
+      const j = (await res.json()) as { configured: boolean; synced: number; brevoListId?: number };
+      setResult(j);
+      // Hand the Brevo contact-list id up so campaign creation targets the right list.
+      if (j.configured && typeof j.brevoListId === "number") onSynced?.(listId, j.brevoListId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
