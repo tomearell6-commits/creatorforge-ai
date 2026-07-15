@@ -95,13 +95,17 @@ export function BrevoCampaigns() {
         body: JSON.stringify({ templateId, listId, name: name.trim(), brevoListId }),
       });
       if (!createRes.ok) throw new Error((await createRes.json().catch(() => ({})))?.error || "Could not create campaign.");
-      const { campaign, configured } = await createRes.json();
+      const { campaign, configured, brevoError } = await createRes.json();
       if (!configured) {
         setNotice({ variant: "warning", text: "Connect Brevo (BREVO_API_KEY) to enable outreach." });
         return;
       }
       if (!campaign?.brevo_campaign_id) {
-        setError("Brevo didn't accept the campaign — make sure the list has synced contacts and your sender email is verified in Brevo, then try again.");
+        setError(
+          brevoError
+            ? `Brevo rejected the campaign: ${brevoError}. (Most often this means the sender email isn't a verified sender in your Brevo account.)`
+            : "Brevo didn't accept the campaign — make sure the list has synced contacts and your sender email is verified in Brevo, then try again."
+        );
         return;
       }
 

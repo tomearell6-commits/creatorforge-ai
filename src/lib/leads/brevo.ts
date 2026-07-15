@@ -61,7 +61,10 @@ export async function createEmailCampaign(args: { name: string; subject: string;
       name: args.name, subject: args.subject, sender: { name: args.senderName, email: args.senderEmail },
       htmlContent: args.htmlContent, recipients: { listIds: [args.listId] },
     });
-    if (!r.ok) return { configured: true, error: `brevo_${r.status}` };
+    if (!r.ok) {
+      const msg = (r.json as { message?: string })?.message;
+      return { configured: true, error: msg || `brevo_${r.status}` };
+    }
     return { configured: true, campaignId: (r.json as { id?: number }).id };
   } catch { return { configured: true, error: "brevo_unreachable" }; }
 }
