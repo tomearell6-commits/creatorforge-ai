@@ -6,8 +6,8 @@ import { LEAD_CREDIT_COSTS } from "@/lib/leads/constants";
 import { guardLead, logUsage } from "@/lib/leads/access";
 import { logCompliance, safeSourceUrl } from "@/lib/leads/compliance";
 import {
-  crawlSourceUrl, findContactPages, extractBusinessData, normalizeLeadData,
-  removeDuplicates, storeLeadSource, willUseFirecrawl, type RawLead,
+  crawlSourceUrl, findContactPages, extractBusinessData, extractBusinessLinks, normalizeLeadData,
+  removeDuplicates, storeLeadSource, willUseFirecrawl, type RawLead, type Scrape,
 } from "@/lib/leads/firecrawl";
 import { verifySingleEmail, updateVerificationStatus, willUseNeverBounce } from "@/lib/leads/neverbounce";
 
@@ -49,20 +49,17 @@ export async function POST(request: Request) {
   const rawLeads: RawLead[] = [];
 
   try {
-    for (const rawUrl of (campaign.source_urls as string[])) {
-      if (rawLeads.length >= maxLeads) break;
-      const safe = await safeSourceUrl(rawUrl);
-      if (!safe.ok) { await logCompliance(supabase, user.id, "blocked_url", `${rawUrl}: ${safe.error}`, { campaignId }); continue; }
-
-      if (billScan && (await getCreditBalance()) < LEAD_CREDIT_COSTS.pageScan) { toppedOut = true; break; }
-      const scrape = await crawlSourceUrl(safe.url);
-      await logCompliance(supabase, user.id, "scan", safe.url, { campaignId });
+    // Scrape one site into a lead — with a public contact-page fallback for the
+    // email. Charges page-scan (+ contact-discovery) credits; flips toppedOut when
+    // credits run low. Returns the raw scrape too, so directory pages can expand.
+    const scanSite = async (safeUrl: string): Promise<{ scrape: Scrape | null; lead: RawLead | null }> => {
+      if (billScan && (await getCreditBalance()) < LEAD_CREDIT_COSTS.pageScan) { toppedOut = true; return { scrape: null, lead: null }; }
+      const scrape = await crawlSourceUrl(safeUrl);
+      await logCompliance(supabase, user.id, "scan", safeUrl, { campaignId });
       if (billScan) { await deductCredits(LEAD_CREDIT_COSTS.pageScan, "lead_page_scan"); creditsUsed += LEAD_CREDIT_COSTS.pageScan; }
-      if (!scrape) continue;
+      if (!scrape) return { scrape: null, lead: null };
 
       const raw = extractBusinessData(scrape, { country: campaign.country ?? undefined, city: campaign.city ?? undefined });
-
-      // Best-effort: look at one public contact page if we still lack an email.
       if (!raw.email) {
         const contactPages = findContactPages(scrape);
         if (contactPages[0] && (!billScan || (await getCreditBalance()) >= LEAD_CREDIT_COSTS.contactDiscovery)) {
@@ -77,10 +74,33 @@ export async function POST(request: Request) {
           }
         }
       }
-
       const lead = normalizeLeadData(raw, { business_type: campaign.business_type ?? undefined });
-      if (campaign.require_email && !lead.email) continue;
-      rawLeads.push(lead);
+      return { scrape, lead: campaign.require_email && !lead.email ? null : lead };
+    };
+
+    for (const rawUrl of (campaign.source_urls as string[])) {
+      if (rawLeads.length >= maxLeads || toppedOut) break;
+      const safe = await safeSourceUrl(rawUrl);
+      if (!safe.ok) { await logCompliance(supabase, user.id, "blocked_url", `${rawUrl}: ${safe.error}`, { campaignId }); continue; }
+
+      // 1) The page's own business.
+      const { scrape, lead } = await scanSite(safe.url);
+      if (lead && rawLeads.length < maxLeads) rawLeads.push(lead);
+
+      // 2) Directory / listing page → expand into the businesses it links to.
+      if (scrape && !toppedOut && rawLeads.length < maxLeads) {
+        const bizLinks = extractBusinessLinks(scrape, { limit: 30 });
+        if (bizLinks.length >= 5) {
+          await logCompliance(supabase, user.id, "extract", `directory ${safe.url}: ${bizLinks.length} businesses`, { campaignId });
+          for (const link of bizLinks) {
+            if (rawLeads.length >= maxLeads || toppedOut) break;
+            const bs = await safeSourceUrl(link);
+            if (!bs.ok) continue;
+            const child = await scanSite(bs.url);
+            if (child.lead && rawLeads.length < maxLeads) rawLeads.push(child.lead);
+          }
+        }
+      }
     }
 
     // Dedup within batch + against the user's existing leads.

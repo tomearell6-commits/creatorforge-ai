@@ -220,6 +220,11 @@ export function LeadCampaignForm() {
           <p className={`mt-1 text-xs ${tooManyUrls ? "text-red-600" : "text-muted-foreground"}`}>
             One URL per line. {sourceUrls.length}/{MAX_SOURCE_URLS} used.
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Best sources: a business <strong>directory / listing page</strong> (we extract each business it lists),
+            a business&rsquo;s <strong>Contact page</strong>, or its <strong>homepage</strong>. We read the full page
+            (including the footer) and pull the public business email.
+          </p>
         </div>
       </Card>
 
