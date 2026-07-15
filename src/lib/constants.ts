@@ -595,16 +595,17 @@ export type AdPlatform = {
   supportsPublish: boolean;    // can we create/publish ads via API (after app review)
   supportsReporting: boolean;  // does the API expose performance metrics
   docsUrl: string;
+  managerUrl: string;          // deep link to the platform's Ads Manager (export/handoff)
 };
 
 export const AD_PLATFORMS: AdPlatform[] = [
-  { id: "facebook",  name: "Facebook Ads",  envKeys: ["FACEBOOK_CLIENT_ID", "FACEBOOK_CLIENT_SECRET"],  formats: ["image", "video", "carousel", "story", "collection", "lead_form"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://developers.facebook.com/docs/marketing-apis" },
-  { id: "instagram", name: "Instagram Ads", envKeys: ["INSTAGRAM_CLIENT_ID", "INSTAGRAM_CLIENT_SECRET"], formats: ["image", "video", "carousel", "story", "short_video"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://developers.facebook.com/docs/marketing-apis" },
-  { id: "google",    name: "Google Ads",    envKeys: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET"], formats: ["image", "video", "lead_form"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.google.com/google-ads/api/docs/start" },
-  { id: "youtube",   name: "YouTube Ads",   envKeys: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET"], formats: ["video", "short_video"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.google.com/google-ads/api/docs/start" },
-  { id: "linkedin",  name: "LinkedIn Ads",  envKeys: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"],  formats: ["image", "video", "carousel", "lead_form"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://learn.microsoft.com/linkedin/marketing" },
-  { id: "pinterest", name: "Pinterest Ads", envKeys: ["PINTEREST_CLIENT_ID", "PINTEREST_CLIENT_SECRET"], formats: ["image", "video", "carousel", "collection"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.pinterest.com/docs/api/v5" },
-  { id: "tiktok",    name: "TikTok Ads",    envKeys: ["TIKTOK_ADS_CLIENT_ID", "TIKTOK_ADS_CLIENT_SECRET"], formats: ["short_video", "video"], supportsPublish: true, supportsReporting: true, docsUrl: "https://business-api.tiktok.com/portal/docs" },
+  { id: "facebook",  name: "Facebook Ads",  envKeys: ["FACEBOOK_CLIENT_ID", "FACEBOOK_CLIENT_SECRET"],  formats: ["image", "video", "carousel", "story", "collection", "lead_form"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://developers.facebook.com/docs/marketing-apis", managerUrl: "https://www.facebook.com/adsmanager/manage/campaigns" },
+  { id: "instagram", name: "Instagram Ads", envKeys: ["INSTAGRAM_CLIENT_ID", "INSTAGRAM_CLIENT_SECRET"], formats: ["image", "video", "carousel", "story", "short_video"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://developers.facebook.com/docs/marketing-apis", managerUrl: "https://www.facebook.com/adsmanager/manage/campaigns" },
+  { id: "google",    name: "Google Ads",    envKeys: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET"], formats: ["image", "video", "lead_form"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.google.com/google-ads/api/docs/start", managerUrl: "https://ads.google.com/aw/campaigns/new" },
+  { id: "youtube",   name: "YouTube Ads",   envKeys: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET"], formats: ["video", "short_video"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.google.com/google-ads/api/docs/start", managerUrl: "https://ads.google.com/aw/campaigns/new" },
+  { id: "linkedin",  name: "LinkedIn Ads",  envKeys: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"],  formats: ["image", "video", "carousel", "lead_form"], supportsPublish: true,  supportsReporting: true,  docsUrl: "https://learn.microsoft.com/linkedin/marketing", managerUrl: "https://www.linkedin.com/campaignmanager/" },
+  { id: "pinterest", name: "Pinterest Ads", envKeys: ["PINTEREST_CLIENT_ID", "PINTEREST_CLIENT_SECRET"], formats: ["image", "video", "carousel", "collection"], supportsPublish: true, supportsReporting: true, docsUrl: "https://developers.pinterest.com/docs/api/v5", managerUrl: "https://ads.pinterest.com/" },
+  { id: "tiktok",    name: "TikTok Ads",    envKeys: ["TIKTOK_ADS_CLIENT_ID", "TIKTOK_ADS_CLIENT_SECRET"], formats: ["short_video", "video"], supportsPublish: true, supportsReporting: true, docsUrl: "https://business-api.tiktok.com/portal/docs", managerUrl: "https://ads.tiktok.com/i18n/creation/" },
 ];
 export function adPlatform(id: string): AdPlatform | undefined { return AD_PLATFORMS.find((p) => p.id === id); }
 

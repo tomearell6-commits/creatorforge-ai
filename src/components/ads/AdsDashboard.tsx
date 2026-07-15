@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Megaphone } from "lucide-react";
+import { Plus, Megaphone, Rocket } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { AdsGuidedJourney } from "./AdsGuidedJourney";
 
 const STATUS: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
   draft: "warning", scheduled: "warning",
@@ -24,10 +25,14 @@ export function AdsDashboard() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <AdsGuidedJourney />
       <div className="flex items-center justify-between">
         <CardTitle>Campaigns</CardTitle>
-        <Button asChild variant="accent"><Link href="/dashboard/ads/create"><Plus className="h-4 w-4" /> Create campaign</Link></Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline"><Link href="/dashboard/ads/launch"><Rocket className="h-4 w-4" /> Launch &amp; Export</Link></Button>
+          <Button asChild variant="accent"><Link href="/dashboard/ads/create"><Plus className="h-4 w-4" /> Create campaign</Link></Button>
+        </div>
       </div>
       {campaigns.length === 0 ? (
         <Card className="flex flex-col items-center gap-3 py-12 text-center text-muted-foreground">
