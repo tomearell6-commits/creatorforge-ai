@@ -71,7 +71,7 @@ export default function LocalBusinessStudioLanding() {
             <ol className="mt-8 space-y-3">
               {WORKFLOW.map((step, i) => (
                 <li key={i} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-300 text-sm font-bold text-brand-900">{i + 1}</span>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">{i + 1}</span>
                   <span className="text-sm">{step}</span>
                 </li>
               ))}

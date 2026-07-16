@@ -33,7 +33,7 @@ export function QuickCreateButton() {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-300 px-3 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-400"
+        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
       >
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">Create</span>

@@ -64,7 +64,7 @@ export default async function BillingOverviewPage() {
           </div>
           <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={usagePct} aria-valuemin={0} aria-valuemax={100} aria-label="Monthly credit usage">
             <div
-              className={`h-full rounded-full ${usagePct >= 90 ? "bg-red-500" : usagePct >= 70 ? "bg-amber-500" : "bg-brand-500"}`}
+              className={`h-full rounded-full ${usagePct >= 90 ? "bg-red-500" : usagePct >= 70 ? "bg-amber-500" : "bg-brand-600"}`}
               style={{ width: `${usagePct}%` }}
             />
           </div>

@@ -428,7 +428,7 @@ export function OpsCostForecast() {
             {Object.entries(data.byProvider).sort((a, b) => b[1] - a[1]).map(([name, cost]) => (
               <li key={name} className="flex items-center gap-3 text-sm">
                 <span className="w-48 truncate">{name}</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full bg-brand-500" style={{ width: `${(cost / max) * 100}%` }} /></div>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full bg-brand-600" style={{ width: `${(cost / max) * 100}%` }} /></div>
                 <span className="w-20 text-right text-xs text-muted-foreground">{fmtMoney(cost)}</span>
               </li>
             ))}

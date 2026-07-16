@@ -31,7 +31,7 @@ export function DashboardPromptBar() {
         />
         <button
           onClick={go}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-300 text-brand-900 transition-colors hover:bg-brand-400"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700"
           aria-label="Generate"
         >
           <ArrowUp className="h-4 w-4" />

@@ -43,10 +43,10 @@ export function AssistantDemo() {
       <Reveal delay={120}>
         <div className="rounded-2xl border border-border bg-card p-4 shadow-lg">
           <div className="mb-3 flex items-center gap-2 border-b border-border pb-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white"><Bot className="h-5 w-5" /></span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white"><Bot className="h-5 w-5" /></span>
             <div>
               <p className="text-sm font-semibold">Forge Assistant</p>
-              <p className="flex items-center gap-1 text-xs text-brand-600"><span className="h-2 w-2 rounded-full bg-brand-500" /> Online</p>
+              <p className="flex items-center gap-1 text-xs text-brand-600"><span className="h-2 w-2 rounded-full bg-brand-600" /> Online</p>
             </div>
           </div>
           <div className="space-y-3">
@@ -55,7 +55,7 @@ export function AssistantDemo() {
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${m.from === "user" ? "bg-muted text-foreground" : "bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300"}`}>
                   {m.from === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                 </span>
-                <p className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${m.from === "user" ? "bg-brand-500 text-white" : "bg-muted text-foreground"}`}>{m.text}</p>
+                <p className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${m.from === "user" ? "bg-brand-600 text-white" : "bg-muted text-foreground"}`}>{m.text}</p>
               </div>
             ))}
           </div>

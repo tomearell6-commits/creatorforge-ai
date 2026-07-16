@@ -65,7 +65,7 @@ export function CreateHub({ initialGroup }: { initialGroup?: string }) {
                 <span className="inline-flex items-center gap-1"><Coins className="h-3 w-3" /> ~{c.creditEstimate}</span>
               </div>
               <div className="mt-auto flex gap-2">
-                <Link href={`/dashboard/create/${c.slug}`} className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-brand-300 px-3 py-1.5 text-sm font-semibold text-brand-900 hover:bg-brand-400">
+                <Link href={`/dashboard/create/${c.slug}`} className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700">
                   Create <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link href={`/dashboard/templates?group=${c.group}`} className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted">

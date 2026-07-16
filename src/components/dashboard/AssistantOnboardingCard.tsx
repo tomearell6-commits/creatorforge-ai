@@ -9,7 +9,7 @@ export function AssistantOnboardingCard() {
   return (
     <Card className="flex flex-wrap items-center justify-between gap-3 border-brand-200 bg-brand-50/40">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-300 text-brand-900"><Sparkles className="h-5 w-5" /></span>
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white"><Sparkles className="h-5 w-5" /></span>
         <div>
           <CardTitle className="text-base">Need help getting started?</CardTitle>
           <CardDescription>Forge AI Assistant can guide you through creating your first video, SEO article, product ad, or social post.</CardDescription>

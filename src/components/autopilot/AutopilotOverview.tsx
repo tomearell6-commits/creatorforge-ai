@@ -23,7 +23,7 @@ export function AutopilotOverview() {
     <div className="space-y-6">
       <Card className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-300 text-brand-900"><Rocket className="h-5 w-5" /></span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white"><Rocket className="h-5 w-5" /></span>
           <div><CardTitle>CreatorsForge Autopilot</CardTitle><p className="text-sm text-muted-foreground">Configure your strategy once — Autopilot plans, schedules, and (in Full mode) publishes.</p></div>
         </div>
         <Button asChild variant="accent"><Link href="/dashboard/autopilot/campaigns/new"><Plus className="h-4 w-4" /> New campaign</Link></Button>

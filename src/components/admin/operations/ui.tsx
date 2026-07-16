@@ -19,7 +19,7 @@ export function OpsBadge({ status }: { status: string | null | undefined }) {
 export function OpsProgress({ pct }: { pct: number | null | undefined }) {
   if (pct == null) return <span className="text-xs text-muted-foreground">—</span>;
   const clamped = Math.max(0, Math.min(100, pct));
-  const color = clamped >= 85 ? "bg-red-500" : clamped >= 70 ? "bg-amber-500" : "bg-brand-500";
+  const color = clamped >= 85 ? "bg-red-500" : clamped >= 70 ? "bg-amber-500" : "bg-brand-600";
   return (
     <div className="flex items-center gap-2">
       <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">

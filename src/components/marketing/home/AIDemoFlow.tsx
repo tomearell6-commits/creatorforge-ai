@@ -39,7 +39,7 @@ export function AIDemoFlow() {
               }`}
             >
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                done ? "bg-brand-500 text-white" : current ? "bg-brand-300 text-brand-900" : "bg-muted text-muted-foreground"
+                done ? "bg-brand-600 text-white" : current ? "bg-brand-600 text-white" : "bg-muted text-muted-foreground"
               }`}>
                 {done ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
               </div>

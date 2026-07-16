@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 
 const DOT: Record<string, string> = {
   planned: "bg-muted-foreground", scheduled: "bg-violet-500", awaiting_approval: "bg-amber-500",
-  publishing: "bg-sky-500", published: "bg-brand-500", failed: "bg-red-500", generating: "bg-sky-500", queued: "bg-muted-foreground",
+  publishing: "bg-sky-500", published: "bg-brand-600", failed: "bg-red-500", generating: "bg-sky-500", queued: "bg-muted-foreground",
 };
 
 /** Groups upcoming jobs by day — a lightweight visual planner. */

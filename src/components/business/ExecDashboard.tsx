@@ -66,7 +66,7 @@ export function ExecDashboard() {
             ].map((step) => (
               <div key={step.n}>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">{step.n}</span>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">{step.n}</span>
                   <step.icon className="h-4 w-4 text-brand-600" />
                   <p className="text-sm font-semibold">{step.title}</p>
                 </div>

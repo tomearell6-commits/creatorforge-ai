@@ -44,7 +44,7 @@ export function PricingCards() {
               )}
             >
               {p.badge && (
-                <span className="mb-2 w-fit rounded-full bg-brand-300 px-3 py-0.5 text-xs font-bold text-brand-900">{p.badge}</span>
+                <span className="mb-2 w-fit rounded-full bg-brand-600 px-3 py-0.5 text-xs font-bold text-white">{p.badge}</span>
               )}
               <h3 className="text-lg font-bold text-ink dark:text-foreground">{p.name}</h3>
               <p className="text-xs text-muted-foreground">{p.tagline}</p>

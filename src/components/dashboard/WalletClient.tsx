@@ -195,7 +195,7 @@ function WalletSummaryCard({ summary }: { summary: ReturnType<typeof useWallet>[
         <span className="rounded-full border border-border px-3 py-1 text-sm capitalize text-muted-foreground">{summary.planName} plan</span>
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-brand-500" style={{ width: `${Math.max(pct, 2)}%` }} />
+        <div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.max(pct, 2)}%` }} />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <Mini icon={<RefreshCw className="h-4 w-4" />} label="Monthly" v={summary.monthlyRemaining} />

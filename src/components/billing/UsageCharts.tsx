@@ -23,7 +23,7 @@ function Bars({ points, labelFor }: { points: { key: string; credits: number }[]
       {points.map((p) => (
         <div key={p.key} className="group relative flex-1">
           <div
-            className={cn("w-full rounded-t bg-brand-500/70 transition-colors group-hover:bg-brand-500", p.credits === 0 && "bg-muted")}
+            className={cn("w-full rounded-t bg-brand-500/70 transition-colors group-hover:bg-brand-600", p.credits === 0 && "bg-muted")}
             style={{ height: `${Math.max((p.credits / max) * 100, p.credits > 0 ? 4 : 2)}%` }}
           />
           <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-xs text-background group-hover:block">
@@ -109,7 +109,7 @@ export function UsageCharts() {
                   <span className="text-muted-foreground">{c.credits.toLocaleString()} credits</span>
                 </div>
                 <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${(c.credits / catMax) * 100}%` }} />
+                  <div className="h-full rounded-full bg-brand-600" style={{ width: `${(c.credits / catMax) * 100}%` }} />
                 </div>
               </li>
             ))}

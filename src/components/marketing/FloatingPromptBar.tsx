@@ -26,7 +26,7 @@ export function FloatingPromptBar() {
           placeholder="Describe what you want to create..."
           className="flex-1 bg-transparent text-sm text-ink placeholder:text-muted-foreground focus:outline-none dark:text-foreground"
         />
-        <button onClick={submit} aria-label="Generate" className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-300 text-brand-900 hover:bg-brand-400">
+        <button onClick={submit} aria-label="Generate" className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-white hover:bg-brand-700">
           <ArrowUp className="h-4 w-4" />
         </button>
         <button onClick={() => setHidden(true)} aria-label="Dismiss" className="text-muted-foreground hover:text-foreground">

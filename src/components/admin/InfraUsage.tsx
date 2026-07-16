@@ -32,7 +32,7 @@ export function InfraUsage() {
         ) : withUsage.map((p) => (
           <div key={p.id}>
             <div className="mb-1 flex justify-between text-sm"><span>{p.name}</span><span className="font-medium">{p.usage!.calls_month.toLocaleString()}</span></div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-brand-500" style={{ width: `${(p.usage!.calls_month / maxMonth) * 100}%` }} /></div>
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-brand-600" style={{ width: `${(p.usage!.calls_month / maxMonth) * 100}%` }} /></div>
           </div>
         ))}
       </Card>

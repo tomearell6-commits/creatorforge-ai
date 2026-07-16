@@ -53,7 +53,7 @@ export function AnalyticsCharts() {
           {d.series.days.map((day, i) => (
             <div key={day} className="flex flex-1 flex-col items-center justify-end gap-0.5" title={day}>
               <div className="flex w-full items-end justify-center gap-0.5" style={{ height: "100%" }}>
-                <div className="w-1/2 rounded-t bg-brand-300" style={{ height: `${(d.series.created[i] / max) * 100}%` }} />
+                <div className="w-1/2 rounded-t bg-brand-600" style={{ height: `${(d.series.created[i] / max) * 100}%` }} />
                 <div className="w-1/2 rounded-t bg-brand-600" style={{ height: `${(d.series.published[i] / max) * 100}%` }} />
               </div>
               <span className="text-[9px] text-muted-foreground">{day.slice(8)}</span>
@@ -61,7 +61,7 @@ export function AnalyticsCharts() {
           ))}
         </div>
         <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded bg-brand-300" /> Created</span>
+          <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded bg-brand-600" /> Created</span>
           <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded bg-brand-600" /> Published</span>
         </div>
       </Card>

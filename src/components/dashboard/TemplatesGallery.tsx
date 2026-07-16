@@ -78,7 +78,7 @@ export function TemplatesGallery({ initialGroup }: { initialGroup?: string }) {
                     ))}
                   </div>
                 )}
-                {t.featured && <span className="absolute left-2 top-2 rounded-full bg-brand-300 px-2 py-0.5 text-[10px] font-semibold text-brand-900">Popular</span>}
+                {t.featured && <span className="absolute left-2 top-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}
                 {t.isNew && <span className="absolute right-2 top-2 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold text-background">New</span>}
               </div>
               <div className="mt-3 space-y-1">

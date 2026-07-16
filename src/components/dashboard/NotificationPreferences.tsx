@@ -68,7 +68,7 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        checked ? "bg-brand-500" : "bg-muted",
+        checked ? "bg-brand-600" : "bg-muted",
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
       )}
     >

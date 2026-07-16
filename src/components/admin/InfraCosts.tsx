@@ -33,7 +33,7 @@ export function InfraCosts() {
         ) : d.byProvider.map((r) => (
           <div key={r.id}>
             <div className="mb-1 flex justify-between text-sm"><span>{r.name} <span className="text-xs text-muted-foreground">({r.category})</span></span><span className="font-medium">${r.monthly.toLocaleString()}/mo</span></div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-brand-500" style={{ width: `${(r.monthly / max) * 100}%` }} /></div>
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-brand-600" style={{ width: `${(r.monthly / max) * 100}%` }} /></div>
           </div>
         ))}
       </Card>

@@ -26,7 +26,7 @@ export function EcosystemSection() {
         <ArrowRight className="hidden h-5 w-5 shrink-0 text-brand-400 lg:block" />
         <Reveal delay={STUDIOS.length * 80}>
           <div className="flex w-32 flex-col items-center gap-2 rounded-2xl border border-brand-300 bg-brand-50 p-4 text-center shadow-sm dark:bg-brand-950/40">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-500 text-white">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
               <TrendingUp className="h-5 w-5" />
             </div>
             <span className="text-xs font-semibold leading-tight text-brand-800 dark:text-brand-300">Business Growth</span>

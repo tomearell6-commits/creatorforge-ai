@@ -31,7 +31,7 @@ export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
     <header className={`sticky top-0 z-50 transition-colors ${scrolled ? "border-b border-border bg-background/85 backdrop-blur" : "bg-transparent"}`}>
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4" aria-label="Primary">
         <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight text-ink dark:text-foreground">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white"><Sparkles className="h-5 w-5" /></span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white"><Sparkles className="h-5 w-5" /></span>
           <span>CreatorsForge<span className="text-brand-600">.io</span></span>
         </Link>
 
@@ -50,7 +50,7 @@ export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
             <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-foreground hover:text-brand-600">Login</Link>
           )}
           <Link href="/tutorials" className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted">Watch Demo</Link>
-          <Link href="/signup" className="rounded-lg bg-brand-300 px-4 py-2 text-sm font-bold text-brand-900 transition-colors hover:bg-brand-400">Start Free</Link>
+          <Link href="/signup" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-brand-700">Start Free</Link>
         </div>
 
         <button className="md:hidden" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
@@ -69,7 +69,7 @@ export function MarketingNav({ isAuthed }: { isAuthed: boolean }) {
             <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3">
               <Link href={isAuthed ? "/dashboard" : "/login"} onClick={() => setOpen(false)} className="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-muted">{isAuthed ? "Dashboard" : "Login"}</Link>
               <Link href="/tutorials" onClick={() => setOpen(false)} className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold hover:bg-muted">Watch Demo</Link>
-              <Link href="/signup" onClick={() => setOpen(false)} className="rounded-lg bg-brand-300 px-4 py-2 text-center text-sm font-bold text-brand-900 hover:bg-brand-400">Start Free</Link>
+              <Link href="/signup" onClick={() => setOpen(false)} className="rounded-lg bg-brand-600 px-4 py-2 text-center text-sm font-bold text-white hover:bg-brand-700">Start Free</Link>
             </div>
           </div>
         </div>

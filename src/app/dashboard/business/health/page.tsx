@@ -37,7 +37,7 @@ export default async function BusinessHealthPage() {
               </div>
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
                 <div
-                  className={`h-full rounded-full ${f.score / f.max >= 0.7 ? "bg-brand-500" : f.score / f.max >= 0.4 ? "bg-amber-500" : "bg-red-500"}`}
+                  className={`h-full rounded-full ${f.score / f.max >= 0.7 ? "bg-brand-600" : f.score / f.max >= 0.4 ? "bg-amber-500" : "bg-red-500"}`}
                   style={{ width: `${(f.score / f.max) * 100}%` }}
                 />
               </div>

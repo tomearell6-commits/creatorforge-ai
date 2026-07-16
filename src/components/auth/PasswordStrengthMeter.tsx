@@ -3,7 +3,7 @@
 import { Check, X } from "lucide-react";
 import { passwordChecks, passwordScore, STRENGTH_LABELS } from "@/lib/security/password";
 
-const BAR = ["bg-red-500", "bg-red-500", "bg-amber-500", "bg-brand-500", "bg-brand-600"];
+const BAR = ["bg-red-500", "bg-red-500", "bg-amber-500", "bg-brand-600", "bg-brand-600"];
 
 /** Password strength bar + rule checklist. Purely presentational. */
 export function PasswordStrengthMeter({ password }: { password: string }) {

@@ -10,7 +10,7 @@ export function CreditBadge({ credits, plan }: { credits: number; plan: string }
       </span>
       <Link
         href="/dashboard/credits"
-        className="inline-flex items-center gap-1.5 rounded-full bg-brand-300 px-3 py-1 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-400"
+        className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
         title="Top up credits"
       >
         <Coins className="h-4 w-4" />

@@ -118,7 +118,7 @@ export function WeeklyReport() {
             className={cn(
               "rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
               range === f.key
-                ? "border-brand-500 bg-brand-500 text-white"
+                ? "border-brand-500 bg-brand-600 text-white"
                 : "border-border text-foreground hover:bg-muted"
             )}
           >

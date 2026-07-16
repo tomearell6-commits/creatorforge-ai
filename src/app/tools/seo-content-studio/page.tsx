@@ -77,7 +77,7 @@ export default function SeoContentStudioPage() {
             <ol className="mt-8 space-y-3">
               {WORKFLOW.map((step, i) => (
                 <li key={i} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-300 text-sm font-bold text-brand-900">{i + 1}</span>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">{i + 1}</span>
                   <span className="text-sm">{step}</span>
                 </li>
               ))}
@@ -118,7 +118,7 @@ export default function SeoContentStudioPage() {
                     <div key={i} className="flex aspect-square flex-col rounded-md border border-border/60 bg-muted/40 p-1">
                       <span className="text-[9px] leading-none text-muted-foreground">{day}</span>
                       {label && (
-                        <span className="mt-auto block truncate rounded bg-brand-300 px-1 text-[8px] font-semibold text-brand-900">{label}</span>
+                        <span className="mt-auto block truncate rounded bg-brand-600 px-1 text-[8px] font-semibold text-white">{label}</span>
                       )}
                     </div>
                   );

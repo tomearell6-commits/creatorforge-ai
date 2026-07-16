@@ -18,7 +18,7 @@ export function LegalPage({
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white"><Sparkles className="h-5 w-5" /></span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white"><Sparkles className="h-5 w-5" /></span>
             <span>CreatorsForge<span className="text-brand-600">.io</span></span>
           </Link>
           <nav className="flex gap-4 text-sm text-muted-foreground">

@@ -6,7 +6,7 @@ import type { WalletSummary } from "@/lib/credits/wallet";
 import { formatDate } from "@/lib/utils";
 
 const BAR: Record<string, string> = {
-  ok: "bg-brand-500", low: "bg-amber-500", critical: "bg-red-500", empty: "bg-red-600",
+  ok: "bg-brand-600", low: "bg-amber-500", critical: "bg-red-500", empty: "bg-red-600",
 };
 
 /** Top-of-dashboard wallet snapshot: plan, remaining, breakdown, usage bar, top-up. */

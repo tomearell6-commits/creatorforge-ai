@@ -73,14 +73,14 @@ export function Hero() {
               placeholder={text || EXAMPLES[idx]}
               className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none placeholder:text-muted-foreground sm:text-base"
             />
-            <button onClick={submit} aria-label="Start creating" className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-600">
+            <button onClick={submit} aria-label="Start creating" className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700">
               Create <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/signup" className="cf-glow inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-300 px-7 py-3.5 text-base font-bold text-brand-900 transition-colors hover:bg-brand-400 sm:w-auto">
+          <Link href="/signup" className="cf-glow inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-7 py-3.5 text-base font-bold text-white transition-colors hover:bg-brand-700 sm:w-auto">
             Start Creating Free <ArrowRight className="h-5 w-5" />
           </Link>
           <Link href="/#demo" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto">

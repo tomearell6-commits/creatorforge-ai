@@ -93,7 +93,7 @@ export function InfraProviders({ category, title, emphasis }: { category?: strin
                     <span>{remaining?.toLocaleString()} left</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div className={`h-full rounded-full ${usagePct >= 95 ? "bg-red-500" : usagePct >= 80 ? "bg-amber-500" : "bg-brand-500"}`} style={{ width: `${Math.min(usagePct, 100)}%` }} />
+                    <div className={`h-full rounded-full ${usagePct >= 95 ? "bg-red-500" : usagePct >= 80 ? "bg-amber-500" : "bg-brand-600"}`} style={{ width: `${Math.min(usagePct, 100)}%` }} />
                   </div>
                 </div>
               )}

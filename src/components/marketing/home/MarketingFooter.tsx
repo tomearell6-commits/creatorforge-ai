@@ -24,7 +24,7 @@ export function MarketingFooter() {
         <div className="grid gap-10 lg:grid-cols-[1.3fr_repeat(3,1fr)]">
           <div>
             <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight text-ink dark:text-foreground">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white"><Sparkles className="h-5 w-5" /></span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white"><Sparkles className="h-5 w-5" /></span>
               <span>CreatorsForge<span className="text-brand-600">.io</span></span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">The AI Business Operating System — create, market, publish, automate, analyze, and grow.</p>

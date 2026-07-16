@@ -130,7 +130,7 @@ export function ForgeAssistant() {
   if (!open) {
     return (
       <button onClick={() => { setOpen(true); setMin(false); }}
-        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand-300 px-4 py-3 font-semibold text-brand-900 shadow-lg transition-transform hover:scale-105 hover:bg-brand-400">
+        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-3 font-semibold text-white shadow-lg transition-transform hover:scale-105 hover:bg-brand-700">
         <Sparkles className="h-5 w-5" /> Ask Forge AI
       </button>
     );
@@ -209,7 +209,7 @@ export function ForgeAssistant() {
             <Alert
               variant="warning"
               className="rounded-none border-t border-border"
-              action={<Link href="/dashboard/credits" className="inline-block rounded-md bg-brand-300 px-2 py-1 text-xs font-semibold text-brand-900">Top Up Credits</Link>}
+              action={<Link href="/dashboard/credits" className="inline-block rounded-md bg-brand-600 px-2 py-1 text-xs font-semibold text-white">Top Up Credits</Link>}
             >
               You need more credits to continue chatting with Forge AI Assistant.
             </Alert>
