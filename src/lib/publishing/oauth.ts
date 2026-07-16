@@ -365,23 +365,41 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             return { status: "published", externalPostId: j.id, externalUrl: `https://pinterest.com/pin/${j.id}` };
           }
           case "tiktok": {
-            // TikTok pull_by_url only accepts media from a VERIFIED domain. Our
-            // rendered videos live on Supabase storage, so re-serve them through
-            // our verified creatorsforge.io domain via the media proxy.
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.creatorsforge.io";
-            const videoUrl = input.videoUrl.includes("/storage/v1/object/public/")
-              ? `${appUrl}/api/media/proxy?url=${encodeURIComponent(input.videoUrl)}`
-              : input.videoUrl;
-            const res = await fetchWithTimeout("https://open.tiktokapis.com/v2/post/publish/video/init/", {
+            // FILE_UPLOAD (push_by_file): upload the video bytes directly to
+            // TikTok. Avoids pull_by_url domain verification entirely.
+            if (!input.videoUrl) return { status: "failed", error: "TikTok needs a rendered video." };
+            const src = await fetchWithTimeout(input.videoUrl, {}, 60_000);
+            if (!src.ok) return { status: "failed", error: `TikTok: couldn't fetch the video (${src.status}).` };
+            const videoBytes = Buffer.from(await src.arrayBuffer());
+            const videoSize = videoBytes.byteLength;
+            if (!videoSize) return { status: "failed", error: "TikTok: the rendered video is empty." };
+            if (videoSize > 64_000_000) return { status: "failed", error: "TikTok: video exceeds the 64MB single-upload limit." };
+
+            const init = await (await fetchWithTimeout("https://open.tiktokapis.com/v2/post/publish/video/init/", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
               body: JSON.stringify({
                 post_info: { title: caption(input).slice(0, 150), privacy_level: input.visibility === "public" ? "PUBLIC_TO_EVERYONE" : "SELF_ONLY" },
-                source_info: { source: "PULL_FROM_URL", video_url: videoUrl },
+                source_info: { source: "FILE_UPLOAD", video_size: videoSize, chunk_size: videoSize, total_chunk_count: 1 },
               }),
-            }, 30_000);
-            const j = await res.json();
-            if (j.error && j.error.code !== "ok") return { status: "failed", error: `TikTok: ${j.error.message}` };
-            return { status: "published", externalPostId: j.data?.publish_id ?? "", externalUrl: undefined };
+            }, 30_000)).json();
+            if (init.error && init.error.code !== "ok") return { status: "failed", error: `TikTok: ${init.error.message}` };
+            const uploadUrl = init.data?.upload_url as string | undefined;
+            const publishId = init.data?.publish_id as string | undefined;
+            if (!uploadUrl) return { status: "failed", error: "TikTok: no upload URL returned." };
+
+            const put = await fetchWithTimeout(uploadUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "video/mp4",
+                "Content-Length": String(videoSize),
+                "Content-Range": `bytes 0-${videoSize - 1}/${videoSize}`,
+              },
+              body: videoBytes,
+            }, 120_000);
+            if (!put.ok) return { status: "failed", error: `TikTok: video upload failed (${put.status}).` };
+
+            // TikTok processes asynchronously; the post lands (private in sandbox) shortly.
+            return { status: "published", externalPostId: publishId ?? "", externalUrl: undefined };
           }
           case "x": {
             // Try a chunked video upload; fall back to a text post with the link.

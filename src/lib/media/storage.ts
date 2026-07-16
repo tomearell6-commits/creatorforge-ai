@@ -29,20 +29,43 @@ type UploadInput = {
   ext: string;
 };
 
-/** Upload raw bytes to the media bucket and return the public URL + path. */
+/** Upload raw bytes to the media bucket and return the public URL + path.
+ *  Validates the payload up front and retries once on a transient failure so a
+ *  momentary Storage 4xx/5xx doesn't sink an otherwise-complete render. */
 export async function uploadMedia(
   supabase: SupabaseClient,
   { userId, type, bytes, contentType, ext }: UploadInput
 ): Promise<UploadResult> {
-  const path = `${userId}/${type}/${randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, bytes, {
-    contentType,
-    upsert: false,
-  });
-  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+  const body = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
+  const size = body.byteLength;
+  if (!size) {
+    throw new Error(
+      `Storage upload skipped: the ${type} media was empty (0 bytes) — the generator returned no data.`
+    );
+  }
+  if (size > MAX_UPLOAD_BYTES) {
+    throw new Error(`Storage upload skipped: ${type} media too large (${size} bytes > ${MAX_UPLOAD_BYTES} limit).`);
+  }
 
-  const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-  return { url: data.publicUrl, path, size: bytes.byteLength };
+  const ct = contentType || "application/octet-stream";
+  const path = `${userId}/${type}/${randomUUID()}.${ext}`;
+
+  let lastError = "";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, body, {
+      contentType: ct,
+      upsert: true, // random UUID path, so upsert only matters on a retry of the same path
+    });
+    if (!error) {
+      const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+      return { url: data.publicUrl, path, size };
+    }
+    lastError = error.message;
+    if (attempt === 0) await new Promise((r) => setTimeout(r, 600));
+  }
+  throw new Error(
+    `Storage upload failed for ${type} (${size} bytes, ${ct}) after retry: ${lastError}`
+  );
 }
 
 type UploadFromUrlInput = {
@@ -60,12 +83,18 @@ export async function uploadFromUrl(
 ): Promise<UploadResult> {
   const res = await fetchWithTimeout(sourceUrl, {}, 30_000);
   if (!res.ok) throw new Error(`Failed to fetch source media (${res.status})`);
+  const upstreamType = res.headers.get("content-type") || "";
   const declaredSize = Number(res.headers.get("content-length"));
   if (Number.isFinite(declaredSize) && declaredSize > MAX_UPLOAD_BYTES) {
     throw new Error(`Source media too large (${declaredSize} bytes > ${MAX_UPLOAD_BYTES} limit)`);
   }
   const bytes = Buffer.from(await res.arrayBuffer());
-  const ct = contentType || res.headers.get("content-type") || "application/octet-stream";
+  if (!bytes.byteLength) throw new Error(`Source media was empty: ${sourceUrl.slice(0, 80)}`);
+  const ct = contentType || upstreamType || "application/octet-stream";
+  // A provider that errored often returns an HTML page instead of media — catch it early.
+  if (/text\/html/i.test(ct)) {
+    throw new Error(`Source URL returned an HTML page, not ${type} media — the provider likely errored.`);
+  }
   return uploadMedia(supabase, { userId, type, bytes, contentType: ct, ext });
 }
 
