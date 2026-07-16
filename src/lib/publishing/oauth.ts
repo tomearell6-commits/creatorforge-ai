@@ -365,11 +365,18 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             return { status: "published", externalPostId: j.id, externalUrl: `https://pinterest.com/pin/${j.id}` };
           }
           case "tiktok": {
+            // TikTok pull_by_url only accepts media from a VERIFIED domain. Our
+            // rendered videos live on Supabase storage, so re-serve them through
+            // our verified creatorsforge.io domain via the media proxy.
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.creatorsforge.io";
+            const videoUrl = input.videoUrl.includes("/storage/v1/object/public/")
+              ? `${appUrl}/api/media/proxy?url=${encodeURIComponent(input.videoUrl)}`
+              : input.videoUrl;
             const res = await fetchWithTimeout("https://open.tiktokapis.com/v2/post/publish/video/init/", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
               body: JSON.stringify({
                 post_info: { title: caption(input).slice(0, 150), privacy_level: input.visibility === "public" ? "PUBLIC_TO_EVERYONE" : "SELF_ONLY" },
-                source_info: { source: "PULL_FROM_URL", video_url: input.videoUrl },
+                source_info: { source: "PULL_FROM_URL", video_url: videoUrl },
               }),
             }, 30_000);
             const j = await res.json();
