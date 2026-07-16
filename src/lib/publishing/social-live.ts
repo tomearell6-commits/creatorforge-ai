@@ -10,6 +10,7 @@ import { getSocialProvider, oauthConfigured } from "@/lib/publishing/oauth";
 import { decryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
 import type { SocialPlatform } from "@/lib/types";
+import type { TikTokPostOptions } from "@/lib/publishing/types";
 
 export type SocialLiveInput = {
   videoUrl?: string | null;
@@ -18,6 +19,8 @@ export type SocialLiveInput = {
   hashtags?: string[];
   thumbnailUrl?: string | null;
   visibility?: "public" | "unlisted" | "private";
+  /** TikTok Direct-Post compliance settings (privacy + interaction/disclosure). */
+  tiktok?: TikTokPostOptions | null;
 };
 
 export async function publishToSocialPlatform(
@@ -47,6 +50,7 @@ export async function publishToSocialPlatform(
     tags: [],
     thumbnailUrl: input.thumbnailUrl ?? undefined,
     visibility: input.visibility ?? "public",
+    tiktok: input.tiktok ?? undefined,
     account: {
       accessToken,
       refreshToken: decryptSecret(acct.refresh_token ?? null),

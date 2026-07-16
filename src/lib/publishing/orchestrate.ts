@@ -18,6 +18,7 @@ import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { publishVideoToYouTube } from "@/lib/publishing/youtube-live";
 import { publishToSocialPlatform, publishFacebookReel } from "@/lib/publishing/social-live";
 import type { SocialPlatform } from "@/lib/types";
+import type { TikTokPostOptions } from "@/lib/publishing/types";
 import { decryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
 import { emitNotification } from "@/lib/notifications";
@@ -54,6 +55,8 @@ export type PublishRequest = {
   webhookUrl?: string | null;
   /** ISO datetime → schedule instead of publish now. */
   scheduleFor?: string | null;
+  /** TikTok Direct-Post compliance settings (privacy + interaction/disclosure). */
+  tiktok?: TikTokPostOptions | null;
 };
 
 export type DestinationResult = {
@@ -160,6 +163,7 @@ async function publishLive(
     const r = await publishToSocialPlatform(supabase, platform, {
       videoUrl: req.assetUrl, title: req.metadata.title, description: req.metadata.description,
       hashtags: req.metadata.hashtags, thumbnailUrl: req.metadata.featuredImage, visibility: req.metadata.visibility,
+      tiktok: destination === "tiktok" ? req.tiktok : undefined,
     });
     if (!r.ok) return { status: "failed", error: r.error };
     return { status: "published", url: r.url };

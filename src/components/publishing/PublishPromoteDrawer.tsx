@@ -8,7 +8,9 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Input } from "@/components/ui/Input";
 import { BrandIcon, hasBrandIcon } from "@/components/icons/BrandIcon";
 import { ConnectAccountModal, type ConnectItem } from "@/components/integrations/ConnectAccountModal";
+import { TikTokComposeSettings } from "@/components/publishing/TikTokComposeSettings";
 import type { ContentTypeId } from "@/config/publishingCapabilities";
+import type { TikTokPostOptions } from "@/lib/publishing/types";
 
 type DestStatus = { id: string; label: string; brandIcon: string | null; accountType: string; live: boolean; connected: boolean; permissions: string };
 type Summary = {
@@ -65,6 +67,11 @@ export function PublishPromoteDrawer(props: DrawerProps) {
   const [results, setResults] = useState<PubResult[]>([]);
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [connectOpen, setConnectOpen] = useState(false);
+  const [tiktokOpts, setTiktokOpts] = useState<TikTokPostOptions | null>(null);
+  const [tiktokValid, setTiktokValid] = useState(false);
+  const onTiktokChange = useCallback((options: TikTokPostOptions | null, valid: boolean) => {
+    setTiktokOpts(options); setTiktokValid(valid);
+  }, []);
 
   function reloadCaps() {
     fetch(`/api/publishing/capabilities?contentType=${contentType}`).then((r) => r.json()).then((j) => { if (j.summary) setSummary(j.summary); });
@@ -92,13 +99,15 @@ export function PublishPromoteDrawer(props: DrawerProps) {
   const chosenDestinations = useCallback(() => Object.keys(picked).filter((k) => picked[k]), [picked]);
   const needsWp = chosenDestinations().some((d) => d === "wordpress" || d === "woocommerce");
   const needsWebhook = chosenDestinations().includes("custom_webhook");
+  const needsTiktok = chosenDestinations().includes("tiktok");
 
   const buildReq = useCallback(() => ({
     contentType, sourceKind, sourceId,
     destinations: chosenDestinations(),
     metadata: { title: meta.title, description: meta.description, caption: meta.caption, hashtags: meta.hashtags.split(/\s+/).filter(Boolean) },
     assetUrl, contentHtml, wpSiteId: wpSiteId || null, webhookUrl: webhookUrl || null,
-  }), [contentType, sourceKind, sourceId, chosenDestinations, meta, assetUrl, contentHtml, wpSiteId, webhookUrl]);
+    tiktok: chosenDestinations().includes("tiktok") ? tiktokOpts : undefined,
+  }), [contentType, sourceKind, sourceId, chosenDestinations, meta, assetUrl, contentHtml, wpSiteId, webhookUrl, tiktokOpts]);
 
   async function optimize() {
     const dests = chosenDestinations();
@@ -120,6 +129,7 @@ export function PublishPromoteDrawer(props: DrawerProps) {
     if (dests.length === 0) { setMsg({ kind: "error", text: "Select at least one destination." }); return; }
     if (needsWp && !wpSiteId) { setMsg({ kind: "error", text: "Choose which WordPress site to publish to." }); return; }
     if (needsWebhook && !webhookUrl) { setMsg({ kind: "error", text: "Enter your webhook URL." }); return; }
+    if (needsTiktok && !tiktokValid) { setMsg({ kind: "error", text: "Complete the TikTok post settings below (choose who can view the video)." }); return; }
     if (schedule && !scheduleFor) { setMsg({ kind: "error", text: "Pick a date and time." }); return; }
     setBusy(schedule ? "schedule" : "publish"); setMsg(null); setResults([]);
     try {
@@ -230,13 +240,14 @@ export function PublishPromoteDrawer(props: DrawerProps) {
                     </div>
                   )}
                   {needsWebhook && <Input value={webhookUrl} onChange={(e) => setWebhookUrl(e.target.value)} placeholder="https://your-site.com/webhook" />}
+                  {needsTiktok && <TikTokComposeSettings onChange={onTiktokChange} />}
                   {tab === "schedule" && (
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground">Publish at</label>
                       <Input type="datetime-local" value={scheduleFor} onChange={(e) => setScheduleFor(e.target.value)} />
                     </div>
                   )}
-                  <Button onClick={() => doPublish(tab === "schedule")} disabled={busy === "publish" || busy === "schedule"}>
+                  <Button onClick={() => doPublish(tab === "schedule")} disabled={busy === "publish" || busy === "schedule" || (needsTiktok && !tiktokValid)}>
                     {busy ? <Spinner className="h-4 w-4" /> : tab === "schedule" ? <CalendarClock className="h-4 w-4" /> : <Send className="h-4 w-4" />}
                     {tab === "schedule" ? "Schedule" : "Publish now"}
                   </Button>

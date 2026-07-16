@@ -9,6 +9,23 @@
  */
 import type { SocialPlatform, Visibility } from "@/lib/types";
 
+/** TikTok Direct-Post compliance options captured from the user before posting
+ *  (privacy choice + interaction/commercial-disclosure settings). Required by
+ *  TikTok's Content Posting API UX guidelines. */
+export type TikTokPostOptions = {
+  /** One of the account's creator_info privacy_level_options. */
+  privacyLevel: string;
+  disableComment?: boolean;
+  disableDuet?: boolean;
+  disableStitch?: boolean;
+  /** "Disclose video content" master toggle. */
+  commercialContent?: boolean;
+  /** Promoting the creator's own brand/business. */
+  yourBrand?: boolean;
+  /** Paid partnership / branded content (can't be private). */
+  brandedContent?: boolean;
+};
+
 export type PublishInput = {
   videoUrl: string;
   title: string;
@@ -21,6 +38,8 @@ export type PublishInput = {
   playlist?: string | null;
   category?: string | null;
   visibility: Visibility;
+  /** TikTok-only compliance settings (see TikTokPostOptions). */
+  tiktok?: TikTokPostOptions | null;
   account: {
     accessToken?: string | null;
     refreshToken?: string | null;

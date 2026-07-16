@@ -379,15 +379,24 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
               return { status: "failed", error: `TikTok: ${ci.error.message} (${ci.error.code})` };
             }
             const privacyOptions: string[] = ci.data?.privacy_level_options ?? [];
+            const opts = input.tiktok;
             const wantPublic = input.visibility === "public";
+            // Prefer the user's explicit choice (from the compliant UI) when it's a
+            // valid option; otherwise fall back to a sensible default.
             const privacyLevel =
-              wantPublic && privacyOptions.includes("PUBLIC_TO_EVERYONE")
-                ? "PUBLIC_TO_EVERYONE"
-                : privacyOptions.includes("SELF_ONLY")
-                  ? "SELF_ONLY"
-                  : privacyOptions[0];
+              opts?.privacyLevel && privacyOptions.includes(opts.privacyLevel)
+                ? opts.privacyLevel
+                : wantPublic && privacyOptions.includes("PUBLIC_TO_EVERYONE")
+                  ? "PUBLIC_TO_EVERYONE"
+                  : privacyOptions.includes("SELF_ONLY")
+                    ? "SELF_ONLY"
+                    : privacyOptions[0];
             if (!privacyLevel) {
               return { status: "failed", error: "TikTok: no posting privacy option is available for this account. While the app is unaudited, set the TikTok account to Private (Settings › Privacy › Account privacy), then retry." };
+            }
+            // TikTok forbids branded (paid-partnership) content on private posts.
+            if (opts?.brandedContent && privacyLevel === "SELF_ONLY") {
+              return { status: "failed", error: "TikTok: branded content can't be posted privately — choose a public/friends audience." };
             }
 
             const src = await fetchWithTimeout(input.videoUrl, {}, 60_000);
@@ -403,9 +412,12 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
                 post_info: {
                   title: caption(input).slice(0, 150),
                   privacy_level: privacyLevel,
-                  disable_comment: false,
-                  disable_duet: false,
-                  disable_stitch: false,
+                  // Respect the account's own interaction settings as well as the user's toggles.
+                  disable_comment: (opts?.disableComment ?? false) || !!ci.data?.comment_disabled,
+                  disable_duet: (opts?.disableDuet ?? false) || !!ci.data?.duet_disabled,
+                  disable_stitch: (opts?.disableStitch ?? false) || !!ci.data?.stitch_disabled,
+                  brand_content_toggle: opts?.brandedContent ?? false,
+                  brand_organic_toggle: opts?.yourBrand ?? false,
                 },
                 source_info: { source: "FILE_UPLOAD", video_size: videoSize, chunk_size: videoSize, total_chunk_count: 1 },
               }),
