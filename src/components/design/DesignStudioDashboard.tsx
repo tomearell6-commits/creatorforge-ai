@@ -105,7 +105,7 @@ export function DesignStudioDashboard() {
       {/* Industry Suites promo */}
       <Link href="/dashboard/design/industries" className="flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 transition-shadow hover:shadow-md dark:border-brand-900 dark:bg-brand-950/20">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
             <Building2 className="h-5 w-5" />
           </span>
           <div>

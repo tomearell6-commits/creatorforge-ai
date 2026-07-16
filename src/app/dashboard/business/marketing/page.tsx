@@ -29,7 +29,7 @@ export default function BusinessMarketingPage() {
         {TOOLS.map((t) => (
           <Card key={t.label} className="flex flex-col">
             <div className="flex items-center gap-3">
-              <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+              <span className="rounded-lg bg-brand-100 p-2 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
                 <t.icon className="h-5 w-5" />
               </span>
               <h2 className="font-bold">{t.label}</h2>

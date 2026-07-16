@@ -126,7 +126,7 @@ export function WeeklySummaryCard() {
       </div>
 
       {rec && (
-        <div className="flex items-start gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800 dark:bg-brand-950/30 dark:text-brand-300">
+        <div className="flex items-start gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-900 dark:bg-brand-950/30 dark:text-brand-300">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{rec}</span>
         </div>

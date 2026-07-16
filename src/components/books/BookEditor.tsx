@@ -130,7 +130,7 @@ export function BookEditor({ bookId }: { bookId: string }) {
           <ul className="space-y-1">
             {chapters.map((c, i) => (
               <li key={c.id}>
-                <button onClick={() => selectChapter(c)} className={`w-full rounded-md px-2 py-1.5 text-left text-sm ${c.id === activeId ? "bg-brand-50 text-brand-800 dark:bg-brand-950/40" : "hover:bg-muted"}`}>
+                <button onClick={() => selectChapter(c)} className={`w-full rounded-md px-2 py-1.5 text-left text-sm ${c.id === activeId ? "bg-brand-50 text-brand-900 dark:bg-brand-950/40" : "hover:bg-muted"}`}>
                   <span className="line-clamp-1">{i + 1}. {c.title}</span>
                   <span className="text-xs text-muted-foreground">{c.word_count} words</span>
                 </button>

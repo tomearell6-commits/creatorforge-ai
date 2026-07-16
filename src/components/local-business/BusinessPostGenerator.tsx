@@ -98,7 +98,7 @@ export function BusinessPostGenerator() {
           </select>
         </div>
         <Button className="mt-3" onClick={generate} disabled={busy === "generate"}>{busy === "generate" ? <><Spinner className="h-4 w-4" /> Generating…</> : <><Wand2 className="h-4 w-4" /> Generate post (~{LB_CREDIT_COSTS.post} cr)</>}</Button>
-        {msg && <p className={`mt-2 rounded-lg px-3 py-2 text-sm ${msg.kind === "success" ? "bg-brand-50 text-brand-800 dark:bg-brand-950/40 dark:text-brand-200" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{msg.text}</p>}
+        {msg && <p className={`mt-2 rounded-lg px-3 py-2 text-sm ${msg.kind === "success" ? "border-l-4 border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-100" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{msg.text}</p>}
       </Card>
 
       {out && (

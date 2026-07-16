@@ -26,7 +26,7 @@ function Stat({ label, value, href, icon: Icon }: { label: string; value: number
     <Link href={href} className="block">
       <Card className="transition-colors hover:border-brand-500/60">
         <div className="flex items-center gap-3">
-          <span className="rounded-lg bg-brand-100 p-2 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+          <span className="rounded-lg bg-brand-100 p-2 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
             <Icon className="h-4 w-4" />
           </span>
           <div>

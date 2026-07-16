@@ -18,7 +18,7 @@ type Result = {
 
 const AREA_LABEL: Record<NavAreaId, string> = { create: "Create", grow: "Grow", manage: "Manage" };
 const AREA_STYLE: Record<NavAreaId, string> = {
-  create: "bg-brand-100 text-brand-800 dark:bg-brand-950/50 dark:text-brand-300",
+  create: "bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300",
   grow: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
   manage: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
 };

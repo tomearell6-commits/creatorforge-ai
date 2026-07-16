@@ -126,13 +126,13 @@ export function BrowserStudio() {
           <div className="flex rounded-lg border border-border p-0.5">
             {DEVICE_PRESETS.map((d) => {
               const I = d.id === "desktop" ? Monitor : d.id === "tablet" ? Tablet : Smartphone;
-              return <button key={d.id} onClick={() => setDevice(d.id)} className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs ${device === d.id ? "bg-brand-100 text-brand-800 dark:bg-brand-950/50 dark:text-brand-300" : "text-muted-foreground hover:bg-muted"}`} title={d.label}><I className="h-3.5 w-3.5" />{d.label}</button>;
+              return <button key={d.id} onClick={() => setDevice(d.id)} className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs ${device === d.id ? "bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300" : "text-muted-foreground hover:bg-muted"}`} title={d.label}><I className="h-3.5 w-3.5" />{d.label}</button>;
             })}
           </div>
           {report?.ok && (
             <div className="ml-auto flex flex-wrap gap-2 text-xs">
               <a href={`/dashboard/seo/audit?url=${encodeURIComponent(report.url)}`} className="rounded-md border border-border px-2 py-1 hover:bg-muted">Full SEO Audit →</a>
-              <a href="/dashboard/seo/fixer" className="rounded-md border border-brand-400 px-2 py-1 text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950/20">Auto-fix on WordPress →</a>
+              <a href="/dashboard/seo/fixer" className="rounded-md border border-brand-400 px-2 py-1 text-brand-900 hover:bg-brand-50 dark:hover:bg-brand-950/20">Auto-fix on WordPress →</a>
               <a href="/dashboard/seo/sites" className="rounded-md border border-border px-2 py-1 hover:bg-muted">WordPress Sites →</a>
               <a href="/dashboard/build" className="rounded-md border border-border px-2 py-1 hover:bg-muted">Build Studio →</a>
             </div>

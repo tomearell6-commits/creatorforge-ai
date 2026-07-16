@@ -28,7 +28,7 @@ export function SeoBlogCalendar() {
   }, [articles]);
 
   function Chip({ a }: { a: Article }) {
-    const color = a.status === "published" ? "bg-green-100 text-green-700" : a.status === "failed" ? "bg-red-100 text-red-700" : "bg-brand-100 text-brand-700";
+    const color = a.status === "published" ? "bg-green-100 text-green-700" : a.status === "failed" ? "bg-red-100 text-red-700" : "bg-brand-100 text-brand-900";
     return <div className={`truncate rounded px-1.5 py-0.5 text-xs ${color}`} title={a.seo_title}>📝 {a.seo_title || a.main_keyword}</div>;
   }
   function Cell({ date, dim }: { date: Date; dim?: boolean }) {

@@ -43,7 +43,7 @@ const FILTERS: { key: keyof Template | "all"; label: string; values: string[] }[
 ];
 
 const DIFF_TINT: Record<string, string> = {
-  Beginner: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+  Beginner: "bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300",
   Intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
   Advanced: "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300",
 };

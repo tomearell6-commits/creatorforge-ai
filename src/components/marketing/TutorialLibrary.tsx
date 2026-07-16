@@ -41,7 +41,7 @@ export function TutorialLibrary({ tutorials }: { tutorials: any[] }) {
         </div>
         {selected && (
           <div className="mt-4">
-            <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-800 dark:bg-brand-500/15 dark:text-brand-300">{selected.category}</span>
+            <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-900 dark:bg-brand-500/15 dark:text-brand-300">{selected.category}</span>
             <h2 className="mt-2 text-xl font-bold text-ink dark:text-foreground">{selected.title}</h2>
             {selected.description && <p className="mt-1 text-sm text-muted-foreground">{selected.description}</p>}
           </div>

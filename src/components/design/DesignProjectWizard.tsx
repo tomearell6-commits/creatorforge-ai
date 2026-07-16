@@ -95,7 +95,7 @@ export function DesignProjectWizard() {
       {/* Set-up sub-steps */}
       <ol className="flex flex-wrap items-center gap-2 text-xs">
         {STEPS.map((s, i) => (
-          <li key={s} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${i === step ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : i < step ? "text-brand-600" : "text-muted-foreground"}`}>
+          <li key={s} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${i === step ? "bg-brand-100 text-brand-900 dark:bg-brand-950/40" : i < step ? "text-brand-600" : "text-muted-foreground"}`}>
             {i < step ? <Check className="h-3 w-3" /> : <span className="font-semibold">{i + 1}</span>} {s}
           </li>
         ))}
@@ -107,7 +107,7 @@ export function DesignProjectWizard() {
             <h2 className="font-semibold">Choose a design category</h2>
             <div className="flex flex-wrap gap-2">
               {DESIGN_GROUPS.map((g) => (
-                <button key={g.id} onClick={() => setGroup(g.id)} className={`rounded-full border px-3 py-1.5 text-sm ${g.id === group ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}>{g.name}</button>
+                <button key={g.id} onClick={() => setGroup(g.id)} className={`rounded-full border px-3 py-1.5 text-sm ${g.id === group ? "border-brand-500 bg-brand-50 text-brand-900 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}>{g.name}</button>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

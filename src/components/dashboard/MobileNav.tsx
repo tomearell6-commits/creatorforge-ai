@@ -35,7 +35,7 @@ export function MobileNav({ isAdmin = false, plan = "free" }: { isAdmin?: boolea
           {/* Drawer */}
           <aside className="cf-slide-in relative flex h-full w-72 max-w-[85%] flex-col border-r border-border bg-card shadow-xl">
             <div className="flex h-16 items-center justify-between border-b border-border px-4">
-              <Logo href="/dashboard" />
+              <Logo href="/" />
               <button onClick={() => setOpen(false)} aria-label="Close menu" className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-muted">
                 <X className="h-5 w-5" />
               </button>

@@ -54,7 +54,7 @@ export function CreateHub({ initialGroup }: { initialGroup?: string }) {
           return (
             <Card key={c.categoryId} className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-100 text-brand-700"><Icon className="h-5 w-5" /></span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-100 text-brand-900"><Icon className="h-5 w-5" /></span>
                 <div className="min-w-0">
                   <div className="truncate font-semibold">{c.name}</div>
                   <div className="text-xs text-muted-foreground">{c.groupName.replace("AI ", "")}</div>

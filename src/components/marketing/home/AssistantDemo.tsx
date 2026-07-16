@@ -52,7 +52,7 @@ export function AssistantDemo() {
           <div className="space-y-3">
             {CHAT.map((m, i) => (
               <div key={i} className={`flex gap-2 ${m.from === "user" ? "flex-row-reverse" : ""}`}>
-                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${m.from === "user" ? "bg-muted text-foreground" : "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300"}`}>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${m.from === "user" ? "bg-muted text-foreground" : "bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300"}`}>
                   {m.from === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                 </span>
                 <p className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${m.from === "user" ? "bg-brand-500 text-white" : "bg-muted text-foreground"}`}>{m.text}</p>

@@ -8,7 +8,7 @@ import type { Notification } from "@/lib/types";
 
 const RED = "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300";
 const AMBER = "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
-const BRAND = "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300";
+const BRAND = "bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300";
 const BLUE = "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
 
 // One semantic Lucide icon (+ tint) per notification type — replaces emoji.

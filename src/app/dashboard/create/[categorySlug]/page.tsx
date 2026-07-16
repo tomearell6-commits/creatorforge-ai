@@ -64,7 +64,7 @@ export default async function CategoryWorkflowPage({ params }: { params: Promise
         <ol className="mt-3 space-y-2">
           {workflow.steps.map((step, i) => (
             <li key={i} className="flex items-start gap-3 text-sm">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">{i + 1}</span>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-900">{i + 1}</span>
               <span>{step}</span>
             </li>
           ))}

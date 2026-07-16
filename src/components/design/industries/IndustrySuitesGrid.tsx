@@ -41,7 +41,7 @@ export function IndustrySuitesGrid() {
               className={`flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-shadow ${active ? "hover:shadow-md" : "opacity-70"}`}
             >
               <div className="flex items-start justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
                   <Icon className="h-5 w-5" />
                 </span>
                 {active

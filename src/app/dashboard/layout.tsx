@@ -24,7 +24,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex flex-1 flex-col">
           <Topbar />
           <DashboardPromptBar />
-          <main className="flex-1 p-6">
+          {/* pb-28 keeps the floating Forge AI button from covering page action
+              buttons (e.g. Send) that sit at the very bottom of a page. */}
+          <main className="flex-1 p-6 pb-28">
             <Breadcrumbs />
             {children}
           </main>

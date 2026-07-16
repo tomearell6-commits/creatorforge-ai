@@ -79,7 +79,7 @@ export function AdminTutorials() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs ${t.is_published ? "bg-brand-100 text-brand-700" : "bg-muted text-muted-foreground"}`}>{t.is_published ? "Published" : "Hidden"}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs ${t.is_published ? "bg-brand-100 text-brand-900" : "bg-muted text-muted-foreground"}`}>{t.is_published ? "Published" : "Hidden"}</span>
               <Button size="sm" variant="ghost" disabled={busyThumb === t.id} onClick={() => genThumb(t.id)}>
                 {busyThumb === t.id ? "Generating…" : "AI thumbnail (8cr)"}
               </Button>

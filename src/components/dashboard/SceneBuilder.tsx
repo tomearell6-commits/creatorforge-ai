@@ -278,7 +278,7 @@ function Badge({ active, icon, label }: { active: boolean; icon: React.ReactNode
     <span
       className={cn(
         "hidden items-center gap-1 rounded-full px-2 py-0.5 text-xs sm:inline-flex",
-        active ? "bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300" : "bg-muted text-muted-foreground"
+        active ? "bg-brand-100 text-brand-900 dark:bg-brand-900/40 dark:text-brand-300" : "bg-muted text-muted-foreground"
       )}
       title={label}
     >

@@ -77,7 +77,7 @@ export function CampaignWizard() {
           {CHOICES.map((p) => <button key={p} onClick={() => setPlatforms((s) => ({ ...s, [p]: !s[p] }))} className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs ${platforms[p] ? "border-brand-600 bg-brand-50 dark:bg-brand-900/20" : "border-border"}`}><Icon slug={p} /> {SOCIAL_PROVIDERS[p].name}</button>)}
         </div>
         <Button className="mt-3" onClick={build} disabled={busy === "build"}>{busy === "build" ? <><Spinner className="h-4 w-4" /> Building…</> : <><Megaphone className="h-4 w-4" /> Build campaign (~{SOCIAL_CREDIT_COSTS.campaign} cr)</>}</Button>
-        {msg && <p className={`mt-2 rounded-lg px-3 py-2 text-sm ${msg.kind === "success" ? "bg-brand-50 text-brand-800 dark:bg-brand-950/40 dark:text-brand-200" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{msg.text}</p>}
+        {msg && <p className={`mt-2 rounded-lg px-3 py-2 text-sm ${msg.kind === "success" ? "border-l-4 border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-100" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{msg.text}</p>}
       </Card>
 
       {variations.map((v) => {

@@ -14,7 +14,7 @@ export function SEOAuditHistory({ audits, onOpen }: { audits: AuditRow[]; onOpen
             <span className="truncate">{a.website_url.replace(/^https?:\/\//, "")}</span>
             <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
               <span className="capitalize">{a.audit_type}</span>
-              {a.overall_score != null && <span className={`rounded-full px-2 py-0.5 font-medium ${a.overall_score >= 80 ? "bg-brand-100 text-brand-700" : a.overall_score >= 50 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{a.overall_score}</span>}
+              {a.overall_score != null && <span className={`rounded-full px-2 py-0.5 font-medium ${a.overall_score >= 80 ? "bg-brand-100 text-brand-900" : a.overall_score >= 50 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>{a.overall_score}</span>}
             </span>
           </button>
         ))}

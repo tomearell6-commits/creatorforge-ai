@@ -33,7 +33,7 @@ export function AutopilotShowcase() {
           return (
             <Reveal key={it.title} delay={i * 90}>
               <div className="relative flex items-center gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-                <div className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+                <div className="z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
                   <Icon className="h-5 w-5" />
                 </div>
                 <div>

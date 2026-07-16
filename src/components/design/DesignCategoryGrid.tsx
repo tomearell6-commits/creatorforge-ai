@@ -26,7 +26,7 @@ export function DesignCategoryGrid({ initialGroup }: { initialGroup?: string }) 
             <button
               key={g.id}
               onClick={() => setActive(g.id)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${on ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${on ? "border-brand-500 bg-brand-50 text-brand-900 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}
             >
               <Icon className="h-4 w-4" /> {g.name}
             </button>

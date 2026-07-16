@@ -68,7 +68,7 @@ export function AdCampaignWizard() {
   return (
     <Card className="space-y-5">
       <div className="flex flex-wrap gap-1.5">
-        {STEPS.map((s, i) => <span key={s} className={`rounded-full px-2.5 py-1 text-xs ${i === step ? "bg-brand-600 text-white" : i < step ? "bg-brand-100 text-brand-700" : "bg-muted text-muted-foreground"}`}>{i + 1}. {s}</span>)}
+        {STEPS.map((s, i) => <span key={s} className={`rounded-full px-2.5 py-1 text-xs ${i === step ? "bg-brand-600 text-white" : i < step ? "bg-brand-100 text-brand-900" : "bg-muted text-muted-foreground"}`}>{i + 1}. {s}</span>)}
       </div>
 
       {step === 0 && (
@@ -97,11 +97,11 @@ export function AdCampaignWizard() {
       )}
 
       {step === 2 && (
-        <div><Label>Advertising platforms</Label><div className="flex flex-wrap gap-2">{AD_PLATFORMS.map((p) => <button key={p.id} type="button" onClick={() => setF({ ...f, platforms: toggle(f.platforms, p.id) })} className={`rounded-full border px-3 py-1.5 text-sm ${f.platforms.includes(p.id) ? "border-brand-500 bg-brand-50 font-medium text-brand-800" : "border-border hover:bg-muted"}`}>{p.name}</button>)}</div></div>
+        <div><Label>Advertising platforms</Label><div className="flex flex-wrap gap-2">{AD_PLATFORMS.map((p) => <button key={p.id} type="button" onClick={() => setF({ ...f, platforms: toggle(f.platforms, p.id) })} className={`rounded-full border px-3 py-1.5 text-sm ${f.platforms.includes(p.id) ? "border-brand-500 bg-brand-50 font-medium text-brand-900" : "border-border hover:bg-muted"}`}>{p.name}</button>)}</div></div>
       )}
 
       {step === 3 && (
-        <div><Label>Creative types (supported by your platforms)</Label><div className="flex flex-wrap gap-2">{formatOptions.map((c) => <button key={c.id} type="button" onClick={() => setF({ ...f, creative_types: toggle(f.creative_types, c.id) })} className={`rounded-full border px-3 py-1.5 text-sm ${f.creative_types.includes(c.id) ? "border-brand-500 bg-brand-50 font-medium text-brand-800" : "border-border hover:bg-muted"}`}>{c.label}</button>)}</div></div>
+        <div><Label>Creative types (supported by your platforms)</Label><div className="flex flex-wrap gap-2">{formatOptions.map((c) => <button key={c.id} type="button" onClick={() => setF({ ...f, creative_types: toggle(f.creative_types, c.id) })} className={`rounded-full border px-3 py-1.5 text-sm ${f.creative_types.includes(c.id) ? "border-brand-500 bg-brand-50 font-medium text-brand-900" : "border-border hover:bg-muted"}`}>{c.label}</button>)}</div></div>
       )}
 
       {step === 4 && (

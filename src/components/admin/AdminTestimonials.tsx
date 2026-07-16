@@ -61,7 +61,7 @@ export function AdminTestimonials() {
                 <Button size="sm" variant="ghost" className="text-red-600" onClick={() => remove(t.id)}>Delete</Button>
               </div>
             </div>
-            <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${t.is_published ? "bg-brand-100 text-brand-700" : "bg-muted text-muted-foreground"}`}>{t.is_published ? "Published" : "Hidden"}</span>
+            <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${t.is_published ? "bg-brand-100 text-brand-900" : "bg-muted text-muted-foreground"}`}>{t.is_published ? "Published" : "Hidden"}</span>
           </Card>
         ))}
       </section>

@@ -43,7 +43,7 @@ export function CampaignWizard() {
       {/* Step indicator */}
       <div className="flex flex-wrap gap-1.5">
         {STEPS.map((s, i) => (
-          <span key={s} className={`rounded-full px-2.5 py-1 text-xs ${i === step ? "bg-brand-600 text-white" : i < step ? "bg-brand-100 text-brand-700" : "bg-muted text-muted-foreground"}`}>{i + 1}. {s}</span>
+          <span key={s} className={`rounded-full px-2.5 py-1 text-xs ${i === step ? "bg-brand-600 text-white" : i < step ? "bg-brand-100 text-brand-900" : "bg-muted text-muted-foreground"}`}>{i + 1}. {s}</span>
         ))}
       </div>
 
@@ -118,7 +118,7 @@ function Chips({ title, options, selected, onToggle }: { title: string; options:
       <Label>{title}</Label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
-          <button key={o.id} type="button" onClick={() => onToggle(o.id)} className={`rounded-full border px-3 py-1.5 text-sm ${selected.includes(o.id) ? "border-brand-500 bg-brand-50 font-medium text-brand-800" : "border-border hover:bg-muted"}`}>{o.label}</button>
+          <button key={o.id} type="button" onClick={() => onToggle(o.id)} className={`rounded-full border px-3 py-1.5 text-sm ${selected.includes(o.id) ? "border-brand-500 bg-brand-50 font-medium text-brand-900" : "border-border hover:bg-muted"}`}>{o.label}</button>
         ))}
       </div>
     </div>

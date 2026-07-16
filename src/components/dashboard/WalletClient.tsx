@@ -94,7 +94,7 @@ export function WalletClient() {
           {SUPPORTED_CRYPTO.map((c) => (
             <button key={c.code} onClick={() => setCoin(c.code)}
               className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
-                coin === c.code ? "border-brand-500 bg-brand-50 font-semibold text-brand-800" : "border-border hover:bg-muted"}`}>
+                coin === c.code ? "border-brand-500 bg-brand-50 font-semibold text-brand-900" : "border-border hover:bg-muted"}`}>
               <span className="mr-1">{c.emoji}</span>{c.code}
             </button>
           ))}
@@ -109,7 +109,7 @@ export function WalletClient() {
             <Card key={p.slug} className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">{p.name}</h3>
-                {p.tag && <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-800">{p.tag}</span>}
+                {p.tag && <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-900">{p.tag}</span>}
               </div>
               <p className="text-3xl font-bold">${p.usdPrice}</p>
               <p className="text-sm text-muted-foreground">

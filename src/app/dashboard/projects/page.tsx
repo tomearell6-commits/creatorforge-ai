@@ -38,7 +38,7 @@ export default async function ProjectsPage() {
               <Link key={p.id} href={`/dashboard/projects/${p.id}`}>
                 <Card className="h-full transition-colors hover:border-brand-600">
                   <div className="flex items-center justify-between">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
                       <CategoryIcon slug={cat?.slug} className="h-5 w-5" />
                     </span>
                     <span className="rounded-full bg-muted px-2.5 py-1 text-xs capitalize">

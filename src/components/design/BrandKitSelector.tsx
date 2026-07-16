@@ -128,7 +128,7 @@ export function BrandKitSelector({
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex">{k.colors.slice(0, 6).map((c, i) => <span key={i} className="h-5 w-5 rounded-full border border-border" style={{ background: c }} />)}</span>
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{k.name}{k.is_default && <span className="ml-2 rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] text-brand-700">default</span>}</div>
+                    <div className="truncate text-sm font-medium">{k.name}{k.is_default && <span className="ml-2 rounded-full bg-brand-100 px-1.5 py-0.5 text-[10px] text-brand-900">default</span>}</div>
                     <div className="truncate text-xs text-muted-foreground">{k.fonts.join(" · ") || "No fonts"}</div>
                   </div>
                 </div>

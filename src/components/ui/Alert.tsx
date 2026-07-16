@@ -4,11 +4,14 @@ import type { ReactNode } from "react";
 
 type Variant = "info" | "success" | "warning" | "error";
 
-const styles: Record<Variant, { box: string; icon: typeof Info }> = {
-  info: { box: "bg-blue-50 text-blue-800 dark:bg-blue-950/30 dark:text-blue-300", icon: Info },
-  success: { box: "bg-brand-50 text-brand-800 dark:bg-brand-950/30 dark:text-brand-300", icon: CheckCircle2 },
-  warning: { box: "bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300", icon: AlertTriangle },
-  error: { box: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300", icon: XCircle },
+// Semantic status colors (NOT the brand lime, which is a decorative accent):
+// a thick colored left border + saturated icon + high-contrast text so every
+// message reads clearly in light and dark. Success = emerald green.
+const styles: Record<Variant, { box: string; iconColor: string; icon: typeof Info }> = {
+  info: { box: "border-l-4 border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100", iconColor: "text-blue-600 dark:text-blue-400", icon: Info },
+  success: { box: "border-l-4 border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-100", iconColor: "text-emerald-600 dark:text-emerald-400", icon: CheckCircle2 },
+  warning: { box: "border-l-4 border-amber-500 bg-amber-50 text-amber-900 dark:border-amber-400 dark:bg-amber-950/40 dark:text-amber-100", iconColor: "text-amber-600 dark:text-amber-400", icon: AlertTriangle },
+  error: { box: "border-l-4 border-red-500 bg-red-50 text-red-900 dark:border-red-400 dark:bg-red-950/40 dark:text-red-100", iconColor: "text-red-600 dark:text-red-400", icon: XCircle },
 };
 
 /**
@@ -29,13 +32,13 @@ export function Alert({
   action?: ReactNode;
   className?: string;
 }) {
-  const { box, icon: Icon } = styles[variant];
+  const { box, iconColor, icon: Icon } = styles[variant];
   return (
     <div
       role={variant === "error" || variant === "warning" ? "alert" : "status"}
       className={cn("flex items-start gap-3 rounded-lg px-4 py-3 text-sm", box, className)}
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} aria-hidden />
       <div className="min-w-0 flex-1">
         {title && <p className="font-semibold">{title}</p>}
         {children && <div className={cn(title && "mt-0.5 opacity-90")}>{children}</div>}

@@ -30,7 +30,7 @@ export function FeatureShowcase() {
         return (
           <Reveal key={f.title} delay={(i % 3) * 70}>
             <div className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-400 hover:shadow-md">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-700 transition-transform duration-300 group-hover:scale-110 dark:bg-brand-950/50 dark:text-brand-300">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-900 transition-transform duration-300 group-hover:scale-110 dark:bg-brand-950/50 dark:text-brand-300">
                 <Icon className="h-5 w-5" />
               </div>
               <h3 className="font-semibold text-foreground">{f.title}</h3>

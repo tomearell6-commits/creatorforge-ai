@@ -100,7 +100,7 @@ export function RealEstateSuite() {
       {/* Suite header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
             <Building2 className="h-6 w-6" />
           </span>
           <div>
@@ -150,7 +150,7 @@ export function RealEstateSuite() {
             <div className="flex flex-wrap gap-2">
               {REAL_ESTATE_GROUPS.map((g) => (
                 <button key={g.id} onClick={() => setActiveGroup(g.id)}
-                  className={`rounded-full border px-3 py-1.5 text-sm ${g.id === activeGroup ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                  className={`rounded-full border px-3 py-1.5 text-sm ${g.id === activeGroup ? "border-brand-500 bg-brand-50 text-brand-900 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
                   {g.name}
                 </button>
               ))}

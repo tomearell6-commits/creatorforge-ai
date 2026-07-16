@@ -32,7 +32,7 @@ export function BuildCategoryGrid() {
           const Icon = GROUP_ICON[g.id] ?? Globe;
           return (
             <button key={g.id} onClick={() => setActive(g.id)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${g.id === active ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${g.id === active ? "border-brand-500 bg-brand-50 text-brand-900 dark:bg-brand-950/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
               <Icon className="h-4 w-4" /> {g.name}
             </button>
           );
@@ -138,9 +138,9 @@ export function BuildTemplateGallery() {
       <div className="flex flex-wrap items-center gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search templates…" aria-label="Search templates"
           className="h-9 w-56 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-brand-500" />
-        <button onClick={() => setCat("all")} className={`rounded-full px-3 py-1 text-xs ${cat === "all" ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>All</button>
+        <button onClick={() => setCat("all")} className={`rounded-full px-3 py-1 text-xs ${cat === "all" ? "bg-brand-100 text-brand-900 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>All</button>
         {BUILD_GROUPS.map((g) => (
-          <button key={g.id} onClick={() => setCat(g.id)} className={`rounded-full px-3 py-1 text-xs ${cat === g.id ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>{g.name}</button>
+          <button key={g.id} onClick={() => setCat(g.id)} className={`rounded-full px-3 py-1 text-xs ${cat === g.id ? "bg-brand-100 text-brand-900 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>{g.name}</button>
         ))}
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

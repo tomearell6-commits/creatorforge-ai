@@ -181,7 +181,7 @@ export function DraftReplyEditor() {
             <div className="text-sm font-semibold">Re: {d.email_messages?.subject ?? "(no subject)"} <span className="text-xs font-normal text-muted-foreground">→ {d.email_messages?.from_address}</span></div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="rounded-full bg-muted px-2 py-0.5 capitalize">{d.tone}</span>
-              <span className={`rounded-full px-2 py-0.5 capitalize ${d.status === "sent" ? "bg-brand-100 text-brand-700" : "bg-muted"}`}>{d.status}</span>
+              <span className={`rounded-full px-2 py-0.5 capitalize ${d.status === "sent" ? "bg-brand-100 text-brand-900" : "bg-muted"}`}>{d.status}</span>
             </div>
           </div>
           {editing === d.id ? (

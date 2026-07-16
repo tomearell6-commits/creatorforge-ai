@@ -157,9 +157,9 @@ export function OpsHealth() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search providers…" aria-label="Search providers" className="h-9 w-52 rounded-lg border border-border bg-background px-3 text-sm" />
-        <button onClick={() => setCat("all")} className={`rounded-full px-3 py-1 text-xs ${cat === "all" ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>All</button>
+        <button onClick={() => setCat("all")} className={`rounded-full px-3 py-1 text-xs ${cat === "all" ? "bg-brand-100 text-brand-900 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>All</button>
         {OPS_CATEGORIES.map((c) => (
-          <button key={c.id} onClick={() => setCat(c.id)} className={`rounded-full px-3 py-1 text-xs ${cat === c.id ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>{c.label}</button>
+          <button key={c.id} onClick={() => setCat(c.id)} className={`rounded-full px-3 py-1 text-xs ${cat === c.id ? "bg-brand-100 text-brand-900 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>{c.label}</button>
         ))}
       </div>
       <div className="grid gap-3 lg:grid-cols-2">
@@ -381,7 +381,7 @@ export function OpsCalendar() {
             <div key={i} className={`min-h-[72px] rounded-lg border p-1 text-left ${day ? "border-border bg-card" : "border-transparent"}`}>
               {day && <div className="text-[11px] text-muted-foreground">{day}</div>}
               {evts.map((e, j) => (
-                <div key={j} className={`mt-0.5 truncate rounded px-1 py-0.5 text-[10px] ${e.critical ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300" : e.kind === "rotation" ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" : "bg-brand-100 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300"}`} title={e.label}>
+                <div key={j} className={`mt-0.5 truncate rounded px-1 py-0.5 text-[10px] ${e.critical ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300" : e.kind === "rotation" ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" : "bg-brand-100 text-brand-900 dark:bg-brand-950/40 dark:text-brand-300"}`} title={e.label}>
                   {e.label}
                 </div>
               ))}

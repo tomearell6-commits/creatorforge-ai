@@ -23,7 +23,7 @@ export function BookSettings() {
           {ROWS.map(([name, cost, desc]) => (
             <div key={name} className="flex items-center justify-between gap-4 px-3 py-2">
               <div><p className="text-sm font-medium">{name}</p><p className="text-xs text-muted-foreground">{desc}</p></div>
-              <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-semibold text-brand-800 dark:bg-brand-950/40">{cost === 1 && name === "Export" ? "Free" : `${cost} cr`}</span>
+              <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-semibold text-brand-900 dark:bg-brand-950/40">{cost === 1 && name === "Export" ? "Free" : `${cost} cr`}</span>
             </div>
           ))}
         </div>

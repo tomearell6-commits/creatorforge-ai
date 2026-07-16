@@ -86,7 +86,7 @@ export default function AffiliatePage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {STEPS.map((s) => (
               <div key={s.n} className="rounded-2xl border border-border bg-card p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">{s.n}</div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">{s.n}</div>
                 <h3 className="mt-4 text-lg font-bold text-ink dark:text-foreground">{s.title}</h3>
                 <p className="mt-2 text-sm text-ink-soft dark:text-muted-foreground">{s.body}</p>
               </div>

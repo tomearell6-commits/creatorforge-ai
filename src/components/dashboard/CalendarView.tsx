@@ -53,7 +53,7 @@ export function CalendarView() {
   function PostChip({ p }: { p: Post }) {
     return (
       <div draggable onDragStart={(e) => e.dataTransfer.setData("text/plain", p.id)}
-        className="flex cursor-grab items-center gap-1 rounded bg-brand-50 px-1.5 py-0.5 text-xs text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
+        className="flex cursor-grab items-center gap-1 rounded bg-brand-50 px-1.5 py-0.5 text-xs text-brand-900 dark:bg-brand-900/30 dark:text-brand-300"
         title={`${p.publish_jobs?.title ?? "Post"} • ${new Date(p.scheduled_at).toLocaleString()} • ${p.status}`}>
         <PlatformIcon platform={p.platform} className="h-3 w-3 shrink-0" />
         <span className="truncate">{p.publish_jobs?.title ?? p.platform}</span>

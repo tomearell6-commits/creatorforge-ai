@@ -51,7 +51,7 @@ export function Hero() {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 pb-12 pt-20 text-center sm:pt-28">
-        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-semibold text-brand-700 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-300">
+        <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-semibold text-brand-900 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-300">
           <Sparkles className="h-4 w-4" /> The AI Business Operating System
         </span>
         <h1 className="text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-ink dark:text-foreground sm:text-6xl">

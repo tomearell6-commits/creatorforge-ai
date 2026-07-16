@@ -40,8 +40,8 @@ export function StudioShowcase() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-800 dark:bg-brand-950/30 dark:text-brand-300">
-                <Activity className="h-3.5 w-3.5 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-100">
+                <Activity className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 <span className="truncate">{ACTIVITY[studio.id]}</span>
               </div>
 

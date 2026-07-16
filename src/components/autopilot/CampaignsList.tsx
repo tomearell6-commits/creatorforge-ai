@@ -66,7 +66,7 @@ export function CampaignsList() {
               <p className="text-xs text-muted-foreground">{c.industry || "—"} · {(c.content_types ?? []).length} content type(s) · {(c.destinations ?? []).length} destination(s)</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${c.mode === "full" ? "bg-brand-100 text-brand-800" : c.mode === "assisted" ? "bg-sky-100 text-sky-800" : "bg-muted text-muted-foreground"}`}>{c.mode}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${c.mode === "full" ? "bg-brand-100 text-brand-900" : c.mode === "assisted" ? "bg-sky-100 text-sky-800" : "bg-muted text-muted-foreground"}`}>{c.mode}</span>
               <Badge variant={c.status === "active" ? "success" : "warning"}>{c.status}</Badge>
             </div>
           </div>

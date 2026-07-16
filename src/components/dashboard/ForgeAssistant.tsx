@@ -182,7 +182,7 @@ export function ForgeAssistant() {
                 <p className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Guided tours (free)</p>
                 <div className="flex flex-wrap gap-1.5">
                   {TOUR_ACTIONS.map((t) => (
-                    <button key={t.tour} onClick={() => startTour(t.tour)} className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs text-brand-800 hover:bg-brand-100">{t.label}</button>
+                    <button key={t.tour} onClick={() => startTour(t.tour)} className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-xs text-brand-900 hover:bg-brand-100">{t.label}</button>
                   ))}
                 </div>
               </div>

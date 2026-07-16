@@ -78,7 +78,7 @@ export function DesignTemplateGallery() {
           className="w-56 rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-brand-500" />
         <div className="flex gap-1">
           {DIFFICULTIES.map((d) => (
-            <button key={d} onClick={() => setDifficulty(d)} className={`rounded-full px-3 py-1 text-xs capitalize ${d === difficulty ? "bg-brand-100 text-brand-700 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>{d}</button>
+            <button key={d} onClick={() => setDifficulty(d)} className={`rounded-full px-3 py-1 text-xs capitalize ${d === difficulty ? "bg-brand-100 text-brand-900 dark:bg-brand-950/40" : "text-muted-foreground hover:bg-muted"}`}>{d}</button>
           ))}
         </div>
       </div>
