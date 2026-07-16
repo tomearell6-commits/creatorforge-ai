@@ -49,10 +49,21 @@ export function ForgeAssistant() {
   const [credits, setCredits] = useState<number | null>(null);
   const [estCost, setEstCost] = useState<{ credits: number; willCharge: boolean; realAI: boolean } | null>(null);
   const [needCredits, setNeedCredits] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Only render inside the dashboard.
   const inDashboard = pathname?.startsWith("/dashboard");
+
+  // Step aside for modal drawers/dialogs (Publish, Connect, etc.) so the
+  // floating button never covers their content (e.g. the publish result badge).
+  useEffect(() => {
+    const check = () => setDialogOpen(!!document.querySelector('[role="dialog"][aria-modal="true"]'));
+    check();
+    const mo = new MutationObserver(check);
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -114,7 +125,7 @@ export function ForgeAssistant() {
     await fetch("/api/assistant/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId, rating }) });
   }
 
-  if (!inDashboard) return null;
+  if (!inDashboard || dialogOpen) return null;
 
   if (!open) {
     return (
