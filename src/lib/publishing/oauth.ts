@@ -56,6 +56,8 @@ export function oauthConfigured(platform: SocialPlatform): boolean {
 }
 
 function redirectUri(platform: SocialPlatform): string {
+  // TikTok forbids query parameters in redirect URIs, so it uses a clean path.
+  if (platform === "tiktok") return `${process.env.NEXT_PUBLIC_APP_URL}/api/social/callback/tiktok`;
   return `${process.env.NEXT_PUBLIC_APP_URL}/api/social/callback?platform=${platform}`;
 }
 
