@@ -368,6 +368,28 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             // FILE_UPLOAD (push_by_file): upload the video bytes directly to
             // TikTok. Avoids pull_by_url domain verification entirely.
             if (!input.videoUrl) return { status: "failed", error: "TikTok needs a rendered video." };
+
+            // TikTok's Direct Post flow requires querying creator info first; it
+            // also tells us which privacy levels this account actually allows
+            // (an unaudited app only gets SELF_ONLY, and only for PRIVATE accounts).
+            const ci = await (await fetchWithTimeout("https://open.tiktokapis.com/v2/post/publish/creator_info/query/", {
+              method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            }, 20_000)).json();
+            if (ci.error && ci.error.code !== "ok") {
+              return { status: "failed", error: `TikTok: ${ci.error.message} (${ci.error.code})` };
+            }
+            const privacyOptions: string[] = ci.data?.privacy_level_options ?? [];
+            const wantPublic = input.visibility === "public";
+            const privacyLevel =
+              wantPublic && privacyOptions.includes("PUBLIC_TO_EVERYONE")
+                ? "PUBLIC_TO_EVERYONE"
+                : privacyOptions.includes("SELF_ONLY")
+                  ? "SELF_ONLY"
+                  : privacyOptions[0];
+            if (!privacyLevel) {
+              return { status: "failed", error: "TikTok: no posting privacy option is available for this account. While the app is unaudited, set the TikTok account to Private (Settings › Privacy › Account privacy), then retry." };
+            }
+
             const src = await fetchWithTimeout(input.videoUrl, {}, 60_000);
             if (!src.ok) return { status: "failed", error: `TikTok: couldn't fetch the video (${src.status}).` };
             const videoBytes = Buffer.from(await src.arrayBuffer());
@@ -378,11 +400,26 @@ function makeProvider(platform: SocialPlatform): PublishProvider {
             const init = await (await fetchWithTimeout("https://open.tiktokapis.com/v2/post/publish/video/init/", {
               method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
               body: JSON.stringify({
-                post_info: { title: caption(input).slice(0, 150), privacy_level: input.visibility === "public" ? "PUBLIC_TO_EVERYONE" : "SELF_ONLY" },
+                post_info: {
+                  title: caption(input).slice(0, 150),
+                  privacy_level: privacyLevel,
+                  disable_comment: false,
+                  disable_duet: false,
+                  disable_stitch: false,
+                },
                 source_info: { source: "FILE_UPLOAD", video_size: videoSize, chunk_size: videoSize, total_chunk_count: 1 },
               }),
             }, 30_000)).json();
-            if (init.error && init.error.code !== "ok") return { status: "failed", error: `TikTok: ${init.error.message}` };
+            if (init.error && init.error.code !== "ok") {
+              const code = init.error.code as string;
+              const hint =
+                code === "unaudited_client_can_only_post_to_private_accounts"
+                  ? " — the app is still unaudited, so it can only post to a PRIVATE TikTok account. Set the account to Private (Settings › Privacy › Account privacy), then retry."
+                  : code === "spam_risk_too_many_posts"
+                    ? " — TikTok's daily post cap for this account was reached; try again later."
+                    : "";
+              return { status: "failed", error: `TikTok: ${init.error.message}${hint} (${code})` };
+            }
             const uploadUrl = init.data?.upload_url as string | undefined;
             const publishId = init.data?.publish_id as string | undefined;
             if (!uploadUrl) return { status: "failed", error: "TikTok: no upload URL returned." };
