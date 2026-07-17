@@ -107,6 +107,17 @@ export const BUILD_CREDIT_COSTS = {
   heroImage: 5,        // AI hero image for a published site (opt-in)
 } as const;
 
+/**
+ * Custom domains for published sites are a Business/Enterprise perk — the main
+ * reason to upgrade. Plan ids: free | creator (Starter) | pro (Business) |
+ * agency (Enterprise).
+ */
+export const CUSTOM_DOMAIN_PLANS = ["pro", "agency"] as const;
+
+export function planAllowsCustomDomain(plan: string | null | undefined): boolean {
+  return (CUSTOM_DOMAIN_PLANS as readonly string[]).includes(plan ?? "free");
+}
+
 export const BUILD_CREDIT_REASONS = {
   fullPackage: "BUILD_PACKAGE",
   copyOnly: "BUILD_COPY",

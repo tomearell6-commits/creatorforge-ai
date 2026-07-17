@@ -13,6 +13,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { readJsonBody, apiError } from "@/lib/api/respond";
+import { removeDomain } from "@/lib/build/vercel-domains";
 
 export const dynamic = "force-dynamic";
 
@@ -66,12 +67,18 @@ export async function POST(request: Request) {
     const paths = (listed ?? []).map((f) => `${site.storage_path}/${f.name}`);
     if (paths.length) await admin.storage.from(BUCKET).remove(paths);
   }
+  // Detach any custom domain too — a removed site must not keep a domain
+  // pointed at our project.
+  if (site.custom_domain) await removeDomain(site.custom_domain);
 
   const { data, error } = await admin
     .from("build_sites")
     .update({
       status: "removed",
       live_url: null,
+      custom_domain: null,
+      domain_status: "none",
+      domain_verified_at: null,
       removed_reason: reason.slice(0, 300),
       removed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

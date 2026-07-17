@@ -9,10 +9,12 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { SITE_TEMPLATES, type SiteTemplateId } from "@/lib/build/site";
 import { BUILD_CREDIT_COSTS } from "@/config/buildStudio";
+import { CustomDomainPanel } from "@/components/build/CustomDomainPanel";
 
 type Site = {
   id: string; slug: string; title: string; template: string;
   status: string; live_url: string | null; page_count: number; published_at: string | null;
+  custom_domain: string | null; domain_status: string; domain_error: string | null;
 };
 
 /** Publish a generated blueprint as a real, hosted website. */
@@ -27,12 +29,15 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [domainAllowed, setDomainAllowed] = useState(false);
+
   const load = useCallback(() => {
     fetch(`/api/build/sites?projectId=${projectId}`)
       .then((r) => r.json())
       .then((j) => {
         const s: Site | undefined = j.sites?.[0];
         if (s) { setSite(s); if (s.template) setTemplate(s.template as SiteTemplateId); }
+        setDomainAllowed(!!j.customDomainAllowed);
       })
       .finally(() => setLoading(false));
   }, [projectId]);
@@ -116,6 +121,10 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
             </div>
           )}
 
+          {isLive && (
+            <CustomDomainPanel site={site} allowed={domainAllowed} onChanged={(s) => setSite({ ...site, ...s })} />
+          )}
+
           <div>
             <p className="text-xs font-semibold text-muted-foreground">Template</p>
             <div className="mt-2 grid gap-2 sm:grid-cols-3">
@@ -185,7 +194,7 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
 
           <Alert variant="info">
             Your site is <strong>hosted by CreatorsForge</strong> on a separate, sandboxed domain (never on creatorsforge.io itself, for security).
-            You can take it offline any time, and a custom domain isn&rsquo;t supported yet.
+            You can take it offline any time.
             <span className="mt-1 block">
               You are the publisher and are responsible for what it contains — we can remove sites that breach our{" "}
               <a href="/terms" target="_blank" rel="noreferrer" className="underline">Terms</a>.

@@ -29,22 +29,33 @@ function notFound() {
   });
 }
 
+/** Sentinel used by middleware for customer domains: /s/by-host/{host}/{path} */
+const BY_HOST = "by-host";
+
 export async function GET(_request: Request, ctx: { params: Promise<{ slug: string; file?: string[] }> }) {
   const { slug, file } = await ctx.params;
   if (!slug) return notFound();
 
   // Public read: visitors aren't signed in, and build_sites is owner-RLS.
   const admin = createAdminClient();
-  const { data: site } = await admin
-    .from("build_sites")
-    .select("storage_path, status")
-    .eq("slug", slug)
-    .maybeSingle();
+
+  // A request that arrived on a customer's own domain: resolve host -> site.
+  // Only a VERIFIED domain serves, so a stale/hijacked DNS entry can't.
+  const byHost = slug === BY_HOST;
+  const segments = byHost ? (file ?? []).slice(1) : (file ?? []);
+  const host = byHost ? decodeURIComponent((file ?? [])[0] ?? "") : null;
+  if (byHost && !host) return notFound();
+
+  const { data: site } = byHost
+    ? await admin.from("build_sites").select("storage_path, status, domain_status")
+        .eq("custom_domain", host).eq("domain_status", "verified").maybeSingle()
+    : await admin.from("build_sites").select("storage_path, status, domain_status")
+        .eq("slug", slug).maybeSingle();
 
   if (!site || site.status !== "published" || !site.storage_path) return notFound();
 
   // Only ever serve .html files from inside this site's own folder.
-  const requested = (file ?? []).join("/");
+  const requested = segments.join("/");
   const name = requested === "" ? "index.html" : requested;
   if (name.includes("..") || name.startsWith("/") || !/^[a-z0-9._/-]+\.html$/i.test(name)) return notFound();
 

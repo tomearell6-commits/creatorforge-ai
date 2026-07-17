@@ -7,6 +7,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, readJsonBody } from "@/lib/api/respond";
+import { getUserPlan } from "@/lib/plan";
+import { planAllowsCustomDomain } from "@/config/buildStudio";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +25,11 @@ export async function GET(request: Request) {
 
   const { data, error } = await q;
   if (error) return apiError(error.message, 400);
-  return NextResponse.json({ sites: data ?? [] });
+
+  // Drives the custom-domain panel: entitlement, not just a UI hint (the domain
+  // route enforces the same check server-side).
+  const plan = await getUserPlan(supabase);
+  return NextResponse.json({ sites: data ?? [], customDomainAllowed: planAllowsCustomDomain(plan) });
 }
 
 export async function POST(request: Request) {
