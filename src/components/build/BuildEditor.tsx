@@ -10,8 +10,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Sparkles, FileDown, Printer, Copy, Check, Coins, Globe, Layers, Map as MapIcon,
-  CalendarDays, Megaphone, Package, PenLine, Video, Search, Palette,
+  CalendarDays, Megaphone, Package, PenLine, Video, Search, Palette, Rocket,
 } from "lucide-react";
+import { SitePublishPanel } from "@/components/build/SitePublishPanel";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
@@ -35,6 +36,7 @@ const TABS = [
   { id: "roadmap", label: "Roadmap", icon: CalendarDays },
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "export", label: "Export", icon: FileDown },
+  { id: "publish", label: "Publish site", icon: Rocket },
 ] as const;
 
 export function BuildEditor() {
@@ -327,6 +329,10 @@ export function BuildEditor() {
               </p>
               <Alert variant="warning">{BUILD_DISCLAIMER}</Alert>
             </div>
+          )}
+
+          {tab === "publish" && (
+            <SitePublishPanel projectId={project.id} generated={!!pkg} />
           )}
         </>
       )}

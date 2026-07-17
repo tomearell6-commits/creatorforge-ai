@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LayoutTemplate, PenLine, Sparkles, FileText, ListChecks, Megaphone, Download, ArrowRight, Check, Info } from "lucide-react";
+import { LayoutTemplate, PenLine, Sparkles, FileText, ListChecks, Megaphone, Download, Rocket, ArrowRight, Check, Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
@@ -12,7 +12,7 @@ import { BUILD_CREDIT_COSTS } from "@/config/buildStudio";
 
 type Journey = {
   providers: { ai: boolean };
-  counts: { projects: number; generated: number };
+  counts: { projects: number; generated: number; published: number };
 };
 
 const STEPS = [
@@ -22,7 +22,8 @@ const STEPS = [
   { id: "review", label: "Review & edit", route: "/dashboard/build/editor", icon: FileText, blurb: "Refine the pages, headlines, body copy and feature list until it's right." },
   { id: "roadmap", label: "Plan the build", route: "/dashboard/build/roadmap", icon: ListChecks, blurb: "A phased roadmap — what to build first, second and later." },
   { id: "marketing", label: "Plan the launch", route: "/dashboard/build/marketing", icon: Megaphone, blurb: "Launch phases, channels and an email sequence to get your first visitors." },
-  { id: "export", label: "Export the brief", route: "/dashboard/build/export", icon: Download, blurb: "Download the developer brief — hand it to a developer, a site builder, or an AI coding tool." },
+  { id: "export", label: "Export the brief", route: "/dashboard/build/export", icon: Download, blurb: "Download the developer brief — or hand it to a developer or an AI coding tool." },
+  { id: "publish", label: "Publish it live", route: "/dashboard/build/editor", icon: Rocket, blurb: `Turn the blueprint into a real, responsive website with a live URL (${BUILD_CREDIT_COSTS.publishSite} credits).` },
 ] as const;
 
 function isDone(id: string, c: Journey["counts"]): boolean {
@@ -30,6 +31,8 @@ function isDone(id: string, c: Journey["counts"]): boolean {
     case "choose":
     case "describe":
       return c.projects > 0;
+    case "publish":
+      return c.published > 0;
     default:
       // Everything from "generate" on unlocks once a blueprint exists.
       return c.generated > 0;
@@ -61,14 +64,15 @@ export function BuildJourney() {
       <div>
         <h2 className="text-lg font-semibold">How Build Studio works</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Seven steps from an idea to a complete, ready-to-build website plan. Follow them in order — we track your progress automatically.
+          Eight steps from an idea to a website that&rsquo;s actually live. Follow them in order — we track your progress automatically.
         </p>
       </div>
 
       {/* What you actually get — set expectations before they spend credits. */}
       <Alert variant="info" title="What you get">
-        A complete <strong>blueprint</strong>: structure, pages with real copy, sitemap, features, tech stack, roadmap and a launch plan — exported as a developer brief.
-        Build Studio <strong>plans</strong> your site; it doesn&rsquo;t host or deploy a live website. Take the brief to your developer, a site builder, or an AI coding tool to put it online.
+        A complete <strong>blueprint</strong> — structure, pages with real copy, sitemap, features, tech stack, roadmap and a launch plan — which you can
+        <strong> publish as a real, responsive website with a live URL</strong>, hosted by CreatorsForge. You can also export the developer brief to build it
+        yourself. Custom domains aren&rsquo;t supported yet.
       </Alert>
 
       <GuidedStepper

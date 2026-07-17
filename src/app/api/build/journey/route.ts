@@ -15,13 +15,18 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const head = { count: "exact" as const, head: true };
-  const [projects, generated] = await Promise.all([
+  const [projects, generated, published] = await Promise.all([
     supabase.from("build_projects").select("id", head).eq("user_id", user.id),
     supabase.from("build_projects").select("id", head).eq("user_id", user.id).eq("status", "generated"),
+    supabase.from("build_sites").select("id", head).eq("user_id", user.id).eq("status", "published"),
   ]);
 
   return NextResponse.json({
     providers: { ai: willUseRealBuildAI() },
-    counts: { projects: projects.count ?? 0, generated: generated.count ?? 0 },
+    counts: {
+      projects: projects.count ?? 0,
+      generated: generated.count ?? 0,
+      published: published.count ?? 0,
+    },
   });
 }

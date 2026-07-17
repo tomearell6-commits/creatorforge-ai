@@ -103,6 +103,7 @@ export const BUILD_CREDIT_COSTS = {
   schema: 6,
   exportStandard: 0,   // markdown / copy package / prompt package (client-side)
   exportPdf: 1,        // print-to-PDF brief
+  publishSite: 10,     // render the blueprint into a real hosted website
 } as const;
 
 export const BUILD_CREDIT_REASONS = {
@@ -113,4 +114,5 @@ export const BUILD_CREDIT_REASONS = {
   sitemap: "BUILD_SITEMAP",
   schema: "BUILD_SCHEMA",
   exportPdf: "BUILD_EXPORT_PDF",
+  publishSite: "BUILD_PUBLISH_SITE",
 } as const;
