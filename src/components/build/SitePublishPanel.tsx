@@ -114,10 +114,10 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
                 <button
                   key={t.id}
                   onClick={() => setTemplate(t.id)}
-                  className={`rounded-lg border p-3 text-left text-sm transition-colors ${template === t.id ? "border-brand-600 bg-brand-50 dark:bg-brand-950/40" : "border-border hover:bg-muted"}`}
+                  className={`rounded-lg border p-3 text-left text-sm transition-colors ${template === t.id ? "border-brand-600 bg-brand-50 text-brand-900 dark:bg-brand-950/40 dark:text-brand-100" : "border-border hover:bg-muted"}`}
                 >
                   <span className="block font-medium">{t.name}</span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">{t.blurb}</span>
+                  <span className={`mt-0.5 block text-xs ${template === t.id ? "opacity-80" : "text-muted-foreground"}`}>{t.blurb}</span>
                 </button>
               ))}
             </div>

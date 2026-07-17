@@ -73,8 +73,11 @@ export async function POST(request: Request) {
     if (error) return apiError(`Publishing failed: ${error.message}`, 502);
   }
 
-  const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(`${basePath}/index.html`);
-  const liveUrl = pub.publicUrl;
+  // Served by /s/[slug] — Supabase Storage force-serves HTML as text/plain, so
+  // it can't host pages. SITES_BASE_URL lets us move sites to a dedicated
+  // domain later without touching stored URLs.
+  const siteHost = process.env.SITES_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://www.creatorsforge.io";
+  const liveUrl = `${siteHost.replace(/\/$/, "")}/s/${slug}`;
   const now = new Date().toISOString();
 
   const row = {

@@ -12,8 +12,12 @@ import { BUILD_CREDIT_COSTS } from "@/config/buildStudio";
 
 type Journey = {
   providers: { ai: boolean };
+  latestProjectId: string | null;
   counts: { projects: number; generated: number; published: number };
 };
+
+/** Steps that operate on a specific project — they need ?project=<id>. */
+const PROJECT_SCOPED = new Set(["review", "roadmap", "marketing", "export", "publish"]);
 
 const STEPS = [
   { id: "choose", label: "Choose what to build", route: "/dashboard/build/templates", icon: LayoutTemplate, blurb: "Pick a website type — business site, portfolio, blog — or start from a template." },
@@ -59,6 +63,14 @@ export function BuildJourney() {
   const ActiveIcon = active.icon;
   const allDone = doneIds.length === STEPS.length;
 
+  // Project-scoped steps must carry the project id, or the editor opens empty.
+  // With no project yet, send the user to the projects list instead.
+  const routeFor = (id: string, route: string): string => {
+    if (!PROJECT_SCOPED.has(id)) return route;
+    if (!data.latestProjectId) return "/dashboard/build/projects";
+    return `${route}?project=${data.latestProjectId}`;
+  };
+
   return (
     <Card className="space-y-5 p-5">
       <div>
@@ -79,7 +91,7 @@ export function BuildJourney() {
         steps={STEPS.map((s) => ({ id: s.id, label: s.label }))}
         activeId={active.id}
         doneIds={doneIds}
-        onStep={(id) => { const s = STEPS.find((x) => x.id === id); if (s) router.push(s.route); }}
+        onStep={(id) => { const s = STEPS.find((x) => x.id === id); if (s) router.push(routeFor(s.id, s.route)); }}
       />
 
       {/* Current step callout */}
@@ -93,7 +105,7 @@ export function BuildJourney() {
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">{active.blurb}</p>
         </div>
-        <Button size="sm" onClick={() => router.push(active.route)}>
+        <Button size="sm" onClick={() => router.push(routeFor(active.id, active.route))}>
           {allDone ? "Open" : "Continue"} <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
@@ -106,7 +118,7 @@ export function BuildJourney() {
           return (
             <li key={s.id}>
               <button
-                onClick={() => router.push(s.route)}
+                onClick={() => router.push(routeFor(s.id, s.route))}
                 className="flex w-full items-start gap-3 rounded-lg border border-border px-3 py-2.5 text-left transition-colors hover:bg-muted"
               >
                 <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${done ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"}`}>

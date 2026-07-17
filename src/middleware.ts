@@ -6,6 +6,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Run on everything except static assets and image files.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|txt|xml|ico)$).*)"],
+  // Run on everything except static assets, image files, and published Build
+  // Studio sites (/s/*) — those are public, sandboxed, and must never touch the
+  // app session.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|s/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|txt|xml|ico)$).*)"],
 };

@@ -15,14 +15,20 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const head = { count: "exact" as const, head: true };
-  const [projects, generated, published] = await Promise.all([
+  const [projects, generated, published, latest] = await Promise.all([
     supabase.from("build_projects").select("id", head).eq("user_id", user.id),
     supabase.from("build_projects").select("id", head).eq("user_id", user.id).eq("status", "generated"),
     supabase.from("build_sites").select("id", head).eq("user_id", user.id).eq("status", "published"),
+    // Deep-link target: the newest project, so the journey's project-scoped
+    // steps (review / roadmap / marketing / export / publish) open it directly
+    // instead of dumping the user on an empty editor.
+    supabase.from("build_projects").select("id").eq("user_id", user.id)
+      .order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   return NextResponse.json({
     providers: { ai: willUseRealBuildAI() },
+    latestProjectId: latest.data?.id ?? null,
     counts: {
       projects: projects.count ?? 0,
       generated: generated.count ?? 0,
