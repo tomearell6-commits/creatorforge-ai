@@ -51,6 +51,20 @@ export async function GET(_request: Request, ctx: { params: Promise<{ slug: stri
   const host = byHost ? decodeURIComponent((file ?? [])[0] ?? "") : null;
   if (byHost && !host) return notFound();
 
+  // The homepage MUST be served with a trailing slash. Pages link to each other
+  // relatively (./about.html), and a browser resolves those against the current
+  // directory — so at `/s/{slug}` (no slash) "./about.html" wrongly becomes
+  // `/s/about.html` and 404s. Redirecting to `/s/{slug}/` makes the directory
+  // `/s/{slug}/`, so relative links resolve correctly. (Custom domains already
+  // serve at a trailing-slash root, so they're exempt.)
+  if (!byHost && segments.length === 0) {
+    const path = new URL(_request.url).pathname;
+    if (!path.endsWith("/")) {
+      const search = new URL(_request.url).search;
+      return new NextResponse(null, { status: 308, headers: { Location: `${path}/${search}` } });
+    }
+  }
+
   const { data: site } = byHost
     ? await admin.from("build_sites").select("storage_path, status, domain_status")
         .eq("custom_domain", host).eq("domain_status", "verified").maybeSingle()

@@ -122,7 +122,10 @@ export async function POST(request: Request) {
   // it can't host pages. SITES_BASE_URL lets us move sites to a dedicated
   // domain later without touching stored URLs.
   const siteHost = process.env.SITES_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://www.creatorsforge.io";
-  const liveUrl = `${siteHost.replace(/\/$/, "")}/s/${slug}`;
+  // Trailing slash is REQUIRED: pages link to each other relatively, and the
+  // browser resolves those against the current directory. Without it, the
+  // homepage's "./about.html" resolves one level too high and 404s.
+  const liveUrl = `${siteHost.replace(/\/$/, "")}/s/${slug}/`;
   const now = new Date().toISOString();
 
   const row = {

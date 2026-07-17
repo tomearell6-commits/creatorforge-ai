@@ -73,6 +73,12 @@ export function SitePreviewPanel({
   const width = DEVICES.find((d) => d.id === device)?.width ?? null;
   const domainLive = site.domain_status === "verified" && !!site.custom_domain;
 
+  // Preview from the SAME origin as the dashboard (the app domain), not the
+  // public sites domain: it always resolves here, avoids any dedicated-domain
+  // DNS propagation delay, and is still CSP-sandboxed by the /s route. The
+  // address bar below still shows the real public URL visitors get.
+  const previewSrc = `/s/${site.slug}/`;
+
   return (
     <div className="space-y-3">
       {/* Toolbar */}
@@ -121,7 +127,7 @@ export function SitePreviewPanel({
           <iframe
             key={reloadKey}
             ref={iframeRef}
-            src={site.live_url}
+            src={previewSrc}
             title="Website preview"
             onLoad={() => setFrameLoading(false)}
             // Defense in depth: the served page already carries CSP: sandbox.
