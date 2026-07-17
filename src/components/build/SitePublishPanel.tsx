@@ -185,7 +185,11 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
 
           <Alert variant="info">
             Your site is <strong>hosted by CreatorsForge</strong> on a separate, sandboxed domain (never on creatorsforge.io itself, for security).
-            You can take it offline any time. A custom domain isn&rsquo;t supported yet — that&rsquo;s coming next.
+            You can take it offline any time, and a custom domain isn&rsquo;t supported yet.
+            <span className="mt-1 block">
+              You are the publisher and are responsible for what it contains — we can remove sites that breach our{" "}
+              <a href="/terms" target="_blank" rel="noreferrer" className="underline">Terms</a>.
+            </span>
           </Alert>
         </>
       )}
