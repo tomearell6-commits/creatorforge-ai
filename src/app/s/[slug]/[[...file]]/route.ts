@@ -51,20 +51,6 @@ export async function GET(_request: Request, ctx: { params: Promise<{ slug: stri
   const host = byHost ? decodeURIComponent((file ?? [])[0] ?? "") : null;
   if (byHost && !host) return notFound();
 
-  // The homepage MUST be served with a trailing slash. Pages link to each other
-  // relatively (./about.html), and a browser resolves those against the current
-  // directory — so at `/s/{slug}` (no slash) "./about.html" wrongly becomes
-  // `/s/about.html` and 404s. Redirecting to `/s/{slug}/` makes the directory
-  // `/s/{slug}/`, so relative links resolve correctly. (Custom domains already
-  // serve at a trailing-slash root, so they're exempt.)
-  if (!byHost && segments.length === 0) {
-    const path = new URL(_request.url).pathname;
-    if (!path.endsWith("/")) {
-      const search = new URL(_request.url).search;
-      return new NextResponse(null, { status: 308, headers: { Location: `${path}/${search}` } });
-    }
-  }
-
   const { data: site } = byHost
     ? await admin.from("build_sites").select("storage_path, status, domain_status")
         .eq("custom_domain", host).eq("domain_status", "verified").maybeSingle()
@@ -81,7 +67,15 @@ export async function GET(_request: Request, ctx: { params: Promise<{ slug: stri
   const { data: blob, error } = await admin.storage.from(BUCKET).download(`${site.storage_path}/${name}`);
   if (error || !blob) return notFound();
 
-  const html = await blob.text();
+  // Pages link to each other with root-relative-looking `href="./about.html"`.
+  // A browser resolves those against the current directory, so at `/s/{slug}`
+  // (Next strips trailing slashes) `./about.html` becomes `/s/about.html` and
+  // 404s. Rewrite those links to the correct absolute base for how this site is
+  // being served — `/s/{slug}/` normally, or `/` on a customer's own domain.
+  // Surgical: only `href="./…"` is touched, so in-page `#anchors`, mailto:,
+  // and absolute asset URLs (hero image, fonts) are left alone.
+  const basePath = byHost ? "/" : `/s/${slug}/`;
+  const html = (await blob.text()).split('href="./').join(`href="${basePath}`);
 
   return new NextResponse(html, {
     status: 200,

@@ -77,7 +77,7 @@ export function SitePreviewPanel({
   // public sites domain: it always resolves here, avoids any dedicated-domain
   // DNS propagation delay, and is still CSP-sandboxed by the /s route. The
   // address bar below still shows the real public URL visitors get.
-  const previewSrc = `/s/${site.slug}/`;
+  const previewSrc = `/s/${site.slug}`;
 
   return (
     <div className="space-y-3">
