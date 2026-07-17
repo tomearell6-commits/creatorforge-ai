@@ -339,6 +339,7 @@ export const ADMIN_NAV = [
   { href: "/admin/design", label: "Design Studio" },
   { href: "/admin/email-assistant", label: "Email Assistant" },
   { href: "/admin/build", label: "Build Studio" },
+  { href: "/admin/build-sites", label: "Hosted Sites" },
   { href: "/admin/business", label: "Business Ops" },
   { href: "/admin/testimonials", label: "Testimonials" },
   { href: "/admin/blog", label: "Blog & SEO" },

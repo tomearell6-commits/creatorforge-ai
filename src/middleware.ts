@@ -1,7 +1,27 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
+/** Host that serves user-published sites, when a dedicated domain is configured
+ *  (SITES_BASE_URL). Keeping user content on its own domain is what isolates it
+ *  from creatorsforge.io's cookies and brand/reputation. */
+const sitesHost = (() => {
+  try {
+    return process.env.SITES_BASE_URL ? new URL(process.env.SITES_BASE_URL).host : null;
+  } catch {
+    return null;
+  }
+})();
+
 export async function middleware(request: NextRequest) {
+  // On the dedicated sites domain, ONLY published sites are served — never the
+  // app. Anything else bounces to the real app so the two never blur together.
+  if (sitesHost && request.headers.get("host") === sitesHost) {
+    if (!request.nextUrl.pathname.startsWith("/s/")) {
+      const app = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.creatorsforge.io";
+      return NextResponse.redirect(new URL(request.nextUrl.pathname, app));
+    }
+    return NextResponse.next();
+  }
   return await updateSession(request);
 }
 
