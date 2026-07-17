@@ -18,16 +18,55 @@ export function vercelDomainsConfigured(): boolean {
   return !!process.env.VERCEL_TOKEN && !!process.env.VERCEL_PROJECT_ID;
 }
 
-function auth(): { headers: Record<string, string>; project: string; teamQs: string } {
+function headers(): Record<string, string> {
   return {
-    headers: {
-      Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    project: process.env.VERCEL_PROJECT_ID!,
-    teamQs: process.env.VERCEL_TEAM_ID ? `?teamId=${process.env.VERCEL_TEAM_ID}` : "",
+    Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
+    "Content-Type": "application/json",
   };
 }
+
+/**
+ * Vercel needs a teamId for team-owned projects. Rather than make the operator
+ * paste a third value, resolve it from the token itself: a team-scoped token
+ * lists exactly the team it can act on. VERCEL_TEAM_ID overrides when an account
+ * belongs to several teams and the guess would be ambiguous.
+ *
+ * Cached for the lifetime of the lambda — the answer can't change under us.
+ */
+let teamIdCache: string | null | undefined;
+
+async function teamId(): Promise<string | null> {
+  if (process.env.VERCEL_TEAM_ID) return process.env.VERCEL_TEAM_ID;
+  if (teamIdCache !== undefined) return teamIdCache;
+  try {
+    const res = await fetchWithTimeout(`${API}/v2/teams?limit=2`, { headers: headers() }, 15_000);
+    const j = await res.json().catch(() => ({}));
+    const teams: { id: string }[] = j?.teams ?? [];
+    // Exactly one team => unambiguous. Zero => personal account, no teamId
+    // needed. More than one => we must not guess; the operator sets it.
+    teamIdCache = teams.length === 1 ? teams[0].id : null;
+  } catch {
+    return null; // don't cache a network blip
+  }
+  return teamIdCache;
+}
+
+/** `?teamId=…` (or "") for a Vercel API path. */
+async function teamQs(): Promise<string> {
+  const id = await teamId();
+  return id ? `?teamId=${encodeURIComponent(id)}` : "";
+}
+
+function projectId(): string {
+  return process.env.VERCEL_PROJECT_ID!;
+}
+
+/**
+ * Only used when Vercel's config endpoint doesn't tell us where to point. These
+ * are their published defaults; the API's own answer always wins.
+ */
+const FALLBACK_APEX_IP = "76.76.21.21";
+const FALLBACK_CNAME = "cname.vercel-dns.com";
 
 /** Hostnames we must never let a customer claim. */
 const RESERVED = [/(^|\.)creatorsforge\.io$/i, /(^|\.)creatorsforge\.net$/i, /(^|\.)vercel\.app$/i];
@@ -57,10 +96,10 @@ export type DomainConfig = {
 /** Attach a domain to the project. Idempotent-ish: an existing domain is fine. */
 export async function addDomain(host: string): Promise<{ ok: boolean; error?: string }> {
   if (!vercelDomainsConfigured()) return { ok: false, error: "Custom domains aren't configured on the server yet." };
-  const { headers, project, teamQs } = auth();
+  const project = projectId();
   try {
-    const res = await fetchWithTimeout(`${API}/v10/projects/${project}/domains${teamQs}`, {
-      method: "POST", headers, body: JSON.stringify({ name: host }),
+    const res = await fetchWithTimeout(`${API}/v10/projects/${project}/domains${await teamQs()}`, {
+      method: "POST", headers: headers(), body: JSON.stringify({ name: host }),
     }, 20_000);
     const j = await res.json().catch(() => ({}));
     if (res.ok) return { ok: true };
@@ -82,15 +121,16 @@ export async function addDomain(host: string): Promise<{ ok: boolean; error?: st
  */
 export async function getDomainConfig(host: string): Promise<DomainConfig> {
   if (!vercelDomainsConfigured()) return { verified: false, records: [], error: "Custom domains aren't configured on the server yet." };
-  const { headers, project, teamQs } = auth();
+  const project = projectId();
+  const qs = await teamQs();
   try {
     // Project-level record: is Vercel satisfied the domain points here?
-    const dRes = await fetchWithTimeout(`${API}/v9/projects/${project}/domains/${encodeURIComponent(host)}${teamQs}`, { headers }, 20_000);
+    const dRes = await fetchWithTimeout(`${API}/v9/projects/${project}/domains/${encodeURIComponent(host)}${qs}`, { headers: headers() }, 20_000);
     const d = await dRes.json().catch(() => ({}));
     if (!dRes.ok) return { verified: false, records: [], error: d?.error?.message ?? `Vercel ${dRes.status}` };
 
     // Domain-level config: misconfigured => DNS isn't right yet.
-    const cRes = await fetchWithTimeout(`${API}/v6/domains/${encodeURIComponent(host)}/config${teamQs}`, { headers }, 20_000);
+    const cRes = await fetchWithTimeout(`${API}/v6/domains/${encodeURIComponent(host)}/config${qs}`, { headers: headers() }, 20_000);
     const c = await cRes.json().catch(() => ({}));
     const misconfigured = c?.misconfigured !== false;
 
@@ -101,10 +141,14 @@ export async function getDomainConfig(host: string): Promise<DomainConfig> {
     }
     if (misconfigured && records.length === 0) {
       // Standard pointing records when no ownership challenge is outstanding.
+      // Prefer the target Vercel reports for THIS account: hardcoding their
+      // apex IP would silently break every customer's DNS the day it changes.
       const apex = host.split(".").length === 2;
+      const ip = c?.recommendedIPv4?.[0]?.value ?? c?.recommendedIPv4?.[0] ?? FALLBACK_APEX_IP;
+      const cname = c?.recommendedCNAME?.[0]?.value ?? c?.recommendedCNAME?.[0] ?? FALLBACK_CNAME;
       records.push(apex
-        ? { type: "A", name: "@", value: "76.76.21.21" }
-        : { type: "CNAME", name: host.split(".")[0], value: "cname.vercel-dns.com" });
+        ? { type: "A", name: "@", value: typeof ip === "string" ? ip : FALLBACK_APEX_IP }
+        : { type: "CNAME", name: host.split(".")[0], value: typeof cname === "string" ? cname : FALLBACK_CNAME });
     }
 
     const verified = d?.verified === true && !misconfigured;
@@ -117,10 +161,9 @@ export async function getDomainConfig(host: string): Promise<DomainConfig> {
 /** Detach a domain from the project (on removal or admin takedown). */
 export async function removeDomain(host: string): Promise<{ ok: boolean; error?: string }> {
   if (!vercelDomainsConfigured()) return { ok: true }; // nothing to detach
-  const { headers, project, teamQs } = auth();
   try {
-    const res = await fetchWithTimeout(`${API}/v9/projects/${project}/domains/${encodeURIComponent(host)}${teamQs}`, {
-      method: "DELETE", headers,
+    const res = await fetchWithTimeout(`${API}/v9/projects/${projectId()}/domains/${encodeURIComponent(host)}${await teamQs()}`, {
+      method: "DELETE", headers: headers(),
     }, 20_000);
     if (res.ok || res.status === 404) return { ok: true };
     const j = await res.json().catch(() => ({}));
