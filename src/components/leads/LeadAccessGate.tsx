@@ -184,7 +184,7 @@ export function LeadAccessGate({ need = "view", children }: { need?: Need; child
   return (
     <>
       <Card className="mx-auto max-w-2xl text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-900 text-brand-300 dark:bg-brand-950/50 dark:text-brand-300">
           {missing === "compliance" || missing === "sender_profile" ? (
             <ShieldCheck className="h-6 w-6" aria-hidden />
           ) : (

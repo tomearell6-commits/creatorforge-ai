@@ -38,7 +38,7 @@ export const STUDIOS: Studio[] = [
     tagline: "Create original content with AI.",
     purpose: "Produce videos, voiceovers, images, and written content end to end.",
     icon: Video,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+    accent: "bg-brand-900 text-brand-300 dark:bg-brand-900 dark:text-brand-300",
     quickActions: [
       { label: "Create Video", href: "/dashboard/create?group=video", icon: Video },
       { label: "Design a Graphic", href: "/dashboard/design/new", icon: Palette },
@@ -100,7 +100,7 @@ export const STUDIOS: Studio[] = [
     tagline: "Create and manage marketing campaigns.",
     purpose: "Plan ads across every platform, write sales copy, and track performance.",
     icon: Megaphone,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+    accent: "bg-brand-900 text-brand-300 dark:bg-brand-900 dark:text-brand-300",
     quickActions: [
       { label: "Create Ad", href: "/dashboard/ads/create", icon: Megaphone },
       { label: "Launch Campaign", href: "/dashboard/ads", icon: Rocket },
@@ -146,7 +146,7 @@ export const STUDIOS: Studio[] = [
     tagline: "Write, publish, and promote books.",
     purpose: "Author original books and long-form publications from outline to export.",
     icon: BookOpen,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+    accent: "bg-brand-900 text-brand-300 dark:bg-brand-900 dark:text-brand-300",
     quickActions: [
       { label: "Write New Book", href: "/dashboard/books/new", icon: PenLine },
       { label: "Generate Outline", href: "/dashboard/books/new", icon: ListChecks },
@@ -181,7 +181,7 @@ export const STUDIOS: Studio[] = [
     tagline: "Automate content creation and publishing.",
     purpose: "Let Autopilot plan, schedule, and publish your content on a recurring basis.",
     icon: Workflow,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+    accent: "bg-brand-900 text-brand-300 dark:bg-brand-900 dark:text-brand-300",
     quickActions: [
       { label: "Enable Autopilot", href: "/dashboard/autopilot", icon: Rocket },
       { label: "Create Automation", href: "/dashboard/automation", icon: Workflow },
@@ -217,7 +217,7 @@ export const STUDIOS: Studio[] = [
     tagline: "Measure and improve performance.",
     purpose: "Audit websites, track SEO and campaigns, and watch your growth metrics.",
     icon: BarChart3,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+    accent: "bg-brand-900 text-brand-300 dark:bg-brand-900 dark:text-brand-300",
     quickActions: [
       { label: "Run Website Audit", href: "/dashboard/seo/audit", icon: FileSearch },
       { label: "Generate SEO Report", href: "/dashboard/seo", icon: Search },
@@ -249,7 +249,7 @@ export const STUDIOS: Studio[] = [
     tagline: "Manage the business behind CreatorsForge.",
     purpose: "Brand, team, billing, integrations, and infrastructure in one place.",
     icon: Briefcase,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300",
+    accent: "bg-brand-900 text-brand-300 dark:bg-brand-900 dark:text-brand-300",
     quickActions: [
       { label: "Plan a Product", href: "/dashboard/build/new", icon: Hammer },
       { label: "Top Up Credits", href: "/dashboard/credits", icon: Wallet },

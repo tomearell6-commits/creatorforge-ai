@@ -21,7 +21,7 @@ export function WorkflowTimeline() {
           <Reveal key={s.label} delay={i * 90}>
             <div className="relative flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center shadow-sm">
               <span className="absolute right-3 top-3 text-xs font-bold text-brand-300">{String(i + 1).padStart(2, "0")}</span>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-900 text-brand-300 dark:bg-brand-950/50 dark:text-brand-300">
                 <Icon className="h-6 w-6" />
               </div>
               <span className="text-sm font-semibold text-foreground">{s.label}</span>

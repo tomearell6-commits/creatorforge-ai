@@ -100,7 +100,7 @@ export function RealEstateSuite() {
       {/* Suite header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
+          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-900 text-brand-300 dark:bg-brand-950/50 dark:text-brand-300">
             <Building2 className="h-6 w-6" />
           </span>
           <div>

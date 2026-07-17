@@ -22,7 +22,7 @@ export function AreaHub({ areaId }: { areaId: NavAreaId }) {
             href={route}
             className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-brand-500/60 hover:bg-muted/40"
           >
-            <span className="rounded-lg bg-brand-100 p-2 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
+            <span className="rounded-lg bg-brand-900 p-2 text-brand-300 dark:bg-brand-950/50 dark:text-brand-300">
               <Icon className="h-5 w-5" />
             </span>
             <span className="text-sm font-semibold">{label}</span>
@@ -36,7 +36,7 @@ export function AreaHub({ areaId }: { areaId: NavAreaId }) {
           return (
             <Card key={section.id} className="flex flex-col">
               <div className="flex items-center gap-3">
-                <span className="rounded-lg bg-brand-100 p-2 text-brand-900 dark:bg-brand-950/50 dark:text-brand-300">
+                <span className="rounded-lg bg-brand-900 p-2 text-brand-300 dark:bg-brand-950/50 dark:text-brand-300">
                   <Icon className="h-5 w-5" />
                 </span>
                 <h2 className="font-bold">{section.label}</h2>
