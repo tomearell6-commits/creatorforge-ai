@@ -12,6 +12,11 @@
  * creatorsforge.io cookies or localStorage, and scripts are disabled outright.
  * Our generated sites are pure HTML+CSS, so full sandbox costs nothing.
  *
+ * FRAMING: these responses intentionally omit X-Frame-Options (see
+ * next.config.ts, which excludes /s/*) so the in-app preview can embed them.
+ * `frame-ancestors` keeps that tight — only our own dashboard may frame a site,
+ * everyone else is refused, so a customer's page can't be clickjacked.
+ *
  * The public host is env-configurable (SITES_BASE_URL) so these sites can be
  * moved to a dedicated domain later without changing any stored URLs.
  */
@@ -68,10 +73,12 @@ export async function GET(_request: Request, ctx: { params: Promise<{ slug: stri
     status: 200,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      // Opaque origin: no access to app cookies/localStorage, no scripts.
-      "Content-Security-Policy": "sandbox",
+      // Opaque origin (no access to app cookies/localStorage, no scripts) AND
+      // framable only by our own dashboard for the in-app preview.
+      "Content-Security-Policy": "sandbox; frame-ancestors 'self' https://*.creatorsforge.io https://creatorsforge.io",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer",
+      "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
       "Cache-Control": "public, max-age=60",
     },
   });

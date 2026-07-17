@@ -10,9 +10,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   Sparkles, FileDown, Printer, Copy, Check, Coins, Globe, Layers, Map as MapIcon,
-  CalendarDays, Megaphone, Package, PenLine, Video, Search, Palette, Rocket,
+  CalendarDays, Megaphone, Package, PenLine, Video, Search, Palette, Rocket, Monitor,
 } from "lucide-react";
 import { SitePublishPanel } from "@/components/build/SitePublishPanel";
+import { SitePreviewPanel } from "@/components/build/SitePreviewPanel";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Spinner } from "@/components/ui/Spinner";
@@ -37,6 +38,7 @@ const TABS = [
   { id: "marketing", label: "Marketing", icon: Megaphone },
   { id: "export", label: "Export", icon: FileDown },
   { id: "publish", label: "Publish site", icon: Rocket },
+  { id: "preview", label: "Preview", icon: Monitor },
 ] as const;
 
 export function BuildEditor() {
@@ -333,6 +335,14 @@ export function BuildEditor() {
 
           {tab === "publish" && (
             <SitePublishPanel projectId={project.id} generated={!!pkg} />
+          )}
+
+          {tab === "preview" && (
+            <SitePreviewPanel
+              projectId={project.id}
+              onEditPages={() => setTab("pages")}
+              onOpenPublish={() => setTab("publish")}
+            />
           )}
         </>
       )}

@@ -23,7 +23,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Apply the full security set everywhere EXCEPT the user-published sites
+    // under /s/*. Those must be framable by our own dashboard for the in-app
+    // preview, so they can't carry X-Frame-Options: SAMEORIGIN (the dashboard
+    // and the sites live on different origins). The /s route sets its own
+    // headers, restricting framing precisely via CSP frame-ancestors instead.
+    return [{ source: "/((?!s/).*)", headers: securityHeaders }];
   },
 };
 
