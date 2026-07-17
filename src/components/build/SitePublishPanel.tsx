@@ -19,6 +19,7 @@ type Site = {
 export function SitePublishPanel({ projectId, generated }: { projectId: string; generated: boolean }) {
   const [site, setSite] = useState<Site | null>(null);
   const [template, setTemplate] = useState<SiteTemplateId>("modern");
+  const [contactEmail, setContactEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"publish" | "unpublish" | null>(null);
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
@@ -41,7 +42,7 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
     try {
       const r = await fetch("/api/build/sites/publish", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, template }),
+        body: JSON.stringify({ projectId, template, contactEmail: contactEmail || undefined }),
       });
       const j = await r.json().catch(() => ({}));
       if (r.status === 402) { setMsg({ kind: "error", text: "Not enough credits to publish — top up in the Credit Wallet." }); return; }
@@ -121,6 +122,21 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="site-contact" className="text-xs font-semibold text-muted-foreground">
+              Contact email <span className="font-normal">(shown on the site&rsquo;s contact button)</span>
+            </label>
+            <input
+              id="site-contact"
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              placeholder="hello@yourbusiness.com"
+              className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Leave blank and the button links to your Contact page instead — we never publish a fake address.</p>
           </div>
 
           <div className="flex flex-wrap gap-2">

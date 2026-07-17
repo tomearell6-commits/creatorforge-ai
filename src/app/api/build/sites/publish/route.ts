@@ -29,8 +29,12 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
 
-  const body = await readJsonBody<{ projectId?: string; template?: SiteTemplateId }>(request);
+  const body = await readJsonBody<{ projectId?: string; template?: SiteTemplateId; contactEmail?: string }>(request);
   if (!body?.projectId) return apiError("projectId is required", 400);
+  const contactEmail = body.contactEmail?.trim() || null;
+  if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contactEmail)) {
+    return apiError("That contact email doesn't look valid.", 400);
+  }
 
   const { data: project } = await supabase
     .from("build_projects").select("*").eq("id", body.projectId).eq("user_id", user.id).maybeSingle();
@@ -44,7 +48,7 @@ export async function POST(request: Request) {
   // Render deterministically (all content escaped inside renderSite).
   const title = String(project.title || pkg.projectNameIdeas?.[0] || "My site").slice(0, 80);
   const template = (body.template ?? "modern") as SiteTemplateId;
-  const files = renderSite(pkg, { title, template });
+  const files = renderSite(pkg, { title, template, contactEmail });
   const bytes = files.reduce((n, f) => n + Buffer.byteLength(f.html, "utf8"), 0);
   if (bytes > MAX_SITE_BYTES) return apiError("This site is too large to publish.", 400);
 
