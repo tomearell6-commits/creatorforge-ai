@@ -83,6 +83,11 @@ header.nav{border-bottom:1px solid ${t.border};background:${t.bg}e6;backdrop-fil
 .hero{background:${t.heroBg};color:${t.heroFg};padding:92px 0;border-bottom:1px solid ${t.border}}
 .hero h1{margin:0 0 16px;font-size:clamp(32px,5.2vw,54px);line-height:1.08;letter-spacing:-.03em;font-weight:800;max-width:18ch}
 .hero p{margin:0 0 30px;font-size:clamp(17px,2.2vw,20px);opacity:.82;max-width:58ch}
+.herogrid{display:grid;gap:48px;align-items:center;grid-template-columns:1fr}
+.herogrid.withimg{grid-template-columns:1.05fr .95fr}
+.heroimg{border-radius:18px;overflow:hidden;border:1px solid ${t.border};aspect-ratio:4/3;background:${t.card}}
+.heroimg img{width:100%;height:100%;object-fit:cover}
+@media(max-width:860px){.herogrid.withimg{grid-template-columns:1fr}.heroimg{aspect-ratio:16/9}}
 .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .btn{display:inline-block;background:${t.accent};color:${t.accentFg};padding:14px 26px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px}
 .btn:hover{opacity:.92}
@@ -129,9 +134,9 @@ ${contact ? `<span><a href="mailto:${esc(contact)}">${esc(contact)}</a></span>` 
 
 function pageHtml(opts: {
   pkg: BuildPackage; page: BuildPage; pages: BuildPage[]; brand: string;
-  theme: Theme; isHome: boolean; contact: string | null; file: string;
+  theme: Theme; isHome: boolean; contact: string | null; file: string; heroImage: string | null;
 }): string {
-  const { pkg, page, pages, brand, theme, isHome, contact, file } = opts;
+  const { pkg, page, pages, brand, theme, isHome, contact, file, heroImage } = opts;
   const c = page.copy ?? { headline: page.pageName, subhead: "", cta: "Get started" };
   const desc = String(c.subhead || page.purpose || pkg.brandPositioning || "").slice(0, 155);
   const pageTitle = isHome ? `${brand} — ${String(c.headline || "").slice(0, 60)}` : `${page.pageName} — ${brand}`;
@@ -187,12 +192,17 @@ function pageHtml(opts: {
 </head><body>
 ${nav(pages, brand, file)}
 <div class="hero"><div class="wrap">
+<div class="herogrid${isHome && heroImage ? " withimg" : ""}">
+<div>
 <p class="eyebrow">${esc(isHome ? pkg.targetAudience.split(",")[0] || brand : page.pageName)}</p>
 <h1>${esc(c.headline || page.pageName)}</h1>
 <p>${esc(c.subhead || page.purpose)}</p>
 <div class="actions">
 ${c.cta ? `<a class="btn" href="#contact">${esc(c.cta)}</a>` : ""}
 ${isHome && pages[1] ? `<a class="btn ghost" href="./${fileFor(pages[1], 1)}">${esc(pages[1].pageName)}</a>` : ""}
+</div>
+</div>
+${isHome && heroImage ? `<div class="heroimg"><img src="${esc(heroImage)}" alt="${esc(c.headline || brand)}" width="800" height="600" loading="eager"></div>` : ""}
 </div>
 </div></div>
 ${body}
@@ -213,19 +223,38 @@ export type SiteFile = { path: string; html: string };
  * Render the full static site. Returns one file per blueprint page (first page
  * becomes index.html). All content is escaped — the output is always valid HTML.
  */
+/**
+ * Prompt for the site's hero image. Deliberately asks for an abstract/editorial
+ * visual with NO text — models render text badly, and a garbled word on a hero
+ * is worse than no image.
+ */
+export function heroImagePrompt(pkg: BuildPackage, opts: { brand: string; style?: string | null }): string {
+  const subject = [pkg.brandPositioning, pkg.structureOverview].filter(Boolean).join(". ").slice(0, 220);
+  const style = opts.style?.trim() || "modern";
+  return [
+    `Professional ${style} website hero image for "${opts.brand}".`,
+    subject,
+    "Editorial product photography style, clean composition, soft natural lighting,",
+    "generous negative space, muted palette with subtle green accents,",
+    "high-end brand aesthetic, sharp focus, photorealistic.",
+    "Absolutely no text, no words, no letters, no logos, no watermarks, no UI screenshots.",
+  ].join(" ");
+}
+
 export function renderSite(
   pkg: BuildPackage,
-  opts: { title: string; template?: SiteTemplateId; contactEmail?: string | null }
+  opts: { title: string; template?: SiteTemplateId; contactEmail?: string | null; heroImageUrl?: string | null }
 ): SiteFile[] {
   const theme = THEMES[opts.template ?? "modern"] ?? THEMES.modern;
   const brand = brandName(pkg, opts.title);
   const contact = opts.contactEmail?.trim() || null;
+  const heroImage = opts.heroImageUrl?.trim() || null;
   const pages = (pkg.pages ?? []).slice(0, 12);
   if (pages.length === 0) {
     pages.push({ pageName: "Home", purpose: pkg.structureOverview ?? "", sections: [], copy: { headline: brand, subhead: pkg.brandPositioning ?? "", cta: "Get started" } });
   }
   return pages.map((page, i) => {
     const file = fileFor(page, i);
-    return { path: file, html: pageHtml({ pkg, page, pages, brand, theme, isHome: i === 0, contact, file }) };
+    return { path: file, html: pageHtml({ pkg, page, pages, brand, theme, isHome: i === 0, contact, file, heroImage }) };
   });
 }

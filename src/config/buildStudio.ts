@@ -104,6 +104,7 @@ export const BUILD_CREDIT_COSTS = {
   exportStandard: 0,   // markdown / copy package / prompt package (client-side)
   exportPdf: 1,        // print-to-PDF brief
   publishSite: 10,     // render the blueprint into a real hosted website
+  heroImage: 5,        // AI hero image for a published site (opt-in)
 } as const;
 
 export const BUILD_CREDIT_REASONS = {

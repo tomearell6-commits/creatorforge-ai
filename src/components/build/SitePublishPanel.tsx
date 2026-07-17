@@ -20,6 +20,8 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
   const [site, setSite] = useState<Site | null>(null);
   const [template, setTemplate] = useState<SiteTemplateId>("modern");
   const [contactEmail, setContactEmail] = useState("");
+  const [heroImage, setHeroImage] = useState(false);
+  const [regenerateHero, setRegenerateHero] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"publish" | "unpublish" | null>(null);
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
@@ -42,13 +44,19 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
     try {
       const r = await fetch("/api/build/sites/publish", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, template, contactEmail: contactEmail || undefined }),
+        body: JSON.stringify({
+          projectId, template,
+          contactEmail: contactEmail || undefined,
+          heroImage, regenerateHero: heroImage && regenerateHero,
+        }),
       });
       const j = await r.json().catch(() => ({}));
       if (r.status === 402) { setMsg({ kind: "error", text: "Not enough credits to publish — top up in the Credit Wallet." }); return; }
       if (!r.ok) { setMsg({ kind: "error", text: j.error || "Publishing failed." }); return; }
       setSite(j.site);
-      setMsg({ kind: "success", text: `Your site is live — ${j.pages} page${j.pages === 1 ? "" : "s"} published.` });
+      setRegenerateHero(false);
+      const heroNote = heroImage && !j.heroImage ? " (the hero image couldn't be generated, so the site published without it)" : "";
+      setMsg({ kind: "success", text: `Your site is live — ${j.pages} page${j.pages === 1 ? "" : "s"} published${heroNote}. ${j.charged} credits used.` });
     } finally { setBusy(null); }
   }
 
@@ -124,6 +132,30 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
             </div>
           </div>
 
+          <div className="rounded-lg border border-border p-3">
+            <label className="flex items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4"
+                checked={heroImage}
+                onChange={(e) => setHeroImage(e.target.checked)}
+              />
+              <span>
+                <span className="font-medium">Generate a hero image</span>
+                <span className="ml-1.5 text-xs text-muted-foreground">+{BUILD_CREDIT_COSTS.heroImage} cr</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  An AI image for the homepage hero. Only charged when a real image is produced.
+                </span>
+              </span>
+            </label>
+            {heroImage && isLive && (
+              <label className="mt-2 flex items-center gap-2 pl-6 text-xs text-muted-foreground">
+                <input type="checkbox" className="h-3.5 w-3.5" checked={regenerateHero} onChange={(e) => setRegenerateHero(e.target.checked)} />
+                Generate a new image (otherwise your existing one is reused — free)
+              </label>
+            )}
+          </div>
+
           <div>
             <label htmlFor="site-contact" className="text-xs font-semibold text-muted-foreground">
               Contact email <span className="font-normal">(shown on the site&rsquo;s contact button)</span>
@@ -142,7 +174,7 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
           <div className="flex flex-wrap gap-2">
             <Button onClick={publish} disabled={busy !== null}>
               {busy === "publish" ? <Spinner className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
-              {isLive ? "Republish" : "Publish website"} ({BUILD_CREDIT_COSTS.publishSite} cr)
+              {isLive ? "Republish" : "Publish website"} ({BUILD_CREDIT_COSTS.publishSite + (heroImage && (!isLive || regenerateHero) ? BUILD_CREDIT_COSTS.heroImage : 0)} cr)
             </Button>
             {isLive && (
               <Button variant="outline" onClick={unpublish} disabled={busy !== null}>
