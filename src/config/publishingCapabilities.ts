@@ -186,7 +186,7 @@ export const PUBLISH_DESTINATIONS: Record<PublishDestinationId, DestinationMeta>
   instagram_reels: { id: "instagram_reels", label: "Instagram Reels", brandIcon: "instagram", accountType: "social", live: true, permissions: "Publish Reels to your Business account" },
   facebook: { id: "facebook", label: "Facebook Page", brandIcon: "facebook", accountType: "social", live: true, permissions: "Publish posts to your Page" },
   facebook_reels: { id: "facebook_reels", label: "Facebook Reels", brandIcon: "facebook", accountType: "social", live: true, permissions: "Publish Reels to your Page" },
-  linkedin: { id: "linkedin", label: "LinkedIn", brandIcon: "linkedin", accountType: "social", live: false, permissions: "Share posts on your profile or Page" },
+  linkedin: { id: "linkedin", label: "LinkedIn", brandIcon: "linkedin", accountType: "social", live: true, permissions: "Share posts on your profile" },
   x: { id: "x", label: "X", brandIcon: "x", accountType: "social", live: false, permissions: "Post to your account" },
   pinterest: { id: "pinterest", label: "Pinterest", brandIcon: "pinterest", accountType: "social", live: false, permissions: "Create pins on your boards" },
   wordpress: { id: "wordpress", label: "WordPress", brandIcon: "wordpress", accountType: "website", live: true, permissions: "Create & schedule posts via Application Password" },

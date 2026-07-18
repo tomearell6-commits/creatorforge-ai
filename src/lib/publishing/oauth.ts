@@ -132,17 +132,9 @@ export async function oauthExchange(
 
   switch (platform) {
     case "linkedin": {
-      let t;
-      try {
-        t = await formPost("https://www.linkedin.com/oauth/v2/accessToken", {
-          grant_type: "authorization_code", code, redirect_uri: rd, client_id: id!, client_secret: secret!,
-        });
-      } catch (e) {
-        // TEMP DIAGNOSTIC (remove after): surface which credentials reached the
-        // runtime. The Client ID is NOT secret; we only reveal the secret's LENGTH.
-        const msg = e instanceof Error ? e.message : String(e);
-        throw new Error(`${msg} [diag id=${id ?? "MISSING"} idlen=${(id ?? "").length} secretlen=${(secret ?? "").length} rd=${rd}]`);
-      }
+      const t = await formPost("https://www.linkedin.com/oauth/v2/accessToken", {
+        grant_type: "authorization_code", code, redirect_uri: rd, client_id: id!, client_secret: secret!,
+      });
       const me = await (await fetchWithTimeout("https://api.linkedin.com/v2/userinfo", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
       return { accessToken: t.access_token, refreshToken: t.refresh_token ?? null, expiresIn: t.expires_in, externalId: me.sub, accountName: me.name ?? "LinkedIn" };
     }
