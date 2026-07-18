@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 import { PLANS } from "@/lib/constants";
+import { PlanComparison } from "@/components/marketing/PlanComparison";
 
 export const metadata = { title: "Pricing — CreatorsForge AI" };
 
@@ -38,10 +39,18 @@ export default function PricingPage() {
                 )}
                 <h3 className="text-xl font-bold">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold">${plan.price}</span>
-                  <span className="text-muted-foreground">/mo</span>
+                  {plan.custom ? (
+                    <span className="text-4xl font-extrabold">Custom</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-extrabold">${plan.price}</span>
+                      <span className="text-muted-foreground">/mo</span>
+                    </>
+                  )}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{plan.credits} credits / month</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {plan.custom ? "Volume credits & SLAs — let's talk" : `${plan.credits.toLocaleString()} credits / month`}
+                </p>
 
                 <ul className="mt-6 flex-1 space-y-3 text-sm">
                   {plan.features.map((f) => (
@@ -57,11 +66,17 @@ export default function PricingPage() {
                   variant={plan.highlighted ? "primary" : "outline"}
                   className="mt-6 w-full"
                 >
-                  <Link href={plan.price === 0 ? "/signup" : `/signup?plan=${plan.id}&redirect=%2Fdashboard%2Fbilling`}>{plan.price === 0 ? "Start free" : "Choose plan"}</Link>
+                  {plan.custom ? (
+                    <a href="mailto:hello@creatorsforge.io?subject=Enterprise%20plan%20inquiry">Contact sales</a>
+                  ) : (
+                    <Link href={plan.price === 0 ? "/signup" : `/signup?plan=${plan.id}&redirect=%2Fdashboard%2Fbilling`}>{plan.price === 0 ? "Start free" : "Choose plan"}</Link>
+                  )}
                 </Button>
               </Card>
             ))}
           </div>
+
+          <PlanComparison />
         </section>
       </main>
       <Footer />
