@@ -149,7 +149,7 @@ export default async function LandingPage() {
 
         {/* Testimonials */}
         <section className="mx-auto max-w-6xl px-4 py-20">
-          <SectionHead eyebrow="Loved by builders" title="Trusted by creators and businesses" subtitle="Real customer stories are on the way." />
+          <SectionHead eyebrow="For creators & businesses" title="Built for the way you work" subtitle="One platform for content, design, sites and growth — with customer stories on the way." />
           <TestimonialsComingSoon />
         </section>
 

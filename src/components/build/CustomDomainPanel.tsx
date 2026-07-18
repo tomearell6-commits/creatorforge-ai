@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Globe2, Check, RefreshCw, Trash2, Lock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,7 @@ type DnsRecord = { type: string; name: string; value: string };
 type Site = { id: string; custom_domain: string | null; domain_status: string; domain_error: string | null };
 
 /**
- * Connect a customer's own domain to a published site (Business/Enterprise).
+ * Connect a customer's own domain to a published site (Professional and up).
  * Vercel issues the SSL certificate once their DNS resolves — we only ever show
  * "live" when Vercel confirms it.
  */
@@ -39,6 +39,28 @@ export function CustomDomainPanel({
   // At the plan cap only blocks connecting a NEW domain — a site that already
   // has one can still update/verify/remove its own.
   const atLimit = limit != null && !connected && (used ?? 0) >= limit;
+
+  // On load, a domain that's connected-but-not-verified has no DNS records in
+  // state (they only came from the attach/verify response). Silently refetch
+  // them so a returning user still sees which record to add — no error banner.
+  useEffect(() => {
+    if (!connected || verified) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/build/sites/domain", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ siteId: site.id, action: "verify" }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (cancelled || !r.ok) return;
+        if (j.config?.records) setRecords(j.config.records);
+        if (j.site) onChanged(j.site);
+      } catch { /* silent — user can still click Verify */ }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function call(action: "attach" | "verify" | "remove") {
     setBusy(action); setMsg(null);
@@ -70,7 +92,7 @@ export function CustomDomainPanel({
             <p className="text-sm font-semibold">Use your own domain</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Serve this site at <strong>your-business.com</strong> instead of a CreatorsForge link, with SSL included.
-              Available on <strong>Business</strong> and <strong>Enterprise</strong>.
+              Available on <strong>Professional</strong> and up.
             </p>
           </div>
           <Link href="/dashboard/billing"><Button size="sm" variant="outline">Upgrade</Button></Link>
@@ -105,6 +127,7 @@ export function CustomDomainPanel({
       <div className="flex flex-wrap gap-2">
         <input
           type="text"
+          aria-label="Your custom domain"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
           placeholder="mybusiness.com"

@@ -2,12 +2,12 @@
  * Publishing provider registry (Phase 6).
  *
  * `getPublishProvider(platform)` returns a real provider when its OAuth client
- * env vars are present, otherwise a placeholder that simulates publishing. Add a
- * real integration by implementing PublishProvider and returning it from the
- * switch when configured — no route or UI change required.
+ * env vars are present, otherwise an "unconfigured" provider that FAILS HONESTLY
+ * (never fakes a publish). Add a real integration by implementing PublishProvider
+ * and returning it from the switch when configured — no route or UI change needed.
  */
 import type { SocialPlatform } from "@/lib/types";
-import type { PublishProvider, PublishInput, PublishResult } from "./types";
+import type { PublishProvider, PublishResult } from "./types";
 import { PLATFORMS } from "@/lib/constants";
 import { wordpressProvider } from "./providers/wordpress";
 import { youtubeProvider, isYouTubeConfigured } from "./providers/youtube";
@@ -22,18 +22,18 @@ export function isPlatformConfigured(platform: SocialPlatform): boolean {
   return !!id && !!secret;
 }
 
-function placeholderProvider(platform: SocialPlatform): PublishProvider {
+function unconfiguredProvider(platform: SocialPlatform): PublishProvider {
+  const name = PLATFORMS.find((p) => p.id === platform)?.name ?? platform;
   return {
     id: platform,
     configured: false,
-    async publish(input: PublishInput): Promise<PublishResult> {
-      // Simulate a successful publish with a deterministic fake post id/url.
-      const postId = `ph_${platform}_${Date.now().toString(36)}`;
-      const slug = encodeURIComponent(input.title.slice(0, 40).replace(/\s+/g, "-") || postId);
+    async publish(): Promise<PublishResult> {
+      // NEVER fake success. A platform with no live adapter fails honestly — the
+      // user's content is saved and can be posted once an approved app for that
+      // platform is connected.
       return {
-        status: "published",
-        externalPostId: postId,
-        externalUrl: `https://${platform}.example/${slug}`,
+        status: "failed",
+        error: `${name} live posting isn't enabled yet. Connect an approved ${name} app to publish — your content is saved.`,
       };
     },
   };
@@ -47,6 +47,6 @@ export function getPublishProvider(platform: SocialPlatform): PublishProvider {
   // LinkedIn / Facebook / Instagram / X / Pinterest / TikTok via the OAuth registry.
   const social = getSocialProvider(platform);
   if (social) return social;
-  // Otherwise placeholder (simulated publish).
-  return placeholderProvider(platform);
+  // Otherwise: no live adapter — fail honestly, never simulate a publish.
+  return unconfiguredProvider(platform);
 }

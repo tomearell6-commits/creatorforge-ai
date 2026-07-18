@@ -1,6 +1,6 @@
 /**
  * POST /api/build/sites/domain — connect a customer's own domain to a published
- * site. Business/Enterprise plans only.
+ * site. Professional plan and up.
  *
  *   { siteId, action: "attach", domain }  -> validate + add to Vercel, mark pending
  *   { siteId, action: "verify" }          -> ask Vercel if DNS is right yet

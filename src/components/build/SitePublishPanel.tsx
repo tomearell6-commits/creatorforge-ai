@@ -70,6 +70,8 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
   }
 
   async function unpublish() {
+    // Taking a live site offline deletes the hosted files — confirm first.
+    if (!window.confirm("Take your live site offline? Visitors will no longer be able to reach it, and the hosted files are removed. You can republish later.")) return;
     setBusy("unpublish"); setMsg(null);
     try {
       const r = await fetch("/api/build/sites", {

@@ -43,8 +43,14 @@ export function slugify(s: string): string {
     .slice(0, 60) || "page";
 }
 
-function fileFor(page: BuildPage, i: number): string {
-  return i === 0 ? "index.html" : `${slugify(page.pageName)}.html`;
+function fileFor(pages: BuildPage[], i: number): string {
+  if (i === 0) return "index.html";
+  const base = slugify(pages[i].pageName);
+  // Disambiguate duplicate page names so the second "Services" doesn't overwrite
+  // the first on upload (and nav links stay distinct): count earlier same-slug pages.
+  let dupes = 0;
+  for (let j = 1; j < i; j++) if (slugify(pages[j].pageName) === base) dupes++;
+  return dupes === 0 ? `${base}.html` : `${base}-${dupes + 1}.html`;
 }
 
 /** Detail/template pages ("Blog Post", "Product Detail") are destinations you
@@ -112,7 +118,7 @@ footer{border-top:1px solid ${t.border};padding:36px 0;color:${t.muted};font-siz
 function nav(pages: BuildPage[], brand: string, currentFile: string): string {
   const links = navPages(pages)
     .map((p) => {
-      const f = fileFor(p, pages.indexOf(p));
+      const f = fileFor(pages, pages.indexOf(p));
       const current = f === currentFile ? ' aria-current="page"' : "";
       return `<a href="./${f}"${current}>${esc(p.pageName)}</a>`;
     })
@@ -124,7 +130,7 @@ function nav(pages: BuildPage[], brand: string, currentFile: string): string {
 }
 
 function footer(brand: string, pkg: BuildPackage, contact: string | null): string {
-  const year = "2026";
+  const year = String(new Date().getFullYear());
   return `<footer><div class="wrap"><div class="foot">
 <span>&copy; ${year} ${esc(brand)}</span>
 ${contact ? `<span><a href="mailto:${esc(contact)}">${esc(contact)}</a></span>` : ""}
@@ -172,7 +178,7 @@ function pageHtml(opts: {
   const ctaHref = contact
     ? `mailto:${esc(contact)}`
     : contactPage
-      ? `./${fileFor(contactPage, pages.indexOf(contactPage))}`
+      ? `./${fileFor(pages, pages.indexOf(contactPage))}`
       : null;
 
   return `<!doctype html>
@@ -199,7 +205,7 @@ ${nav(pages, brand, file)}
 <p>${esc(c.subhead || page.purpose)}</p>
 <div class="actions">
 ${c.cta ? `<a class="btn" href="#contact">${esc(c.cta)}</a>` : ""}
-${isHome && pages[1] ? `<a class="btn ghost" href="./${fileFor(pages[1], 1)}">${esc(pages[1].pageName)}</a>` : ""}
+${isHome && pages[1] ? `<a class="btn ghost" href="./${fileFor(pages, 1)}">${esc(pages[1].pageName)}</a>` : ""}
 </div>
 </div>
 ${isHome && heroImage ? `<div class="heroimg"><img src="${esc(heroImage)}" alt="${esc(c.headline || brand)}" width="800" height="600" loading="eager"></div>` : ""}
@@ -254,7 +260,7 @@ export function renderSite(
     pages.push({ pageName: "Home", purpose: pkg.structureOverview ?? "", sections: [], copy: { headline: brand, subhead: pkg.brandPositioning ?? "", cta: "Get started" } });
   }
   return pages.map((page, i) => {
-    const file = fileFor(page, i);
+    const file = fileFor(pages, i);
     return { path: file, html: pageHtml({ pkg, page, pages, brand, theme, isHome: i === 0, contact, file, heroImage }) };
   });
 }

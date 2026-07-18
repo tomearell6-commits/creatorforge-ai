@@ -196,7 +196,7 @@ export const PLANS: Plan[] = [
     credits: 0,
     custom: true,
     tagline: "Custom volume, SLAs and onboarding",
-    features: ["Custom monthly credits", "Custom integrations", "Enterprise support & SLA", "Dedicated account manager", "Custom contracts & invoicing"],
+    features: ["Custom monthly credits", "Unlimited sites on your own domain", "Custom integrations", "Enterprise support & SLA", "Dedicated account manager"],
   },
 ];
 
