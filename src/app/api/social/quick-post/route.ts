@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /** Platforms whose live adapter supports a text-only post. */
-export const TEXT_CAPABLE = ["linkedin", "facebook", "x"] as const;
+const TEXT_CAPABLE = ["linkedin", "facebook", "x"] as const;
 
 export async function POST(request: Request) {
   const supabase = await createClient();
