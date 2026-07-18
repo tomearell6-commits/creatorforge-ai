@@ -17,10 +17,14 @@ type Site = { id: string; custom_domain: string | null; domain_status: string; d
  * "live" when Vercel confirms it.
  */
 export function CustomDomainPanel({
-  site, allowed, onChanged,
+  site, allowed, limit, used, onChanged,
 }: {
   site: Site;
   allowed: boolean;
+  /** Max custom-domain sites the plan allows; null = unlimited. */
+  limit?: number | null;
+  /** How many custom-domain sites the user already has (across all projects). */
+  used?: number;
   onChanged: (site: Site) => void;
 }) {
   const [domain, setDomain] = useState(site.custom_domain ?? "");
@@ -31,6 +35,10 @@ export function CustomDomainPanel({
   const status = site.domain_status ?? "none";
   const connected = !!site.custom_domain;
   const verified = status === "verified";
+
+  // At the plan cap only blocks connecting a NEW domain — a site that already
+  // has one can still update/verify/remove its own.
+  const atLimit = limit != null && !connected && (used ?? 0) >= limit;
 
   async function call(action: "attach" | "verify" | "remove") {
     setBusy(action); setMsg(null);
@@ -78,10 +86,21 @@ export function CustomDomainPanel({
         <p className="text-sm font-semibold">Your own domain</p>
         {verified && <Badge variant="success">live</Badge>}
         {connected && !verified && <Badge variant="warning">pending DNS</Badge>}
+        {limit != null && (
+          <span className="ml-auto text-xs text-muted-foreground">{used ?? 0} of {limit} used</span>
+        )}
+        {limit == null && <span className="ml-auto text-xs text-muted-foreground">Unlimited</span>}
       </div>
 
       {msg && <Alert variant={msg.kind === "success" ? "success" : "error"}>{msg.text}</Alert>}
       {site.domain_error && <Alert variant="error">{site.domain_error}</Alert>}
+
+      {atLimit && (
+        <Alert variant="warning">
+          You&rsquo;ve used all {limit} custom domain{limit === 1 ? "" : "s"} on your plan. Remove one, or{" "}
+          <Link href="/dashboard/billing" className="underline">upgrade</Link> for more.
+        </Alert>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <input
@@ -92,7 +111,7 @@ export function CustomDomainPanel({
           disabled={busy !== null}
           className="h-10 min-w-[220px] flex-1 rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
         />
-        <Button size="sm" onClick={() => call("attach")} disabled={busy !== null || !domain.trim()}>
+        <Button size="sm" onClick={() => call("attach")} disabled={busy !== null || !domain.trim() || atLimit}>
           {busy === "attach" ? <Spinner className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
           {connected ? "Update" : "Connect"}
         </Button>

@@ -38,6 +38,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   { key: "credits",       label: "Monthly credits",          group: "capacity", values: { free: "50 (trial)", creator: "500", pro: "2,000", agency: "8,000", enterprise: "Custom" } },
   { key: "topups",        label: "Credit top-ups",           group: "capacity", values: PAID_UP },
   { key: "storage",       label: "Media storage",            group: "capacity", values: { free: "500 MB", creator: "5 GB", pro: "25 GB", agency: "100 GB", enterprise: "Custom" } },
+  { key: "custom_domains", label: "Hosted sites on your own domain", group: "capacity", values: { free: false, creator: false, pro: "1", agency: "5", enterprise: "Unlimited" } },
   { key: "workspaces",    label: "Workspaces",               group: "capacity", values: { free: "1", creator: "1", pro: "3", agency: "10", enterprise: "Custom" } },
   { key: "exports",       label: "Export formats",           group: "capacity", values: { free: "Watermarked", creator: "PNG · JPG · MP4", pro: "All formats + PDF", agency: "All formats + PDF", enterprise: "All formats + PDF" } },
   { key: "api",           label: "API access",               group: "capacity", values: { ...BIZ_UP, agency: "Coming soon", enterprise: "Custom" } },

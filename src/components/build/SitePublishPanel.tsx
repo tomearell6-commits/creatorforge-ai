@@ -30,6 +30,8 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
   const [copied, setCopied] = useState(false);
 
   const [domainAllowed, setDomainAllowed] = useState(false);
+  const [domainLimit, setDomainLimit] = useState<number | null>(null);
+  const [domainUsed, setDomainUsed] = useState(0);
 
   const load = useCallback(() => {
     fetch(`/api/build/sites?projectId=${projectId}`)
@@ -38,6 +40,8 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
         const s: Site | undefined = j.sites?.[0];
         if (s) { setSite(s); if (s.template) setTemplate(s.template as SiteTemplateId); }
         setDomainAllowed(!!j.customDomainAllowed);
+        setDomainLimit(j.customDomainLimit ?? null);
+        setDomainUsed(j.customDomainUsed ?? 0);
       })
       .finally(() => setLoading(false));
   }, [projectId]);
@@ -122,7 +126,13 @@ export function SitePublishPanel({ projectId, generated }: { projectId: string; 
           )}
 
           {isLive && (
-            <CustomDomainPanel site={site} allowed={domainAllowed} onChanged={(s) => setSite({ ...site, ...s })} />
+            <CustomDomainPanel
+              site={site}
+              allowed={domainAllowed}
+              limit={domainLimit}
+              used={domainUsed}
+              onChanged={(s) => setSite({ ...site, ...s })}
+            />
           )}
 
           <div>

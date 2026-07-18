@@ -13,7 +13,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 import { getUserPlan } from "@/lib/plan";
-import { planAllowsCustomDomain } from "@/config/buildStudio";
+import { planAllowsCustomDomain, customDomainLimit } from "@/config/buildStudio";
 import { addDomain, getDomainConfig, removeDomain, normalizeDomain, vercelDomainsConfigured } from "@/lib/build/vercel-domains";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   const plan = await getUserPlan(supabase);
   if (!planAllowsCustomDomain(plan)) {
-    return apiError("Custom domains are available on the Business and Enterprise plans.", 403, { code: "upgrade_required" });
+    return apiError("Custom domains are available on the Professional plan and up.", 403, { code: "upgrade_required" });
   }
   if (!vercelDomainsConfigured()) {
     return apiError("Custom domains aren't enabled on the server yet.", 503, { code: "not_configured" });
@@ -50,6 +50,25 @@ export async function POST(request: Request) {
     const { data: taken } = await supabase
       .from("build_sites").select("id").eq("custom_domain", host).neq("id", site.id).maybeSingle();
     if (taken) return apiError("That domain is already connected to another site.", 409);
+
+    // Plan cap: only count sites OTHER than this one (re-pointing this site's
+    // domain shouldn't consume a second slot). At the limit → upgrade.
+    const limit = customDomainLimit(plan);
+    if (Number.isFinite(limit)) {
+      const { count } = await supabase
+        .from("build_sites")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .not("custom_domain", "is", null)
+        .neq("id", site.id);
+      if ((count ?? 0) >= limit) {
+        return apiError(
+          `Your plan includes ${limit} custom domain${limit === 1 ? "" : "s"}, and you've used ${count}. Remove one or upgrade for more.`,
+          403,
+          { code: "domain_limit" },
+        );
+      }
+    }
 
     // Swap: detach whatever this site had before.
     if (site.custom_domain && site.custom_domain !== host) await removeDomain(site.custom_domain);

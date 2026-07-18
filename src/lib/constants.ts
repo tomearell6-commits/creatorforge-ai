@@ -175,7 +175,7 @@ export const PLANS: Plan[] = [
     annualPrice: 490,
     credits: 2000,
     tagline: "For professionals and small teams",
-    features: ["2,000 credits / month", "Priority generation", "Lead Generator access", "Team workspace (soon)", "Priority support"],
+    features: ["2,000 credits / month", "Priority generation", "Lead Generator access", "1 site on your own domain", "Priority support"],
     highlighted: true,
     badge: "Most Popular",
   },
@@ -186,7 +186,7 @@ export const PLANS: Plan[] = [
     annualPrice: 1490,
     credits: 8000,
     tagline: "For agencies and growing businesses",
-    features: ["8,000 credits / month", "Everything in Professional", "API access (soon)", "White-label (soon)", "Dedicated support"],
+    features: ["8,000 credits / month", "Everything in Professional", "5 sites on your own domain", "API access (soon)", "Dedicated support"],
     badge: "Recommended",
   },
   {

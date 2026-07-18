@@ -108,14 +108,28 @@ export const BUILD_CREDIT_COSTS = {
 } as const;
 
 /**
- * Custom domains for published sites are a Business/Enterprise perk — the main
- * reason to upgrade. Plan ids: free | creator (Starter) | pro (Business) |
- * agency (Enterprise).
+ * Custom domains for published sites are a paid perk that drives upgrades.
+ * Plan ids → display names: free (Free Trial) | creator (Starter) |
+ * pro (Professional) | agency (Business) | enterprise (Enterprise).
+ * Included on Professional and up; each tier caps how many sites can have their
+ * own domain (bounds bandwidth/abuse and keeps the upgrade ladder meaningful).
  */
-export const CUSTOM_DOMAIN_PLANS = ["pro", "agency"] as const;
+export const CUSTOM_DOMAIN_PLANS = ["pro", "agency", "enterprise"] as const;
+
+/** Max number of published sites that can hold a custom domain, per plan. */
+export const CUSTOM_DOMAIN_LIMITS: Record<string, number> = {
+  pro: 1,
+  agency: 5,
+  enterprise: Infinity,
+};
 
 export function planAllowsCustomDomain(plan: string | null | undefined): boolean {
   return (CUSTOM_DOMAIN_PLANS as readonly string[]).includes(plan ?? "free");
+}
+
+/** How many custom-domain sites this plan may have (0 if not entitled). */
+export function customDomainLimit(plan: string | null | undefined): number {
+  return CUSTOM_DOMAIN_LIMITS[plan ?? "free"] ?? 0;
 }
 
 export const BUILD_CREDIT_REASONS = {

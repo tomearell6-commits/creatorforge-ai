@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 import { getUserPlan } from "@/lib/plan";
-import { planAllowsCustomDomain } from "@/config/buildStudio";
+import { planAllowsCustomDomain, customDomainLimit } from "@/config/buildStudio";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +26,22 @@ export async function GET(request: Request) {
   const { data, error } = await q;
   if (error) return apiError(error.message, 400);
 
-  // Drives the custom-domain panel: entitlement, not just a UI hint (the domain
-  // route enforces the same check server-side).
+  // Drives the custom-domain panel: entitlement + remaining slots (the domain
+  // route enforces the same checks server-side). The cap is per-USER across ALL
+  // projects, so count separately — `data` may be filtered to one project.
   const plan = await getUserPlan(supabase);
-  return NextResponse.json({ sites: data ?? [], customDomainAllowed: planAllowsCustomDomain(plan) });
+  const limit = customDomainLimit(plan);
+  const { count: used } = await supabase
+    .from("build_sites")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .not("custom_domain", "is", null);
+  return NextResponse.json({
+    sites: data ?? [],
+    customDomainAllowed: planAllowsCustomDomain(plan),
+    customDomainLimit: Number.isFinite(limit) ? limit : null, // null = unlimited
+    customDomainUsed: used ?? 0,
+  });
 }
 
 export async function POST(request: Request) {
