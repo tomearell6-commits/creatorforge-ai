@@ -161,6 +161,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("calendar", "Publishing Calendar", "/dashboard/calendar", CalendarDays, "Plan and schedule your posts", 3, { tour: "publishing-calendar" }),
           c("approval-queue", "Approval Queue", "/dashboard/autopilot/queue", ListChecks, "Review before anything goes live", 4),
           c("social-scheduling", "Social Scheduling", "/dashboard/publish", Share2, "Publish to connected platforms", 5),
+          c("quick-post", "Quick Post", "/dashboard/publish/quick", Share2, "Post a short text update to LinkedIn, Facebook or X now — no video needed", 5),
           c("wp-scheduling", "WordPress Scheduling", "/dashboard/seo/calendar", Globe, "Scheduled blog publishing", 6),
           c("workflows", "Workflow Builder", "/dashboard/automation", Workflow, "Trigger-based automations", 7),
         ],

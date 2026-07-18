@@ -11,7 +11,7 @@ import { FeatureShowcase } from "@/components/marketing/home/FeatureShowcase";
 import { AutopilotShowcase } from "@/components/marketing/home/AutopilotShowcase";
 import { AssistantDemo } from "@/components/marketing/home/AssistantDemo";
 import { EcosystemSection } from "@/components/marketing/home/EcosystemSection";
-import { TestimonialsComingSoon } from "@/components/marketing/home/TestimonialsComingSoon";
+import { Testimonials } from "@/components/marketing/home/Testimonials";
 import { HomeFaq } from "@/components/marketing/home/HomeFaq";
 import { FinalCTA } from "@/components/marketing/home/FinalCTA";
 import { MarketingFooter } from "@/components/marketing/home/MarketingFooter";
@@ -150,7 +150,7 @@ export default async function LandingPage() {
         {/* Testimonials */}
         <section className="mx-auto max-w-6xl px-4 py-20">
           <SectionHead eyebrow="For creators & businesses" title="Built for the way you work" subtitle="One platform for content, design, sites and growth — with customer stories on the way." />
-          <TestimonialsComingSoon />
+          <Testimonials />
         </section>
 
         {/* FAQ */}
