@@ -11,14 +11,28 @@ import {
 } from "@/lib/leads/firecrawl";
 import { verifySingleEmail, updateVerificationStatus, willUseNeverBounce } from "@/lib/leads/neverbounce";
 
+// Scraping many sites is slow; give the function the max Vercel allows and, below,
+// a wall-clock budget so it stops and saves what it has BEFORE the platform kills it.
+export const runtime = "nodejs";
+export const maxDuration = 300;
+
+// Stop scraping this many ms into the run (leaves headroom under maxDuration for
+// dedup + insert + verification so partial results are always persisted).
+const SCRAPE_BUDGET_MS = 210_000;
+// Absolute cutoff for the verification tail so we still mark the campaign complete.
+const VERIFY_BUDGET_MS = 285_000;
+
 /**
  * POST /api/leads/campaigns/run — the lead pipeline.
  * Crawls each PUBLIC source URL (Firecrawl honors robots.txt), extracts public
  * business data, stores provenance, dedups, optionally verifies emails, and
  * charges credits per billable action (only when a real provider runs). Stops
- * gracefully and asks the user to top up if credits run out mid-run.
+ * gracefully and asks the user to top up if credits run out mid-run, or when the
+ * time budget is hit (partial results are saved either way).
  */
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+  const outOfTime = (budget: number) => Date.now() - startedAt > budget;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -79,7 +93,7 @@ export async function POST(request: Request) {
     };
 
     for (const rawUrl of (campaign.source_urls as string[])) {
-      if (rawLeads.length >= maxLeads || toppedOut) break;
+      if (rawLeads.length >= maxLeads || toppedOut || outOfTime(SCRAPE_BUDGET_MS)) break;
       const safe = await safeSourceUrl(rawUrl);
       if (!safe.ok) { await logCompliance(supabase, user.id, "blocked_url", `${rawUrl}: ${safe.error}`, { campaignId }); continue; }
 
@@ -88,12 +102,12 @@ export async function POST(request: Request) {
       if (lead && rawLeads.length < maxLeads) rawLeads.push(lead);
 
       // 2) Directory / listing page → expand into the businesses it links to.
-      if (scrape && !toppedOut && rawLeads.length < maxLeads) {
+      if (scrape && !toppedOut && rawLeads.length < maxLeads && !outOfTime(SCRAPE_BUDGET_MS)) {
         const bizLinks = extractBusinessLinks(scrape, { limit: 30 });
         if (bizLinks.length >= 5) {
           await logCompliance(supabase, user.id, "extract", `directory ${safe.url}: ${bizLinks.length} businesses`, { campaignId });
           for (const link of bizLinks) {
-            if (rawLeads.length >= maxLeads || toppedOut) break;
+            if (rawLeads.length >= maxLeads || toppedOut || outOfTime(SCRAPE_BUDGET_MS)) break;
             const bs = await safeSourceUrl(link);
             if (!bs.ok) continue;
             const child = await scanSite(bs.url);
@@ -129,6 +143,7 @@ export async function POST(request: Request) {
     if (campaign.verify_emails) {
       for (const it of insertedIds) {
         if (!it.email) continue;
+        if (outOfTime(VERIFY_BUDGET_MS)) break; // leave the rest "unverified"; user can re-verify later
         if (billVerify && (await getCreditBalance()) < LEAD_CREDIT_COSTS.emailVerify) { toppedOut = true; break; }
         const result = await verifySingleEmail(it.email);
         await updateVerificationStatus(supabase, user.id, it.id, result);
