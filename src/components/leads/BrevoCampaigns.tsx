@@ -68,27 +68,47 @@ export function BrevoCampaigns() {
     fetch("/api/leads/lists")
       .then((r) => (r.ok ? r.json() : { lists: [] }))
       .then((d) => {
-        setLists(d.lists ?? []);
-        if (d.lists?.[0]) setListId(d.lists[0].id);
+        const ls: LeadList[] = d.lists ?? [];
+        setLists(ls);
+        // Preselect a list passed via ?list= (e.g. the "Start campaign" button on
+        // the Lists page), otherwise default to the first list.
+        const preferred = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("list") : null;
+        if (preferred && ls.some((l) => l.id === preferred)) setListId(preferred);
+        else if (ls[0]) setListId(ls[0].id);
       })
       .catch(() => setLists([]));
     loadCampaigns();
   }, []);
 
+  /** Ensure the lead list is synced to a Brevo contact list; returns its Brevo id.
+   *  Auto-syncs on demand so users never have to run a separate "sync" step first. */
+  async function ensureSynced(leadListId: string): Promise<number | null> {
+    const existing = brevoListByLead[leadListId];
+    if (existing) return existing;
+    const res = await fetch("/api/leads/brevo/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ listId: leadListId }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok || d.configured === false || !d.brevoListId) return null;
+    setBrevoListByLead((m) => ({ ...m, [leadListId]: d.brevoListId as number }));
+    return d.brevoListId as number;
+  }
+
   async function createAndSend(send: boolean) {
     if (!name.trim() || !templateId || !listId) return;
-    // The campaign must target the Brevo contact list created by the sync step.
-    const brevoListId = brevoListByLead[listId];
-    if (!brevoListId) {
-      setError(null);
-      setNotice({ variant: "warning", text: "Sync this lead list to Brevo first (in the “Sync to Brevo” box above), then create the campaign." });
-      return;
-    }
     setBusy(true);
     setError(null);
     setNotice(null);
     setPendingSend(null);
     try {
+      // Auto-sync the list to Brevo if it hasn't been synced yet — no separate step.
+      const brevoListId = await ensureSynced(listId);
+      if (!brevoListId) {
+        setError("Couldn't sync this list to Brevo. Check that Brevo is connected and the list has contactable leads, then try again.");
+        return;
+      }
       const createRes = await fetch("/api/leads/brevo/create-campaign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

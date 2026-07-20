@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ListChecks, Users } from "lucide-react";
+import { ListChecks, Users, Send } from "lucide-react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
@@ -95,6 +95,11 @@ export function LeadLists() {
                     <Link href={`/dashboard/leads/lists?listId=${l.id}`}>View leads</Link>
                   </Button>
                   <LeadExportButton listId={l.id} />
+                  <Button asChild size="sm" variant="accent">
+                    <Link href={`/dashboard/leads/campaigns?list=${l.id}`}>
+                      <Send className="h-4 w-4" aria-hidden /> Start campaign
+                    </Link>
+                  </Button>
                 </div>
               </Card>
             </li>
