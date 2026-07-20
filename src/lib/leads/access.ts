@@ -13,10 +13,11 @@ export type AccessLevel = "none" | "limited" | "full" | "advanced";
 
 /** Code defaults; a matching row in lead_usage_limits (admin-editable) overrides. */
 export const LEAD_PLAN_ACCESS: Record<string, { level: AccessLevel; monthlyLeads: number; dailySends: number; automatedSend: boolean }> = {
-  free:    { level: "none",     monthlyLeads: 0,     dailySends: 0,    automatedSend: false },
-  creator: { level: "limited",  monthlyLeads: 100,   dailySends: 0,    automatedSend: false },
-  pro:     { level: "full",     monthlyLeads: 2000,  dailySends: 500,  automatedSend: true },
-  agency:  { level: "advanced", monthlyLeads: 10000, dailySends: 2000, automatedSend: true },
+  free:       { level: "none",     monthlyLeads: 0,      dailySends: 0,     automatedSend: false },
+  creator:    { level: "limited",  monthlyLeads: 100,    dailySends: 0,     automatedSend: false },
+  pro:        { level: "full",     monthlyLeads: 2000,   dailySends: 500,   automatedSend: true },
+  agency:     { level: "advanced", monthlyLeads: 10000,  dailySends: 2000,  automatedSend: true },
+  enterprise: { level: "advanced", monthlyLeads: 100000, dailySends: 20000, automatedSend: true },
 };
 
 export type LeadAccess = {
