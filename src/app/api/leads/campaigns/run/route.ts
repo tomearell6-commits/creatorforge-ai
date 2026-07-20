@@ -97,14 +97,17 @@ export async function POST(request: Request) {
       const safe = await safeSourceUrl(rawUrl);
       if (!safe.ok) { await logCompliance(supabase, user.id, "blocked_url", `${rawUrl}: ${safe.error}`, { campaignId }); continue; }
 
-      // 1) The page's own business.
+      // 1) The page's own business — but only if this ISN'T a directory page.
+      // A directory's "own" email is the directory operator (e.g. the chamber),
+      // never a lead, so we skip it and expand into its listed businesses instead.
       const { scrape, lead } = await scanSite(safe.url);
-      if (lead && rawLeads.length < maxLeads) rawLeads.push(lead);
+      const bizLinks = scrape ? extractBusinessLinks(scrape, { limit: 30 }) : [];
+      const isDirectory = bizLinks.length >= 5;
+      if (lead && !isDirectory && rawLeads.length < maxLeads) rawLeads.push(lead);
 
       // 2) Directory / listing page → expand into the businesses it links to.
-      if (scrape && !toppedOut && rawLeads.length < maxLeads && !outOfTime(SCRAPE_BUDGET_MS)) {
-        const bizLinks = extractBusinessLinks(scrape, { limit: 30 });
-        if (bizLinks.length >= 5) {
+      if (scrape && isDirectory && !toppedOut && rawLeads.length < maxLeads && !outOfTime(SCRAPE_BUDGET_MS)) {
+        {
           await logCompliance(supabase, user.id, "extract", `directory ${safe.url}: ${bizLinks.length} businesses`, { campaignId });
           for (const link of bizLinks) {
             if (rawLeads.length >= maxLeads || toppedOut || outOfTime(SCRAPE_BUDGET_MS)) break;

@@ -15,18 +15,33 @@ export function willUseFirecrawl(): boolean { return !!process.env.FIRECRAWL_API
 export type Scrape = { markdown: string; html: string; title?: string; description?: string; url: string; links?: string[] };
 
 // Email domains that are never a real business contact (CMS/vendor/placeholder).
+// Includes directory/membership software vendors whose contact address gets
+// scraped off the very directory pages we expand (e.g. ChamberMaster/GrowthZone).
 const JUNK_EMAIL_DOMAINS = [
   "example.com", "example.org", "domain.com", "yourdomain.com", "email.com",
   "sentry.io", "wixpress.com", "wix.com", "squarespace.com", "godaddy.com",
-  "cloudflare.com", "gravatar.com", "sentry-next.wixpress.com", "w.org", "w.org",
+  "cloudflare.com", "gravatar.com", "sentry-next.wixpress.com", "w.org",
+  "chamberdata.com", "chambermaster.com", "growthzone.com", "weblinkconnect.com",
+  "memberzone.com", "membershipworks.com", "membersuite.com", "wordpress.com",
 ];
-// Hosts that are aggregators/social/assets — not a business's own site.
+// Hosts that are aggregators/social/assets/directory-software — not a business's own site.
 const NON_BUSINESS_HOSTS = [
   "facebook.com", "instagram.com", "twitter.com", "x.com", "linkedin.com", "youtube.com",
   "tiktok.com", "pinterest.com", "google.com", "maps.google.com", "goo.gl", "bit.ly",
   "yelp.com", "tripadvisor.com", "wikipedia.org", "apple.com", "play.google.com",
   "wa.me", "whatsapp.com", "t.me", "gstatic.com", "googleapis.com", "cloudflare.com",
+  "chambermaster.com", "chamberdata.com", "growthzone.com", "weblinkconnect.com",
+  "memberzone.com", "membershipworks.com",
 ];
+// Free mail providers: keep a personalised address (joesdiner@gmail.com) but drop
+// a generic ROLE inbox on them (info@gmail.com) — that's a placeholder, not a lead.
+const FREEMAIL_DOMAINS = new Set([
+  "gmail.com", "googlemail.com", "yahoo.com", "ymail.com", "hotmail.com", "outlook.com",
+  "live.com", "msn.com", "aol.com", "icloud.com", "me.com", "gmx.com", "proton.me", "protonmail.com",
+]);
+const ROLE_LOCALPART = /^(info|contact|hello|sales|enquir\w*|inquir\w*|admin|office|support|team|mail|help|general|reservations?)$/i;
+// Bogus/artifact TLDs — e.g. "frame-…@mhtml.blink" from a saved-page (MHTML) blob.
+const BOGUS_TLD = /\.(blink|invalid|local|localhost|test|example|lan|internal|arpa)$/i;
 export type RawLead = {
   business_name?: string; business_type?: string; website?: string; source_url: string; contact_page_url?: string;
   email?: string; phone?: string; address?: string; city?: string; country?: string;
@@ -93,8 +108,13 @@ export function extractPublicEmails(text: string): string[] {
   const found = (deobfuscated.match(EMAIL_RE) ?? [])
     .map((e) => e.toLowerCase().replace(/[.,;:]+$/, ""))
     .filter((e) => !IMG_EMAIL.test(e))
+    .filter((e) => !BOGUS_TLD.test(e.split("@")[1] ?? ""))                    // mhtml.blink & other artifacts
     .filter((e) => !JUNK_EMAIL_DOMAINS.some((d) => e.endsWith(`@${d}`) || e.endsWith(`.${d}`)))
-    .filter((e) => !/^(no-?reply|mailer-daemon|postmaster|donotreply)@/i.test(e));
+    .filter((e) => !/^(no-?reply|mailer-daemon|postmaster|donotreply)@/i.test(e))
+    .filter((e) => {                                                          // drop role@freemail placeholders
+      const [local, domain] = e.split("@");
+      return !(FREEMAIL_DOMAINS.has(domain ?? "") && ROLE_LOCALPART.test(local ?? ""));
+    });
   return [...new Set(found)];
 }
 
