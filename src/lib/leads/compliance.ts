@@ -43,9 +43,27 @@ export function canContact(lead: { lead_status?: string | null; do_not_contact?:
   return { ok: true };
 }
 
-/** Ensure an email body carries the required unsubscribe footer. */
-export function withUnsubscribeFooter(html: string, unsubscribeUrl = "{{ unsubscribe }}"): string {
-  if (html.toLowerCase().includes("unsubscribe")) return html;
-  const footer = UNSUBSCRIBE_FOOTER.replace("unsubscribe here", `<a href="${unsubscribeUrl}">unsubscribe here</a>`);
-  return `${html}<hr/><p style="font-size:12px;color:#8a9382">${footer}</p>`;
+/**
+ * Ensure an email body carries the CAN-SPAM-required footer: an unsubscribe
+ * link AND the sender's physical mailing address. Both are legally required.
+ */
+export function withUnsubscribeFooter(
+  html: string,
+  opts: { unsubscribeUrl?: string; businessAddress?: string } = {},
+): string {
+  const unsubscribeUrl = opts.unsubscribeUrl ?? "{{ unsubscribe }}";
+  const addr = (opts.businessAddress ?? "").trim();
+  // Only treat unsubscribe as already-present if there's a REAL link/merge-tag —
+  // the mere word "unsubscribe" in prose must not suppress the actual link.
+  const hasUnsubLink = /\{\{\s*unsubscribe\s*\}\}/i.test(html) || /<a[^>]+unsubscribe/i.test(html);
+  const parts: string[] = [];
+  if (!hasUnsubLink) {
+    parts.push(UNSUBSCRIBE_FOOTER.replace("unsubscribe here", `<a href="${unsubscribeUrl}">unsubscribe here</a>`));
+  }
+  if (addr) {
+    const safe = addr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    parts.push(safe);
+  }
+  if (!parts.length) return html;
+  return `${html}<hr/><p style="font-size:12px;color:#8a9382">${parts.join("<br/>")}</p>`;
 }

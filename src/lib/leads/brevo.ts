@@ -54,12 +54,13 @@ export async function syncLeadsToBrevo(listId: number, contacts: LeadContact[]):
   return { configured: true, synced };
 }
 
-export async function createEmailCampaign(args: { name: string; subject: string; htmlContent: string; listId: number; senderName: string; senderEmail: string }): Promise<{ configured: boolean; campaignId?: number; error?: string }> {
+export async function createEmailCampaign(args: { name: string; subject: string; htmlContent: string; listId: number; senderName: string; senderEmail: string; replyTo?: string }): Promise<{ configured: boolean; campaignId?: number; error?: string }> {
   if (!willUseBrevo()) return { configured: false };
   try {
     const r = await brevo("/emailCampaigns", "POST", {
       name: args.name, subject: args.subject, sender: { name: args.senderName, email: args.senderEmail },
       htmlContent: args.htmlContent, recipients: { listIds: [args.listId] },
+      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
     });
     if (!r.ok) {
       const msg = (r.json as { message?: string })?.message;

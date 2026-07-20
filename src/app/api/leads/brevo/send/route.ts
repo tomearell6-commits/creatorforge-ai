@@ -63,8 +63,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Send blocked by a safety check.", checks }, { status: 400 });
   }
 
+  // H2: atomically claim the campaign so two concurrent requests (double-click,
+  // retry) can't both fire the send. Only one request will flip draft/ready →
+  // "sending"; the loser gets a 409.
+  const { data: claimed } = await supabase.from("lead_email_campaigns")
+    .update({ status: "sending", updated_at: new Date().toISOString() })
+    .eq("id", campaignId).eq("user_id", user.id).not("status", "in", "(sent,sending)")
+    .select("id").maybeSingle();
+  if (!claimed) return NextResponse.json({ error: "This campaign is already sending or was sent." }, { status: 409 });
+
   const result = await sendCampaign(Number(campaign.brevo_campaign_id));
-  if (!result.ok) return NextResponse.json({ configured: true, error: "Brevo send failed." }, { status: 502 });
+  if (!result.ok) {
+    // Release the claim so the user can retry after fixing the Brevo error.
+    await supabase.from("lead_email_campaigns").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", campaignId).eq("user_id", user.id);
+    return NextResponse.json({ configured: true, error: "Brevo send failed." }, { status: 502 });
+  }
   if (cost > 0) await deductCredits(cost, "lead_campaign_send");
 
   await supabase.from("lead_email_campaigns").update({ status: "sent", sent: recipients, updated_at: new Date().toISOString() }).eq("id", campaignId).eq("user_id", user.id);

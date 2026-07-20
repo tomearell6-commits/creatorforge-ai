@@ -46,9 +46,16 @@ export async function POST(request: Request) {
 
   if (contacts.length === 0) return NextResponse.json({ error: "No contactable leads." }, { status: 400 });
 
-  const created = await createContactList(list.name as string);
-  if (!created.configured) return NextResponse.json({ configured: false });
-  if (created.error || created.listId == null) return NextResponse.json({ configured: true, error: created.error ?? "brevo_list_failed" }, { status: 502 });
+  // H1/L2: reuse this list's existing Brevo list; create one only once, and
+  // persist the id on OUR record so create-campaign never trusts a client id.
+  let brevoListId = (list.brevo_list_id as number | null) ?? null;
+  if (!brevoListId) {
+    const created = await createContactList(list.name as string);
+    if (!created.configured) return NextResponse.json({ configured: false });
+    if (created.error || created.listId == null) return NextResponse.json({ configured: true, error: created.error ?? "brevo_list_failed" }, { status: 502 });
+    brevoListId = created.listId;
+    await supabase.from("lead_lists").update({ brevo_list_id: brevoListId }).eq("id", listId).eq("user_id", user.id);
+  }
 
   const bill = willUseBrevo();
   const cost = Math.ceil(contacts.length / LEAD_CREDIT_COSTS.brevoSyncPer);
@@ -56,7 +63,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not enough credits to sync.", code: "insufficient_credits" }, { status: 402 });
   }
 
-  const result = await syncLeadsToBrevo(created.listId, contacts);
+  const result = await syncLeadsToBrevo(brevoListId, contacts);
   if (!result.configured) return NextResponse.json({ configured: false });
 
   if (bill && result.synced > 0) {
@@ -66,7 +73,7 @@ export async function POST(request: Request) {
 
   await supabase.from("leads").update({ lead_status: "synced", updated_at: new Date().toISOString() })
     .eq("user_id", user.id).in("id", leadIds);
-  await logCompliance(supabase, user.id, "sync", `list ${listId}: ${result.synced} contacts → brevo list ${created.listId}`);
+  await logCompliance(supabase, user.id, "sync", `list ${listId}: ${result.synced} contacts → brevo list ${brevoListId}`);
 
-  return NextResponse.json({ configured: true, synced: result.synced, brevoListId: created.listId });
+  return NextResponse.json({ configured: true, synced: result.synced, brevoListId: brevoListId });
 }

@@ -51,8 +51,11 @@ export async function verifySingleEmail(email: string): Promise<VerifyResult> {
   const provider = activeProvider();
 
   if (provider === "none") {
-    // Heuristic: disposable domains → disposable; example.com sample → catchall; else valid.
-    const result: VerificationStatus = DISPOSABLE.has(domain) ? "disposable" : domain === "example.com" ? "catchall" : "valid";
+    // NO real verifier configured — NEVER claim "valid" (that would let unverified
+    // addresses be emailed and wreck sender reputation). Disposable domains are
+    // still rejectable by pattern; everything else is "unknown", which is NOT
+    // outreach-eligible, so nothing gets sent on a fabricated pass.
+    const result: VerificationStatus = DISPOSABLE.has(domain) ? "disposable" : "unknown";
     return { email: clean, result, score: calculateEmailQualityScore(result, clean), provider: "heuristic" };
   }
 

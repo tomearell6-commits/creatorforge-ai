@@ -45,7 +45,10 @@ export async function crawlSourceUrl(url: string): Promise<Scrape | null> {
       url,
       title: `${host} — Business`,
       description: `Public business listing for ${host}.`,
-      markdown: `# ${host}\nContact us at info@${host}. Phone: +1 555 010 0000.`,
+      // Non-routable placeholder ONLY — never fabricate a real business address.
+      // Combined with the verifier returning "unknown" for unconfigured mode, these
+      // sample leads are not outreach-eligible and can never be emailed.
+      markdown: `# ${host}\nContact us at info@example.com. Phone: +1 555 010 0000.`,
       html: `<a href="https://facebook.com/${host}">fb</a>`,
     };
   }
