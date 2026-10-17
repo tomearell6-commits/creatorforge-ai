@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { apiError } from "@/lib/api/respond";
+import { blogPostUrl, notifyIndexNow } from "@/lib/seo/indexnow";
 import { slugifyBlog, estimateReadingMinutes, sanitizeBlogHtml, type BlogStatus } from "@/lib/blog/blog";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -107,7 +108,14 @@ export async function PATCH(request: Request) {
 
   const { error } = await gate.admin.from("blog_posts").update(patch).eq("id", b.id);
   if (error) return apiError(error.message || "Could not update the post.", 500);
-  return NextResponse.json({ ok: true });
+
+  // Publishing from the admin table also announces the post via IndexNow.
+  let indexnow = null;
+  if (b.status === "published") {
+    const { data: live } = await gate.admin.from("blog_posts").select("slug").eq("id", b.id).maybeSingle();
+    if (live?.slug) indexnow = await notifyIndexNow(gate.admin, blogPostUrl(live.slug as string));
+  }
+  return NextResponse.json({ ok: true, indexnow });
 }
 
 /** DELETE — remove a post. */

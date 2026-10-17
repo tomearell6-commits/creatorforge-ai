@@ -13,6 +13,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { findRiskyHealthClaims, isHealthTopic, withMedicalDisclaimer } from "./health";
+import { addHeadingAnchorsAndToc, analyzeStructure } from "./structure";
 
 export type SeoArticleInput = {
   mainKeyword: string;
@@ -164,7 +165,12 @@ function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boo
       JSON_SHAPE + ".",
     "articleContent must be well-structured HTML using h2/h3/p/ul/ol (no h1, no scripts, no inline styles). Write genuinely useful, original content for people — not keyword stuffing.",
     `Today's date is ${today}. Never present an earlier year as current. If a year appears in the title it must be ${year}.`,
-    `LENGTH: articleContent MUST contain at least ${minWords} words of real substance (aim for ${minWords + 300}). Use at least 6 h2 sections, h3 sub-sections where useful, a short "Key takeaways" list near the top, concrete examples, and a closing summary. Do not pad with filler.`,
+    `LENGTH: articleContent MUST contain at least ${minWords} words of real substance (aim for ${minWords + 300}). Do not pad with filler.`,
+    "STRUCTURE (strict): the page title is the H1, so do NOT include an h1. Open with a 100-150 word introduction in <p> tags (no heading) that uses the focus keyword in the first sentence. " +
+      "Then <h2>Key takeaways</h2> with a <ul> of 4-6 points. Then 6-9 more <h2> sections, each 150-350 words, each with 2-3 <h3> sub-sections where the topic allows. " +
+      "Never skip heading levels and never use h4-h6. Headings must be descriptive, unique and written for people, with natural keyword variations. " +
+      "Use <ul>/<ol> for lists and at least one <table> (with <thead>/<tbody>) for a comparison or summary where it helps. " +
+      "Finish with <h2>Conclusion</h2> — a short summary that adds no new claims.",
     "KEYWORDS: build the article around the focus keyword plus 8-12 closely related secondary keywords (semantic variations, questions people really search). Use the focus keyword in the H1, within the first 100 words, in a few h2s and in the meta description, naturally. metaDescription ≤ 155 characters; metaTitle ≤ 60 characters.",
     "FAQ: 6-8 genuinely common questions with direct, accurate 2-4 sentence answers.",
     "IMAGE: featuredImagePrompt must describe ONE realistic editorial photograph (no text, no logos, no recognizable real people) that fits the topic.",
@@ -291,6 +297,16 @@ export async function generateSeoPackage(
         revision = `Your previous draft had only ${words} words. Return the complete JSON again with a longer, deeper articleContent of AT LEAST ${minWords} words — expand sections with evidence, examples and practical detail, not filler.`;
         continue;
       }
+
+      const structure = analyzeStructure(raw.articleContent);
+      // One rewrite for structure problems; on the second draft accept it (length and
+      // safety are still enforced) rather than throwing away an otherwise good article.
+      if (!structure.ok && attempt === 0) {
+        lastErr = `weak heading structure (${structure.issues.join("; ")})`;
+        revision = `Your previous draft has heading-structure problems: ${structure.issues.join("; ")}. Return the complete JSON again fixing them, following the STRUCTURE rules exactly and keeping at least ${minWords} words.`;
+        continue;
+      }
+      raw.articleContent = addHeadingAnchorsAndToc(raw.articleContent);
 
       if (health) {
         const risky = findRiskyHealthClaims(raw.articleContent);

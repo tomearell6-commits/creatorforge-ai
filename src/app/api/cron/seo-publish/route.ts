@@ -5,6 +5,8 @@ import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { generateFeaturedImage } from "@/lib/seo/featured-image";
 import { SEO_CREDIT_COSTS } from "@/lib/constants";
 import { captureError } from "@/lib/logger";
+import { notifyIndexNow } from "@/lib/seo/indexnow";
+import { composeArticleHtml } from "@/lib/seo/compose";
 
 /**
  * Scheduled SEO publisher (Vercel Cron). Publishes due scheduled articles to
@@ -58,7 +60,7 @@ export async function GET(request: Request) {
       const result = await publishArticleToWordPress({
         siteUrl: site.site_url, username: site.username, appPassword,
         title: article.seo_title || article.h1 || article.main_keyword,
-        contentHtml: article.article_content || "", excerpt: article.excerpt, slug: article.slug,
+        contentHtml: composeArticleHtml(article.article_content || "", Array.isArray(article.faq_json) ? article.faq_json : []), excerpt: article.excerpt, slug: article.slug,
         category: article.category || site.default_category, tags: article.tags,
         metaTitle: article.meta_title, metaDescription: article.meta_description, focusKeyword: article.main_keyword,
         status: "publish",
@@ -84,7 +86,9 @@ export async function GET(request: Request) {
         user_id: article.user_id, article_id: article.id, wordpress_site_id: site.id,
         status: "published", wordpress_post_id: result.postId, post_url: result.url, published_at: new Date().toISOString(),
       });
-      results.push({ id: article.id, ok: true });
+      // Announce the live post to Bing/Yandex/Naver/Seznam/Yep (free; skipped if the site has no IndexNow key).
+      const indexNow = await notifyIndexNow(admin, result.url);
+      results.push({ id: article.id, ok: true, note: indexNow.message });
     } catch (err) {
       captureError(err, { category: "publishing", platform: "wordpress", cron: true, articleId: article.id });
       results.push({ id: article.id, ok: false, note: "exception" });

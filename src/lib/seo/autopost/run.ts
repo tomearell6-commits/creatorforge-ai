@@ -21,6 +21,7 @@ import { generateArticleImage } from "@/lib/seo/images";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { composeArticleHtml } from "@/lib/seo/compose";
 import { notify } from "@/lib/notifications/service";
+import { notifyIndexNow } from "@/lib/seo/indexnow";
 import { captureError } from "@/lib/logger";
 import { planTopics, type Topic } from "./topics";
 import { isSiteDue, startOfUtcDay } from "./schedule";
@@ -196,13 +197,15 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     await admin.from("seo_articles").update({ status: "published", wordpress_post_id: res.postId, published_at: nowIso, updated_at: nowIso }).eq("id", art.id);
     await admin.from("wordpress_publish_history").insert({ user_id: s.user_id, article_id: art.id, wordpress_site_id: s.wordpress_site_id, status: "published", wordpress_post_id: res.postId, post_url: res.url, published_at: nowIso });
     await admin.rpc("wallet_adjust", { p_user: s.user_id, p_amount: -CREDITS_PER_POST, p_type: "publishing", p_reason: "seo_autopost" });
+    // Tell Bing, Yandex, Naver, Seznam and Yep immediately (free; skipped honestly if not connected).
+    const indexNow = await notifyIndexNow(admin, res.url);
     await admin.from("seo_autopost_sites").update({
       topic_queue: rest, last_run_at: nowIso, last_success_at: nowIso, posts_published: (s.posts_published ?? 0) + 1,
       consecutive_failures: 0, paused_reason: null, updated_at: nowIso,
     }).eq("id", s.id);
-    await writeLog(admin, { user_id: s.user_id, site_id: s.id, article_id: art.id, status: "published", title: pkg.seoTitle, post_url: res.url, words, credits_charged: CREDITS_PER_POST, duration_ms: Date.now() - started });
+    await writeLog(admin, { user_id: s.user_id, site_id: s.id, article_id: art.id, status: "published", message: indexNow.message, title: pkg.seoTitle, post_url: res.url, words, credits_charged: CREDITS_PER_POST, duration_ms: Date.now() - started });
 
-    return { status: "published", message: "Published.", title: pkg.seoTitle, postUrl: res.url, words, articleId: art.id };
+    return { status: "published", message: `Published. ${indexNow.message}`, title: pkg.seoTitle, postUrl: res.url, words, articleId: art.id };
   } catch (e) {
     const err = e instanceof StageError ? e : new StageError("article", errMsg(e));
     if (!(e instanceof StageError)) captureError(e, { category: "jobs", feature: "seo-autopost", siteId });

@@ -34,7 +34,7 @@ export async function GET() {
   const ids = (rows ?? []).map((r) => r.id as string);
   const wpIds = (rows ?? []).map((r) => r.wordpress_site_id as string);
   const [{ data: sites }, { data: logs }] = await Promise.all([
-    wpIds.length ? supabase.from("wordpress_sites").select("id, site_name, site_url").in("id", wpIds) : Promise.resolve({ data: [] }),
+    wpIds.length ? supabase.from("wordpress_sites").select("id, site_name, site_url, metadata").in("id", wpIds) : Promise.resolve({ data: [] }),
     ids.length ? supabase.from("seo_autopost_log").select("id, site_id, status, stage, message, title, post_url, words, created_at").in("site_id", ids).order("created_at", { ascending: false }).limit(60) : Promise.resolve({ data: [] }),
   ]);
 
@@ -48,7 +48,13 @@ export async function GET() {
       queued_topics: Array.isArray(r.topic_queue) ? r.topic_queue.length : 0,
       topic_queue: undefined,
       monthly_credit_estimate: estimateMonthlyCredits(r.posts_per_day as number),
-      site: (sites ?? []).find((s) => s.id === r.wordpress_site_id) ?? null,
+      site: (() => {
+        const s = (sites ?? []).find((x) => x.id === r.wordpress_site_id);
+        if (!s) return null;
+        const m = ((s as { metadata?: unknown }).metadata ?? {}) as { indexnow_verified_at?: string | null };
+        // IndexNow is free; this flag drives the "connect IndexNow" prompt in the dashboard.
+        return { id: s.id, site_name: s.site_name, site_url: s.site_url, indexnow_connected: !!m.indexnow_verified_at };
+      })(),
       recent: (logs ?? []).filter((l) => l.site_id === r.id).slice(0, 5),
     })),
   });

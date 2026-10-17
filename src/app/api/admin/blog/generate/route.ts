@@ -5,6 +5,7 @@ import { apiError } from "@/lib/api/respond";
 import { generateSeoPackage, type SeoArticleInput } from "@/lib/seo/generate";
 import { slugifyBlog, estimateReadingMinutes, sanitizeBlogHtml } from "@/lib/blog/blog";
 import { generateBlogCover } from "@/lib/blog/cover";
+import { blogPostUrl, notifyIndexNow } from "@/lib/seo/indexnow";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
@@ -85,7 +86,10 @@ export async function POST(request: Request) {
     cover = r?.url ?? null;
   } catch { /* keep placeholder */ }
 
-  return NextResponse.json({ ok: true, usedAI, post: data, cover_image_url: cover });
+  // A live post is announced to Bing/Yandex/Naver/Seznam/Yep immediately (IndexNow).
+  const indexnow = publish ? await notifyIndexNow(gate.admin, blogPostUrl(data.slug as string)) : null;
+
+  return NextResponse.json({ ok: true, usedAI, post: data, cover_image_url: cover, indexnow });
 }
 
 async function ensureUniqueSlug(admin: AdminClient, base: string): Promise<string> {

@@ -22,7 +22,7 @@ export function faqToHtml(faq: { q: string; a: string }[]): string {
 /** Insert the FAQ section before the disclaimer (or at the end when there is none). */
 export function composeArticleHtml(articleHtml: string, faq: { q: string; a: string }[]): string {
   const faqHtml = faqToHtml(faq);
-  if (!faqHtml) return articleHtml;
+  if (!faqHtml || /Frequently asked questions/i.test(articleHtml)) return articleHtml; // never add it twice
   const markerAt = articleHtml.indexOf(`<p ${MEDICAL_DISCLAIMER_MARKER}`);
   if (markerAt < 0) return `${articleHtml}\n${faqHtml}`;
   // The disclaimer is preceded by an <hr>; keep that rule attached to it.

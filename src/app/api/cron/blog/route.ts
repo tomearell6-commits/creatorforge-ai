@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { captureError } from "@/lib/logger";
+import { blogPostUrl, notifyIndexNow } from "@/lib/seo/indexnow";
 
 /**
  * Scheduled blog publisher (Vercel Cron). Flips due scheduled posts to
@@ -35,6 +36,9 @@ export async function GET(request: Request) {
       .update({ status: "published", published_at: nowIso, scheduled_for: null })
       .in("id", ids);
     if (error) throw error;
+
+    // Announce each newly live post to Bing/Yandex/Naver/Seznam/Yep (IndexNow; free, best-effort).
+    for (const p of due ?? []) await notifyIndexNow(admin, blogPostUrl(p.slug as string));
 
     return NextResponse.json({ ok: true, published: ids.length, slugs: (due ?? []).map((p) => p.slug) });
   } catch (e) {

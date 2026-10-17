@@ -12,6 +12,8 @@
 import type { PublishProvider, PublishInput, PublishResult } from "../types";
 import { CATEGORIES } from "@/lib/constants";
 import { fetchWithTimeout } from "@/lib/http";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyIndexNow } from "@/lib/seo/indexnow";
 
 // Some managed hosts (LiteSpeed/WAF) block REST requests without a browser-like
 // User-Agent. Send one on every WordPress call for compatibility.
@@ -168,6 +170,10 @@ export function wordpressProvider(): PublishProvider {
           return { status: "failed", error: `WordPress error ${res.status}: ${text.slice(0, 200)}` };
         }
         const created = await res.json();
+        // Announce live posts to Bing/Yandex/Naver/Seznam/Yep via IndexNow (free; no-op if the site hasn't connected it).
+        if (status === "publish" && typeof created.link === "string") {
+          await notifyIndexNow(createAdminClient(), created.link).catch(() => undefined);
+        }
         return { status: "published", externalPostId: String(created.id), externalUrl: created.link };
       } catch (err) {
         return { status: "failed", error: err instanceof Error ? err.message : "WordPress publish failed" };

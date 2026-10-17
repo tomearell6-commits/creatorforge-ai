@@ -8,6 +8,9 @@ import { SEO_CREDIT_COSTS } from "@/lib/constants";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { captureError } from "@/lib/logger";
 import { apiError, readJsonBody } from "@/lib/api/respond";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyIndexNow, type IndexNowResult } from "@/lib/seo/indexnow";
+import { composeArticleHtml } from "@/lib/seo/compose";
 
 /**
  * Publish an SEO article to a connected WordPress site.
@@ -63,7 +66,7 @@ export async function POST(request: Request) {
     username: site.username,
     appPassword,
     title: article.seo_title || article.h1 || article.main_keyword,
-    contentHtml: article.article_content || "",
+    contentHtml: composeArticleHtml(article.article_content || "", Array.isArray(article.faq_json) ? article.faq_json : []),
     excerpt: article.excerpt,
     slug: article.slug,
     category: article.category || site.default_category,
@@ -101,5 +104,8 @@ export async function POST(request: Request) {
     published_at: mode === "now" ? new Date().toISOString() : null,
   });
 
-  return NextResponse.json({ ok: true, postId: result.postId, url: result.url, status: result.status });
+  // Live posts are announced to Bing/Yandex/Naver/Seznam/Yep via IndexNow (free) when the site has it connected.
+  const indexnow: IndexNowResult | null = mode === "now" ? await notifyIndexNow(createAdminClient(), result.url) : null;
+
+  return NextResponse.json({ ok: true, postId: result.postId, url: result.url, status: result.status, indexnow });
 }

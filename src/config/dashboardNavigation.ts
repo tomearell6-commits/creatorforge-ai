@@ -76,6 +76,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("scene-builder", "Scene Builder", "/dashboard/scenes", Clapperboard, "Turn a script into video scenes: images, narration, captions", 2),
           c("ai-shorts", "AI Shorts", "/dashboard/create/ai-shorts", Clapperboard, "Vertical short-form for Reels/Shorts/TikTok", 3, { isEnabled: false }),
           c("seo-articles", "SEO Articles", "/dashboard/seo", Search, "SEO Studio: generate & publish articles", 4, { tour: "seo-studio" }),
+          c("seo-autopost", "SEO Auto-Poster", "/dashboard/seo/autopost", CalendarDays, "Automatic daily posts to your WordPress sites, announced via IndexNow", 4),
           c("blog-writer", "Script & Blog Writer", "/dashboard/generate", FileText, "Scripts, blogs and written content", 5),
           c("image-generator", "Image Generator", "/dashboard/create?group=image", ImageIcon, "AI images and thumbnails", 6),
           c("voiceover", "Voiceover Studio", "/dashboard/voice", Music, "AI voiceovers in premium voices", 7),
