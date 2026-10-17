@@ -5,6 +5,7 @@
  * `requireAdmin` resolves the calling user and returns an admin client when
  * authorized, or an error response to return directly from a route.
  */
+import { cache } from "react";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -17,8 +18,12 @@ export function isAdminEmail(email?: string | null): boolean {
   return !!email && list.includes(email.toLowerCase());
 }
 
-/** Server-side admin check: email allowlist OR admin_users row. */
-export async function isPlatformAdmin(): Promise<{ ok: boolean; user: { id: string; email?: string } | null }> {
+/**
+ * Server-side admin check: email allowlist OR admin_users row. Wrapped in React's
+ * cache() so the layout and page of one admin render share a single check instead of
+ * repeating the auth round trip.
+ */
+export const isPlatformAdmin = cache(async (): Promise<{ ok: boolean; user: { id: string; email?: string } | null }> => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, user: null };
@@ -27,7 +32,7 @@ export async function isPlatformAdmin(): Promise<{ ok: boolean; user: { id: stri
   const admin = createAdminClient();
   const { data } = await admin.from("admin_users").select("id").eq("user_id", user.id).maybeSingle();
   return { ok: !!data, user: { id: user.id, email: user.email ?? undefined } };
-}
+});
 
 /**
  * Use at the top of an admin API route:

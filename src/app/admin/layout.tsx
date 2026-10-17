@@ -25,8 +25,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   // Admins without 2FA see a standing warning (and a hard notice once
   // enforcement is active — sensitive admin APIs already reject them).
-  const has2fa = user ? await userHas2faEnabled(user.id) : false;
-  const enforced = !has2fa ? await isAdmin2faEnforced() : false;
+  // Both lookups run at the same time (they used to run one after the other).
+  const [has2fa, enforcedSetting] = await Promise.all([
+    user ? userHas2faEnabled(user.id) : Promise.resolve(false),
+    isAdmin2faEnforced(),
+  ]);
+  const enforced = !has2fa && enforcedSetting;
 
   return (
     <div className="flex min-h-screen">

@@ -47,19 +47,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // Second factor: if 2FA is on and this browser isn't verified yet, go
-        // to the verification step (middleware enforces this regardless).
-        try {
-          const res = await fetch("/api/security/2fa/status");
-          const status = res.ok ? await res.json() : null;
-          if (status?.enabled && !status.verifiedThisBrowser) {
-            router.push(`/two-factor?redirect=${encodeURIComponent(redirectTo)}`);
-            router.refresh();
-            return;
-          }
-        } catch {
-          // status check failed — middleware will still enforce 2FA
-        }
+        // Second factor: no extra check here. The middleware already sends a user with
+        // 2FA enabled (on an unverified browser) from the destination to /two-factor, so a
+        // separate status request just added a slow round trip (and a possible cold start)
+        // to every login.
       }
 
       router.push(redirectTo);
