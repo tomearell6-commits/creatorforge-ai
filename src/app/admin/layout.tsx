@@ -1,9 +1,38 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { isPlatformAdmin } from "@/lib/admin";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { userHas2faEnabled, isAdmin2faEnforced } from "@/lib/security/twofactor";
 
 export const metadata = { title: "Admin Portal — CreatorsForge AI" };
+
+/**
+ * Admins without 2FA see a standing warning (and a hard notice once enforcement is
+ * active — sensitive admin APIs already reject them). It loads on its own so it never
+ * delays the page; both lookups run at the same time.
+ */
+async function TwoFactorBanner({ userId }: { userId: string }) {
+  const [has2fa, enforcedSetting] = await Promise.all([userHas2faEnabled(userId), isAdmin2faEnforced()]);
+  if (has2fa) return null;
+  const enforced = enforcedSetting;
+  return (
+    <div
+      className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
+        enforced
+          ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-400"
+          : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+      }`}
+    >
+      <strong>{enforced ? "2FA required:" : "Security recommendation:"}</strong>{" "}
+      {enforced
+        ? "Admin 2FA enforcement is active — sensitive admin actions are blocked until you enable two-factor authentication."
+        : "Your admin account does not have two-factor authentication enabled."}{" "}
+      <Link href="/dashboard/settings" className="font-semibold underline">
+        Enable 2FA in Settings →
+      </Link>
+    </div>
+  );
+}
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { ok, user } = await isPlatformAdmin();
@@ -23,35 +52,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     );
   }
 
-  // Admins without 2FA see a standing warning (and a hard notice once
-  // enforcement is active — sensitive admin APIs already reject them).
-  // Both lookups run at the same time (they used to run one after the other).
-  const [has2fa, enforcedSetting] = await Promise.all([
-    user ? userHas2faEnabled(user.id) : Promise.resolve(false),
-    isAdmin2faEnforced(),
-  ]);
-  const enforced = !has2fa && enforcedSetting;
-
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 p-6">
-        {!has2fa && (
-          <div
-            className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
-              enforced
-                ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-400"
-                : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-            }`}
-          >
-            <strong>{enforced ? "2FA required:" : "Security recommendation:"}</strong>{" "}
-            {enforced
-              ? "Admin 2FA enforcement is active — sensitive admin actions are blocked until you enable two-factor authentication."
-              : "Your admin account does not have two-factor authentication enabled."}{" "}
-            <Link href="/dashboard/settings" className="font-semibold underline">
-              Enable 2FA in Settings →
-            </Link>
-          </div>
+        {user && (
+          <Suspense fallback={null}>
+            <TwoFactorBanner userId={user.id} />
+          </Suspense>
         )}
         {children}
       </main>

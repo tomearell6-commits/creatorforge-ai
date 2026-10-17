@@ -1,25 +1,12 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
-
-type Overview = {
-  totalUsers: number; activeUsers: number; mrr: number; arr: number;
-  activeSubscriptions: number; creditConsumption: number; creditsOutstanding: number;
-  renders: number; storageBytes: number; apiRequests: number; activeApiKeys: number;
-  published: number; failedJobs: number; openTickets: number; revenueTotal: number;
-  planMix: Record<string, number>; alerts: { level: string; message: string }[];
-};
+import type { AdminOverview } from "@/lib/admin-overview";
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return <Card className="p-4"><div className="text-2xl font-bold">{value}</div><div className="text-xs text-muted-foreground">{label}</div></Card>;
 }
 
-export function AdminDashboard() {
-  const [d, setD] = useState<Overview | null>(null);
-  useEffect(() => { fetch("/api/admin/overview").then((r) => r.json()).then(setD); }, []);
-  if (!d) return <p className="text-sm text-muted-foreground">Loading…</p>;
-
+/** The dashboard numbers. Rendered on the server; the data arrives with the page. */
+export function AdminDashboard({ d }: { d: AdminOverview }) {
   return (
     <div className="space-y-6">
       {d.alerts.length > 0 && (
@@ -56,6 +43,29 @@ export function AdminDashboard() {
           ))}
         </div>
       </Card>
+    </div>
+  );
+}
+
+/** Same layout as the dashboard, as soft grey placeholders, shown the instant the page opens. */
+export function AdminDashboardSkeleton() {
+  return (
+    <div className="space-y-6" role="status" aria-label="Loading dashboard">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <Card key={i} className="animate-pulse p-4">
+            <div className="h-7 w-16 rounded bg-muted" />
+            <div className="mt-2 h-3 w-24 rounded bg-muted" />
+          </Card>
+        ))}
+      </div>
+      <Card className="animate-pulse">
+        <div className="h-4 w-24 rounded bg-muted" />
+        <div className="mt-4 space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-3 w-full rounded bg-muted" />)}
+        </div>
+      </Card>
+      <span className="sr-only">Loading…</span>
     </div>
   );
 }
