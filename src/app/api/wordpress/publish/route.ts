@@ -52,7 +52,10 @@ export async function POST(request: Request) {
   if (!appPassword) return NextResponse.json({ error: "Could not read the site credentials — reconnect the site." }, { status: 400 });
 
   // Generate + attach a featured image (best-effort; charged only for real providers).
-  const featured = await generateFeaturedImage(article.featured_image_prompt);
+  const featured = await generateFeaturedImage(article.featured_image_prompt, {
+    title: article.seo_title || article.h1 || article.main_keyword,
+    keyword: article.main_keyword,
+  });
   const imageBillable = featured && featured.provider !== "placeholder";
 
   const result = await publishArticleToWordPress({

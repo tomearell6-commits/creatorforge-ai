@@ -7,9 +7,13 @@ import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { logEvent } from "@/lib/analytics";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 
+// A 1,500+ word article takes longer than a default serverless limit.
+export const maxDuration = 300;
+
 /**
  * SEO Content Studio — generate a full SEO package and save it as a draft article.
- * Charges SEO_CREDIT_COSTS.article only when real AI is used (placeholder is free).
+ * Charges SEO_CREDIT_COSTS.article ONLY when real AI actually produced the article
+ * (a failed generation is never billed and never saved as placeholder text).
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -28,20 +32,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not enough credits for a full SEO article. Upgrade your plan.", code: "insufficient_credits" }, { status: 402 });
   }
 
-  const { pkg, usedAI } = await generateSeoPackage({
-    mainKeyword: body.mainKeyword,
-    secondaryKeywords: body.secondaryKeywords,
-    targetCountry: body.targetCountry,
-    targetAudience: body.targetAudience,
-    searchIntent: body.searchIntent,
-    articleType: body.articleType,
-    tone: body.tone,
-    wordCount: body.wordCount,
-    language: body.language,
-    brandName: body.brandName,
-    productName: body.productName,
-    cta: body.cta,
-  });
+  let generated: Awaited<ReturnType<typeof generateSeoPackage>>;
+  try {
+    // strict when real AI is configured: a failure is reported, not hidden behind placeholder text.
+    generated = await generateSeoPackage(
+      {
+        mainKeyword: body.mainKeyword,
+        secondaryKeywords: body.secondaryKeywords,
+        niche: body.niche,
+        targetCountry: body.targetCountry,
+        targetAudience: body.targetAudience,
+        searchIntent: body.searchIntent,
+        articleType: body.articleType,
+        tone: body.tone,
+        wordCount: body.wordCount,
+        minWords: body.minWords,
+        language: body.language,
+        brandName: body.brandName,
+        productName: body.productName,
+        cta: body.cta,
+      },
+      { strict: billable }
+    );
+  } catch (e) {
+    return NextResponse.json(
+      { error: `We couldn't produce a publishable article this time. No credits were charged — please try again. (${e instanceof Error ? e.message : "generation failed"})` },
+      { status: 502 }
+    );
+  }
+  const { pkg, usedAI } = generated;
 
   const { data: article, error } = await supabase
     .from("seo_articles")
@@ -84,7 +103,7 @@ export async function POST(request: Request) {
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  if (billable) await deductCredits(SEO_CREDIT_COSTS.article, "seo_article");
+  if (usedAI) await deductCredits(SEO_CREDIT_COSTS.article, "seo_article");
   await logEvent(supabase, { userId: user.id, eventType: "video_created", metadata: { kind: "seo_article" } });
 
   return NextResponse.json({ article, usedAI });

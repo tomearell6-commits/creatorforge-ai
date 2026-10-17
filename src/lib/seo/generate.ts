@@ -2,22 +2,38 @@
  * SEO Content Studio generator. Produces a full SEO blog package as structured
  * JSON. Uses Claude when ANTHROPIC_API_KEY is set; otherwise a deterministic
  * placeholder so the flow always works (no credits charged for placeholder).
+ *
+ * Publishing-grade rules (enforced in code, not just requested in the prompt):
+ *  - minimum body length (default 1,500 words) with one automatic expansion retry;
+ *  - worldwide audience by default (no country-specific assumptions);
+ *  - health topics: reputable-source rules, no fabricated studies/URLs, a standard
+ *    medical disclaimer appended in code, and risky claims rejected;
+ *  - `strict` mode never falls back to placeholder text — it throws instead, so
+ *    automation can never publish "(placeholder answer)" content.
  */
 import Anthropic from "@anthropic-ai/sdk";
+import { findRiskyHealthClaims, isHealthTopic, withMedicalDisclaimer } from "./health";
 
 export type SeoArticleInput = {
   mainKeyword: string;
   secondaryKeywords?: string[];
+  /** The site's subject area (e.g. "cardiology education"); helps health detection and topic fit. */
+  niche?: string;
   targetCountry?: string;
   targetAudience?: string;
   searchIntent?: string;
   articleType?: string;
   tone?: string;
+  /** Legacy: desired length. Treated as the minimum when minWords is not given. */
   wordCount?: number;
+  /** Minimum article body words (default 1,500). */
+  minWords?: number;
   language?: string;
   brandName?: string;
   productName?: string;
   cta?: string;
+  /** Override the model (e.g. a faster/cheaper one for bulk automation). */
+  model?: string;
 };
 
 export type SeoPackage = {
@@ -49,12 +65,26 @@ export type SeoPackage = {
 };
 
 const MODEL = process.env.AI_MODEL || "claude-opus-4-8";
+export const DEFAULT_MIN_WORDS = 1500;
+const MAX_MIN_WORDS = 4000;
+
+export class SeoGenerationError extends Error {}
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70);
 }
 function titleCase(s: string) {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Words of visible text in an HTML string. */
+export function countWords(html: string): number {
+  return html
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
 }
 
 function placeholder(input: SeoArticleInput): SeoPackage {
@@ -120,50 +150,165 @@ export function willUseRealSeoAI(): boolean {
   return !!process.env.ANTHROPIC_API_KEY;
 }
 
-export async function generateSeoPackage(input: SeoArticleInput): Promise<{ pkg: SeoPackage; usedAI: boolean }> {
-  if (!willUseRealSeoAI()) return { pkg: placeholder(input), usedAI: false };
-  try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-    const msg = await client.messages.create({
-      model: MODEL,
-      max_tokens: 8000,
-      system:
-        "You are an expert SEO content strategist and writer. Return ONLY valid minified JSON matching this TypeScript type: " +
-        "{seoTitle,metaTitle,metaDescription,slug,focusKeyword,secondaryKeywords:string[],searchIntent,h1," +
-        "outline:{h2,h3:string[]}[],articleContent(HTML string),faq:{q,a}[],schemaRecommendation,imagePrompts:string[]," +
-        "featuredImagePrompt,altText:string[],excerpt,tags:string[],category,socialCaptions:{platform,text}[]," +
-        "newsletterSummary,cta,internalLinks:string[],externalLinks:string[],seoScore(0-100),readabilityScore(0-100)}. " +
-        "articleContent must be well-structured HTML using h2/h3/p/ul. Write genuinely useful, original content.",
-      messages: [
-        {
-          role: "user",
-          content: JSON.stringify({
-            mainKeyword: input.mainKeyword,
-            secondaryKeywords: input.secondaryKeywords,
-            targetCountry: input.targetCountry,
-            targetAudience: input.targetAudience,
-            searchIntent: input.searchIntent,
-            articleType: input.articleType,
-            tone: input.tone,
-            wordCount: input.wordCount,
-            language: input.language,
-            brandName: input.brandName,
-            productName: input.productName,
-            cta: input.cta,
-          }),
-        },
-      ],
-    });
-    const text = msg.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("")
-      .trim()
-      .replace(/^```json?/i, "")
-      .replace(/```$/, "");
-    const pkg = JSON.parse(text) as SeoPackage;
-    return { pkg, usedAI: true };
-  } catch {
+const JSON_SHAPE =
+  "{seoTitle,metaTitle,metaDescription,slug,focusKeyword,secondaryKeywords:string[],searchIntent,h1," +
+  "outline:{h2,h3:string[]}[],articleContent(HTML string),faq:{q,a}[],schemaRecommendation,imagePrompts:string[]," +
+  "featuredImagePrompt,altText:string[],excerpt,tags:string[],category,socialCaptions:{platform,text}[]," +
+  "newsletterSummary,cta,internalLinks:string[],externalLinks:string[],seoScore(0-100),readabilityScore(0-100)}";
+
+function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boolean): string {
+  const today = new Date().toISOString().slice(0, 10);
+  const year = today.slice(0, 4);
+  const parts: string[] = [
+    "You are an expert SEO content strategist and a careful educational writer. Return ONLY valid minified JSON matching this TypeScript type: " +
+      JSON_SHAPE + ".",
+    "articleContent must be well-structured HTML using h2/h3/p/ul/ol (no h1, no scripts, no inline styles). Write genuinely useful, original content for people — not keyword stuffing.",
+    `Today's date is ${today}. Never present an earlier year as current. If a year appears in the title it must be ${year}.`,
+    `LENGTH: articleContent MUST contain at least ${minWords} words of real substance (aim for ${minWords + 300}). Use at least 6 h2 sections, h3 sub-sections where useful, a short "Key takeaways" list near the top, concrete examples, and a closing summary. Do not pad with filler.`,
+    "KEYWORDS: build the article around the focus keyword plus 8-12 closely related secondary keywords (semantic variations, questions people really search). Use the focus keyword in the H1, within the first 100 words, in a few h2s and in the meta description, naturally. metaDescription ≤ 155 characters; metaTitle ≤ 60 characters.",
+    "FAQ: 6-8 genuinely common questions with direct, accurate 2-4 sentence answers.",
+    "IMAGE: featuredImagePrompt must describe ONE realistic editorial photograph (no text, no logos, no recognizable real people) that fits the topic.",
+  ];
+  if (input.targetCountry && input.targetCountry.trim()) {
+    parts.push(`AUDIENCE: primarily readers in ${input.targetCountry}, but keep the content accurate and useful internationally.`);
+  } else {
+    parts.push(
+      "AUDIENCE: readers WORLDWIDE, in every country. Do not assume one country's laws, prices, healthcare system, units or slang. Use clear international English, give metric and imperial units where relevant, and say explicitly when guidance, regulations or availability differ between countries or regions. Prefer international bodies and global evidence over single-country sources."
+    );
+  }
+  if (health) {
+    parts.push(
+      "HEALTH & MEDICAL RULES (strict): this is educational health information, never personal medical advice. " +
+        "Explain what the evidence generally shows, with appropriate uncertainty. " +
+        "NEVER fabricate studies, statistics, quotes, authors, journal names or URLs — if you are not certain a specific figure exists, describe the finding in general terms instead. " +
+        "Refer to well-known reputable organisations by name where relevant (for example the WHO, NIH, CDC, NHS, Mayo Clinic, Cochrane). " +
+        "externalLinks: include ONLY links you are highly confident exist, preferably top-level pages or established topic hubs of those organisations; otherwise return an empty array. " +
+        "Do NOT give diagnoses, personalised treatment plans, or specific medication doses. Do NOT promise cures or guaranteed outcomes, and never tell readers to stop medication or avoid a doctor. " +
+        "Encourage readers to consult a qualified healthcare professional for their own situation. Write in a calm, neutral, evidence-based tone. " +
+        "Do not add a disclaimer yourself — it is added automatically."
+    );
+  }
+  return parts.join(" ");
+}
+
+function stripFences(text: string): string {
+  const t = text.trim().replace(/^```json?/i, "").replace(/```$/, "").trim();
+  const first = t.indexOf("{");
+  const last = t.lastIndexOf("}");
+  return first >= 0 && last > first ? t.slice(first, last + 1) : t;
+}
+
+const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+
+/** Keep outputs sane: required arrays exist, no example.com links, current-year titles. */
+function normalize(pkg: SeoPackage, input: SeoArticleInput): SeoPackage {
+  const kw = input.mainKeyword.trim();
+  const year = new Date().getFullYear();
+  const fixYear = (s: string | undefined) =>
+    (s ?? "").replace(/\b(20\d{2})\b/g, (m) => (Number(m) < year && /guide|edition|update|complete|best|top|checklist|handbook/i.test(s ?? "") ? String(year) : m));
+  return {
+    ...pkg,
+    seoTitle: fixYear(pkg.seoTitle),
+    metaTitle: fixYear(pkg.metaTitle),
+    h1: fixYear(pkg.h1),
+    metaDescription: (pkg.metaDescription ?? "").slice(0, 160),
+    slug: slugify(pkg.slug || kw),
+    focusKeyword: pkg.focusKeyword || kw,
+    secondaryKeywords: arr<string>(pkg.secondaryKeywords),
+    outline: arr<{ h2: string; h3: string[] }>(pkg.outline),
+    faq: arr<{ q: string; a: string }>(pkg.faq).filter((f) => f && f.q && f.a),
+    imagePrompts: arr<string>(pkg.imagePrompts),
+    altText: arr<string>(pkg.altText),
+    tags: arr<string>(pkg.tags),
+    socialCaptions: arr<{ platform: string; text: string }>(pkg.socialCaptions),
+    internalLinks: arr<string>(pkg.internalLinks),
+    externalLinks: arr<string>(pkg.externalLinks).filter((u) => /^https?:\/\//i.test(u) && !/example\.(com|org|net)/i.test(u)),
+    featuredImagePrompt: pkg.featuredImagePrompt || "",
+  };
+}
+
+export async function generateSeoPackage(
+  input: SeoArticleInput,
+  opts: { strict?: boolean } = {}
+): Promise<{ pkg: SeoPackage; usedAI: boolean }> {
+  const strict = opts.strict === true;
+  if (!willUseRealSeoAI()) {
+    if (strict) throw new SeoGenerationError("ANTHROPIC_API_KEY is not set.");
     return { pkg: placeholder(input), usedAI: false };
   }
+
+  const minWords = Math.min(MAX_MIN_WORDS, Math.max(300, input.minWords ?? input.wordCount ?? DEFAULT_MIN_WORDS));
+  const health = isHealthTopic(input.mainKeyword, input.niche, ...(input.secondaryKeywords ?? []));
+  const system = buildSystemPrompt(input, minWords, health);
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+  const model = input.model || MODEL;
+
+  let revision = "";
+  let lastErr = "no attempt made";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const stream = client.messages.stream({
+        model,
+        max_tokens: 12000,
+        system,
+        messages: [
+          {
+            role: "user",
+            content: JSON.stringify({
+              mainKeyword: input.mainKeyword,
+              secondaryKeywords: input.secondaryKeywords,
+              niche: input.niche,
+              targetCountry: input.targetCountry,
+              targetAudience: input.targetAudience,
+              searchIntent: input.searchIntent,
+              articleType: input.articleType,
+              tone: input.tone,
+              minWords,
+              language: input.language,
+              brandName: input.brandName,
+              productName: input.productName,
+              cta: input.cta,
+              ...(revision ? { revisionInstruction: revision } : {}),
+            }),
+          },
+        ],
+      });
+      const msg = await stream.finalMessage();
+      const text = msg.content
+        .filter((b): b is Anthropic.TextBlock => b.type === "text")
+        .map((b) => b.text)
+        .join("");
+      const raw = JSON.parse(stripFences(text)) as SeoPackage;
+      if (typeof raw.articleContent !== "string" || !raw.articleContent.trim()) {
+        lastErr = "the model returned no article body";
+        revision = "Your previous reply had no articleContent. Return the complete JSON including a full articleContent.";
+        continue;
+      }
+
+      const words = countWords(raw.articleContent);
+      if (words < minWords) {
+        lastErr = `article too short (${words} of ${minWords} words)`;
+        revision = `Your previous draft had only ${words} words. Return the complete JSON again with a longer, deeper articleContent of AT LEAST ${minWords} words — expand sections with evidence, examples and practical detail, not filler.`;
+        continue;
+      }
+
+      if (health) {
+        const risky = findRiskyHealthClaims(raw.articleContent);
+        if (risky.length) {
+          lastErr = `unsafe health claims (${risky.join("; ")})`;
+          revision = `Your previous draft ${risky.join("; ")}. Rewrite the complete JSON without those claims, keeping an educational, evidence-based tone and at least ${minWords} words.`;
+          continue;
+        }
+        raw.articleContent = withMedicalDisclaimer(raw.articleContent);
+      }
+
+      return { pkg: normalize(raw, input), usedAI: true };
+    } catch (e) {
+      lastErr = e instanceof Error ? e.message : "generation failed";
+      revision = "";
+    }
+  }
+
+  if (strict) throw new SeoGenerationError(`Could not produce a publishable article: ${lastErr}`);
+  return { pkg: placeholder(input), usedAI: false };
 }

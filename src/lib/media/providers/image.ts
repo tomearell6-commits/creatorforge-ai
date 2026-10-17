@@ -38,6 +38,9 @@ const openAIImageProvider: ImageProvider = {
 
     const wantLandscape = (input.width ?? 1280) >= (input.height ?? 720);
     const size = wantLandscape ? "1536x1024" : "1024x1024";
+    // Per-call quality wins; otherwise OPENAI_IMAGE_QUALITY; otherwise "high" (unchanged default).
+    const envQ = process.env.OPENAI_IMAGE_QUALITY;
+    const quality = input.quality ?? (envQ === "low" || envQ === "medium" || envQ === "high" ? envQ : "high");
 
     const res = await fetchWithTimeout("https://api.openai.com/v1/images/generations", {
       method: "POST",
@@ -47,10 +50,10 @@ const openAIImageProvider: ImageProvider = {
         prompt: input.prompt,
         n: 1,
         size,
-        quality: "high",
+        quality,
         output_format: "jpeg",
       }),
-    }, 30_000);
+    }, 90_000);
     if (!res.ok) {
       throw new Error(`OpenAI image error ${res.status}: ${await res.text()}`);
     }
@@ -124,6 +127,19 @@ const geminiImageProvider: ImageProvider = {
     return { data: new Uint8Array(Buffer.from(part.inlineData.data, "base64")), contentType: part.inlineData.mimeType || "image/png", width: w, height: h, provider: "gemini" };
   },
 };
+
+/** True when OpenAI image generation is usable (key present). */
+export function hasOpenAIImages(): boolean {
+  return !!process.env.OPENAI_API_KEY;
+}
+
+/**
+ * The OpenAI provider regardless of IMAGE_PROVIDER. Used for blog/SEO images so
+ * an article never gets a random placeholder photo or a different vendor's output.
+ */
+export function getOpenAIImageProvider(): ImageProvider {
+  return openAIImageProvider;
+}
 
 /** Resolve the active image provider from IMAGE_PROVIDER (default: placeholder). */
 export function getImageProvider(): ImageProvider {

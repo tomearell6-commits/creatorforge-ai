@@ -1,18 +1,20 @@
 /**
- * Generate a featured image for an SEO article from its featured_image_prompt,
- * using the active image provider (Gemini/OpenAI/placeholder). Returns raw bytes
- * for WordPress media upload, or null on failure (publish still proceeds).
+ * Generate a featured image for an SEO article, using OpenAI (see ./images.ts).
+ * Returns raw bytes for WordPress media upload, or null on failure / when OpenAI
+ * isn't configured (the post still publishes, just without an image — we never
+ * attach a random placeholder photo).
  */
-import { getImageProvider } from "@/lib/media/providers/image";
+import { generateArticleImage } from "./images";
 
 export async function generateFeaturedImage(
-  prompt: string | null | undefined
+  prompt: string | null | undefined,
+  context?: { title?: string | null; keyword?: string | null }
 ): Promise<{ data: Uint8Array; contentType: string; provider: string } | null> {
-  if (!prompt?.trim()) return null;
+  const title = (context?.title || prompt || "").trim();
+  if (!title) return null;
   try {
-    const provider = getImageProvider();
-    const res = await provider.generate({ prompt, width: 1280, height: 720, seed: prompt.slice(0, 40) });
-    return { data: res.data, contentType: res.contentType, provider: provider.id };
+    const img = await generateArticleImage({ title, keyword: context?.keyword, basePrompt: prompt });
+    return { data: img.data, contentType: img.contentType, provider: img.provider };
   } catch {
     return null;
   }

@@ -37,6 +37,8 @@ export type ImageGenInput = {
   width?: number;
   height?: number;
   seed?: string;
+  /** Render quality hint (OpenAI: low|medium|high). Omit to use the provider default. */
+  quality?: "low" | "medium" | "high";
 };
 
 export type ImageGenResult = {

@@ -8,7 +8,8 @@ import { generateBlogCover } from "@/lib/blog/cover";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
-export const maxDuration = 60;
+// A 1,500+ word article plus a cover image takes well over a minute.
+export const maxDuration = 300;
 
 /**
  * POST — generate a full blog draft from a keyword using the platform's own
@@ -39,7 +40,8 @@ export async function POST(request: Request) {
 
   let pkg, usedAI;
   try {
-    ({ pkg, usedAI } = await generateSeoPackage(input));
+    // strict: never save placeholder text as an article when the AI call fails.
+    ({ pkg, usedAI } = await generateSeoPackage(input, { strict: true }));
   } catch (e) {
     return apiError(`Generation failed: ${(e as Error).message}`, 502);
   }

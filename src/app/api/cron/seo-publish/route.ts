@@ -49,7 +49,10 @@ export async function GET(request: Request) {
         continue;
       }
 
-      const featured = await generateFeaturedImage(article.featured_image_prompt);
+      const featured = await generateFeaturedImage(article.featured_image_prompt, {
+        title: article.seo_title || article.h1 || article.main_keyword,
+        keyword: article.main_keyword,
+      });
       const imageBillable = featured && featured.provider !== "placeholder";
 
       const result = await publishArticleToWordPress({

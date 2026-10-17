@@ -45,9 +45,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at ?? undefined,
-      images: post.cover_image_url ? [{ url: post.cover_image_url }] : undefined,
+      // No cover yet? Fall back to the site-wide share image so links never look bare.
+      images: [{ url: post.cover_image_url || `${BASE}/opengraph-image` }],
     },
-    twitter: { card: "summary_large_image", title, description: description ?? "", images: post.cover_image_url ? [post.cover_image_url] : undefined },
+    twitter: { card: "summary_large_image", title, description: description ?? "", images: [post.cover_image_url || `${BASE}/opengraph-image`] },
   };
 }
 

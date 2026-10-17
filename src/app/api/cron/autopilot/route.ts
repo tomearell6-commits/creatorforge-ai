@@ -3,21 +3,21 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { captureError } from "@/lib/logger";
 
 /**
- * Autopilot processor (Vercel Cron). Secured by CRON_SECRET. Processes due jobs
- * for ACTIVE, FULL-AUTOPILOT campaigns only:
- *   - Validates the destination is connected (social_accounts / wordpress_sites);
- *     if not, the job is paused (awaiting_approval) and the issue is reported —
- *     we never claim to post to an unconfigured destination.
- *   - Gates on credits: if the balance is below the job estimate and the user's
- *     pause_on_low_credits setting is on, the campaign is paused; otherwise the
- *     job fails with a clear message. Credits are deducted via wallet_adjust.
- *   - On success, records the publish and history.
+ * Autopilot processor (Vercel Cron). Secured by CRON_SECRET. Looks at due jobs for
+ * ACTIVE, FULL-AUTOPILOT campaigns.
  *
- * Note: the actual platform API call is delegated to the existing publishing
- * pipeline (dormant until per-platform provider keys are set). This processor
- * owns the lifecycle, credit gating, and connected-account safety checks.
+ * HONESTY FIX (2026-10): this processor used to mark every due job "published" and
+ * deduct credits even though nothing generated or posted the content (the real
+ * per-platform publishers are not wired into Autopilot). That could charge a user
+ * for work that never happened. It now NEVER claims a publish and NEVER charges:
+ * a due job whose destination is not connected is reported as blocked, and every
+ * other due job is held for manual approval with a clear message. Real automated
+ * daily blog posting lives in the SEO Auto-Poster (see /api/cron/seo-autopost).
  */
 export const dynamic = "force-dynamic";
+
+const NOT_WIRED_MESSAGE =
+  "Automatic posting for this content type is not available in Autopilot yet. Nothing was posted and no credits were charged. Approve the job to publish it manually, or use SEO Auto-Poster for automatic daily blog posts.";
 
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -26,11 +26,11 @@ export async function GET(request: Request) {
   }
   const admin = createAdminClient();
   const nowIso = new Date().toISOString();
-  const result = { processed: 0, published: 0, paused: 0, blocked: 0, failed: 0 };
+  const result = { processed: 0, held: 0, blocked: 0, failed: 0 };
 
   const { data: due } = await admin
     .from("autopilot_jobs")
-    .select("id, user_id, campaign_id, destination, content_type, estimated_credits, retry_count")
+    .select("id, user_id, campaign_id, destination, content_type")
     .eq("status", "scheduled").lte("scheduled_time", nowIso).limit(50);
 
   for (const job of due ?? []) {
@@ -46,31 +46,12 @@ export async function GET(request: Request) {
         result.blocked++; continue;
       }
 
-      // Credit gate.
-      const { data: profile } = await admin.from("profiles").select("credits").eq("user_id", job.user_id).single();
-      const balance = profile?.credits ?? 0;
-      if (balance < (job.estimated_credits ?? 0)) {
-        const { data: settings } = await admin.from("autopilot_settings").select("pause_on_low_credits").eq("user_id", job.user_id).maybeSingle();
-        if (settings?.pause_on_low_credits ?? true) {
-          await admin.from("autopilot_campaigns").update({ status: "paused", updated_at: nowIso }).eq("id", job.campaign_id);
-          await history(admin, job, "paused", "Campaign paused: insufficient credits.");
-          result.paused++;
-        } else {
-          await admin.from("autopilot_jobs").update({ status: "failed", error_message: "Insufficient credits", updated_at: nowIso }).eq("id", job.id);
-          await history(admin, job, "failed", "Insufficient credits.");
-          result.failed++;
-        }
-        continue;
-      }
-
-      // Deduct credits via the ledger, then record the publish.
-      await admin.rpc("wallet_adjust", { p_user: job.user_id, p_amount: -(job.estimated_credits ?? 0), p_type: "publishing", p_reason: `autopilot:${job.content_type}` });
-      await admin.from("autopilot_jobs").update({ status: "published", published_time: nowIso, credits_used: job.estimated_credits ?? 0, updated_at: nowIso }).eq("id", job.id);
-      await history(admin, job, "published", `Published ${job.content_type} to ${job.destination}.`);
-      result.published++;
+      // Nothing here can generate or publish content yet — hold the job honestly.
+      await admin.from("autopilot_jobs").update({ status: "awaiting_approval", error_message: NOT_WIRED_MESSAGE, updated_at: nowIso }).eq("id", job.id);
+      await history(admin, job, "paused", NOT_WIRED_MESSAGE);
+      result.held++;
     } catch (e) {
       captureError(e, { category: "jobs", feature: "autopilot", jobId: job.id });
-      await admin.from("autopilot_jobs").update({ status: "failed", error_message: "Processor error", retry_count: (job.retry_count ?? 0) + 1, updated_at: nowIso }).eq("id", job.id);
       result.failed++;
     }
   }
