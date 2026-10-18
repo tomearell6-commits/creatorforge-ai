@@ -20,15 +20,16 @@ export function SEOAuditForm({ onStart, busy, error }: { onStart: (url: string, 
   return (
     <Card className="space-y-4">
       <div>
-        <Label htmlFor="saf-website-url">Website URL</Label>
+        <Label htmlFor="saf-website-url">Step 1: your website address</Label>
         <Input id="saf-website-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com" onKeyDown={(e) => e.key === "Enter" && onStart(url, type)} />
       </div>
       <div>
-        <Label>Audit type</Label>
+        <Label>Step 2: choose your audit type (tap one)</Label>
         <SEOAuditTypeSelector value={type} onChange={setType} />
+        {type === "quick" && <p className="mt-2 text-xs text-muted-foreground">Quick Audit checks the home page only. Choose <b>Full Audit (100 credits)</b> to check the whole site and get priced fixes.</p>}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Coins className="h-4 w-4" /> Estimated cost: <b className="text-foreground">{cost} credits</b></span>
+        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Coins className="h-4 w-4" /> {seoAuditType(type).name}: <b className="text-foreground">{cost} credits</b></span>
         <Button onClick={() => onStart(url, type)} disabled={busy || !url.trim()}>
           {busy ? <Spinner size="sm" className="text-current" /> : <Search className="h-4 w-4" />} Start Audit
         </Button>
