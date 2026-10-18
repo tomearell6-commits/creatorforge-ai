@@ -117,7 +117,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
   const publishedToday = count ?? 0;
   if (opts.force ? publishedToday >= s.posts_per_day : !isSiteDue({ hours: s.publish_hours, publishedToday, now: new Date() })) {
     await admin.from("seo_autopost_sites").update({ claimed_at: null }).eq("id", siteId);
-    return { status: "skipped", message: opts.force ? "Today's posts are already published." : "Not due yet." };
+    return { status: "skipped", message: opts.force ? `You have already used today's ${s.posts_per_day === 1 ? "article" : s.posts_per_day + " articles"} (your site is set to ${s.posts_per_day} a day). The next one goes out tomorrow at the usual time.${s.posts_per_day === 1 ? ' To write another one now, change "Articles per day" to 2.' : ""}` : "Not due yet." };
   }
 
   let title: string | undefined;
