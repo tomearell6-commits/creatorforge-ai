@@ -25,8 +25,11 @@ export async function runProjectAnalysis(admin: SupabaseClient, projectId: strin
   } catch (e) {
     captureError(e, { category: "jobs", feature: "seo-analysis", projectId });
     const message = e instanceof Error ? e.message : "The analysis failed.";
+    // Technical notes (if any) go into a field the dashboard does not show, so support can see what the model returned.
+    const diag = (e as { diag?: string[] } | null)?.diag;
     await admin.from("seo_projects").update({
       status: "failed", progress: null, error: message.slice(0, 300), updated_at: new Date().toISOString(),
+      ...(diag && diag.length ? { gaps: [`diagnostic: ${diag.join(" | ").slice(0, 3000)}`] } : {}),
     }).eq("id", projectId);
   }
 }

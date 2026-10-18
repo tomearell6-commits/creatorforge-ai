@@ -68,7 +68,7 @@ export async function readJsonWithRetry<T>(ask: () => Promise<string>, tries: nu
  * so a stray quote or comma in a long answer can no longer break the analysis (the failure that happened
  * with free-text JSON). Throws a SyntaxError when no usable object came back.
  */
-async function askViaTool(system: string, user: string, maxTokens: number): Promise<Record<string, unknown>> {
+async function askViaTool(system: string, user: string, maxTokens: number, trace: string[] = [], label = "call"): Promise<Record<string, unknown>> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
   const stream = client.messages.stream({
     model: MODEL(),
@@ -83,6 +83,8 @@ async function askViaTool(system: string, user: string, maxTokens: number): Prom
   if (block && block.input && typeof block.input === "object" && !Array.isArray(block.input) && Object.keys(block.input).length > 0) {
     return block.input as Record<string, unknown>;
   }
+  const blocks = msg.content.map((c) => c.type).join(",") || "none";
+  trace.push(`${label}: tool gave no object; stop_reason=${msg.stop_reason}; blocks=${blocks}; output_tokens=${msg.usage?.output_tokens}`);
   console.error("[seo-analysis] tool call returned no usable object; stop_reason=", msg.stop_reason);
   throw new SyntaxError("no structured result");
 }
@@ -92,12 +94,19 @@ async function askViaTool(system: string, user: string, maxTokens: number): Prom
  * calls, then plain-text JSON as a last resort. The big plan call stays at 2 attempts so the whole job
  * fits its 5-minute limit.
  */
-export async function askJson<T>(system: string, user: string, maxTokens: number): Promise<T> {
+export async function askJson<T>(system: string, user: string, maxTokens: number, label = "call", trace: string[] = []): Promise<T> {
   const big = maxTokens > 4000;
   const strategies: (() => Promise<unknown>)[] = [
-    () => askViaTool(system, user, maxTokens),
-    ...(big ? [] : [() => askViaTool(system, user, maxTokens)]),
-    () => readJsonWithRetry(() => askClaude(system + " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote), and never use line breaks inside values.", user, maxTokens), 1),
+    () => askViaTool(system, user, maxTokens, trace, label),
+    ...(big ? [] : [() => askViaTool(system, user, maxTokens, trace, label)]),
+    () => readJsonWithRetry(async () => {
+      const txt = await askClaude(system + " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote), and never use line breaks inside values.", user, maxTokens);
+      try { JSON.parse(txt.trim().replace(/^```json?/i, "").replace(/```$/, "").trim().replace(/^[^[{]*/, "")); } catch (err) {
+        const pos = Number(/position (d+)/.exec(err instanceof Error ? err.message : "")?.[1] ?? -1);
+        trace.push(`${label}: text JSON invalid (${err instanceof Error ? err.message.slice(0, 120) : "?"}); length=${txt.length}; around error: ${pos >= 0 ? JSON.stringify(txt.slice(Math.max(0, pos - 80), pos + 80)) : "n/a"}`);
+      }
+      return txt;
+    }, 1),
   ];
   let lastErr: unknown;
   for (const run of strategies) {
@@ -105,13 +114,14 @@ export async function askJson<T>(system: string, user: string, maxTokens: number
       return (await run()) as T;
     } catch (e) {
       lastErr = e;
+      if (!(e instanceof SyntaxError)) trace.push(`${label}: error status=${(e as { status?: number } | null)?.status ?? "-"} ${e instanceof Error ? e.message.slice(0, 200) : String(e)}`);
       // A bad answer, or the API refusing the tool request (HTTP 400), is worth the next strategy; network/auth errors are not.
       const status = (e as { status?: number } | null)?.status;
       if (!(e instanceof SyntaxError) && status !== 400 && !(e instanceof Error && e.message.includes("readable form"))) throw e;
     }
   }
   console.error("[seo-analysis] no usable answer from the model:", lastErr);
-  throw new Error("The analysis didn't come back in a readable form. Please try again — no credits were charged.");
+  throw Object.assign(new Error("The analysis didn't come back in a readable form. Please try again — no credits were charged."), { diag: trace });
 }
 
 const str = (v: unknown, d = ""): string => (typeof v === "string" ? v.trim() : d);
@@ -132,6 +142,7 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
   if (!hasFirecrawl()) throw new Error("Website analysis isn't set up on this server yet (missing FIRECRAWL_API_KEY).");
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("Website analysis isn't set up on this server yet (missing ANTHROPIC_API_KEY).");
   const ownHost = hostOf(origin);
+  const trace: string[] = []; // technical notes kept for diagnosing a failed analysis
 
   // 1) Read the site.
   await onProgress("Reading your website…");
@@ -153,7 +164,9 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
       "isHealthRelated:boolean,seedKeywords:string[](10 real search phrases real customers type: mix of buying-intent phrases like 'best X', 'X price', 'buy X', 'X near me', and informational ones)}. " +
       "Base everything on the content; never invent products the site does not offer.",
     siteText,
-    2000
+    2000,
+    "profile",
+    trace
   );
   const brand: Brand = {
     name: str(p.name, ownHost), summary: str(p.summary), niche: str(p.niche, str(p.summary)).slice(0, 120) || ownHost,
@@ -204,7 +217,9 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
         : "") +
       "Do not invent search volumes or rankings.",
     JSON.stringify(evidence),
-    9000
+    9000,
+    "plan",
+    trace
   );
 
   const insights = new Map<string, string>();
