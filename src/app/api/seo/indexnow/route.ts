@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 import { limitRequestAsync } from "@/lib/security/ratelimit";
-import { generateIndexNowKey, isValidIndexNowKey, verifyIndexNowKeyFile } from "@/lib/seo/indexnow";
+import { detectRankMath, generateIndexNowKey, isValidIndexNowKey, verifyIndexNowKeyFile } from "@/lib/seo/indexnow";
 
 /**
  * IndexNow connection status for the signed-in user's WordPress sites.
@@ -12,7 +12,7 @@ import { generateIndexNowKey, isValidIndexNowKey, verifyIndexNowKeyFile } from "
  * IndexNow is free; "connected" means the site serves its key file, so every post we
  * publish can be announced to Bing, Yandex, Naver, Seznam and Yep right away.
  */
-type Meta = { indexnow_key?: string; indexnow_verified_at?: string | null; indexnow_error?: string | null };
+type Meta = { indexnow_key?: string; indexnow_verified_at?: string | null; indexnow_error?: string | null; rank_math?: boolean | null };
 
 function shape(site: { id: string; site_name: string; site_url: string; metadata: unknown }) {
   const m = (site.metadata ?? {}) as Meta;
@@ -25,6 +25,7 @@ function shape(site: { id: string; site_name: string; site_url: string; metadata
     fileName: m.indexnow_key ? `${m.indexnow_key}.txt` : null,
     verifiedAt: m.indexnow_verified_at ?? null,
     error: m.indexnow_error ?? null,
+    rankMath: m.rank_math === true,
   };
 }
 
@@ -34,7 +35,18 @@ export async function GET() {
   if (!user) return apiError("Unauthorized", 401);
   const { data, error } = await supabase.from("wordpress_sites").select("id, site_name, site_url, metadata").order("created_at", { ascending: true });
   if (error) return apiError(error.message, 500);
-  return NextResponse.json({ sites: (data ?? []).map(shape) });
+
+  // One-time look for Rank Math on sites not yet connected (result is remembered).
+  const rows = await Promise.all((data ?? []).map(async (site) => {
+    const m = (site.metadata ?? {}) as Meta & Record<string, unknown>;
+    if (m.indexnow_verified_at || m.rank_math !== undefined) return site;
+    const found = await detectRankMath(site.site_url as string);
+    if (found === null) return site; // couldn't check; try again next time
+    const next = { ...m, rank_math: found };
+    await supabase.from("wordpress_sites").update({ metadata: next }).eq("id", site.id);
+    return { ...site, metadata: next };
+  }));
+  return NextResponse.json({ sites: rows.map(shape) });
 }
 
 export async function POST(request: Request) {

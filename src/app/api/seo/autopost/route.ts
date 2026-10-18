@@ -4,7 +4,7 @@ import { getUserPlan } from "@/lib/plan";
 import { getCreditBalance } from "@/lib/credits";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 import { assignPublishHours } from "@/lib/seo/autopost/schedule";
-import { CREDITS_PER_POST, estimateMonthlyCredits, siteLimitForPlan } from "@/lib/seo/autopost/limits";
+import { CREDITS_PER_POST, estimateMonthlyCredits, parseMode, siteLimitForPlan } from "@/lib/seo/autopost/limits";
 
 /**
  * SEO Auto-Poster settings for the signed-in user.
@@ -40,7 +40,7 @@ export async function GET() {
 
   const [{ data: sites }, { data: logs }] = await Promise.all([
     wpIds.length ? supabase.from("wordpress_sites").select("id, site_name, site_url, metadata").in("id", wpIds) : Promise.resolve({ data: [] }),
-    ids.length ? supabase.from("seo_autopost_log").select("id, site_id, status, stage, message, title, post_url, words, created_at").in("site_id", ids).order("created_at", { ascending: false }).limit(60) : Promise.resolve({ data: [] }),
+    ids.length ? supabase.from("seo_autopost_log").select("id, site_id, article_id, status, stage, message, title, post_url, words, created_at").in("site_id", ids).order("created_at", { ascending: false }).limit(60) : Promise.resolve({ data: [] }),
   ]);
 
   return NextResponse.json({
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("seo_autopost_sites")
     .insert({
-      user_id: user.id, wordpress_site_id: wp.id, niche, posts_per_day: postsPerDay, mode: body.mode === "review" ? "review" : "auto",
+      user_id: user.id, wordpress_site_id: wp.id, niche, posts_per_day: postsPerDay, mode: parseMode(body.mode) ?? "auto",
       publish_hours: assignPublishHours(postsPerDay, wp.id as string),
       ...(fromProject ? { project_id: fromProject.id, language: fromProject.language, topic_queue: fromProject.topics, research: fromProject.research } : {}),
     })
@@ -150,7 +150,8 @@ export async function PATCH(request: Request) {
     patch.niche = n;
     patch.topic_queue = []; // a new niche needs a fresh topic plan
   }
-  if (body.mode === "auto" || body.mode === "review") patch.mode = body.mode;
+  const newMode = parseMode(body.mode);
+  if (newMode) patch.mode = newMode;
   if (typeof body.minWords === "number") patch.min_words = Math.min(4000, Math.max(1500, Math.round(body.minWords)));
 
   const { data, error } = await supabase.from("seo_autopost_sites").update(patch).eq("id", body.id).select(COLUMNS).single();

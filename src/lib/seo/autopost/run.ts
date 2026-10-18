@@ -25,7 +25,8 @@ import { notifyIndexNow } from "@/lib/seo/indexnow";
 import { captureError } from "@/lib/logger";
 import { planTopics, type Topic } from "./topics";
 import { isSiteDue, startOfUtcDay } from "./schedule";
-import { CREDITS_PER_POST, ARTICLE_IMAGE_CREDITS, MAX_PENDING_REVIEW } from "./limits";
+import { CREDITS_PER_POST, ARTICLE_IMAGE_CREDITS, MAX_PENDING_REVIEW, needsReview } from "./limits";
+import { chooseCategory } from "./category";
 import { uploadMedia } from "@/lib/media/storage";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -141,7 +142,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     }
 
     // 2b) Review mode: don't pile up drafts nobody has read (each one costs credits).
-    const reviewMode = s.mode === "review";
+    const reviewMode = needsReview(s.mode, s.posts_published ?? 0);
     if (reviewMode) {
       const { count: pending } = await admin.from("seo_articles").select("id", { count: "exact", head: true }).eq("autopost_site_id", s.id).eq("status", "pending_review");
       if ((pending ?? 0) >= MAX_PENDING_REVIEW) {
@@ -199,7 +200,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     }
     const words = countWords(pkg.articleContent);
     const content = composeArticleHtml(pkg.articleContent, pkg.faq);
-    const category = (wp.default_category as string | null) ?? null;
+    const category = chooseCategory({ siteDefault: wp.default_category as string | null, fromWriter: pkg.category, intent: topic.intent });
 
     // 5b) Review mode: save the finished article + image for the owner and stop here.
     if (reviewMode) {
@@ -243,6 +244,19 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       consecutive_failures: 0, paused_reason: null, updated_at: nowIso,
     }).eq("id", s.id);
     await writeLog(admin, { user_id: s.user_id, site_id: s.id, article_id: art.id, status: "published", message: indexNow.message, title: pkg.seoTitle, post_url: res.url, words, credits_charged: CREDITS_PER_POST, duration_ms: Date.now() - started });
+
+    // Automatic mode: tell the owner what just went live (they can undo it from the dashboard).
+    try {
+      const { data: u } = await admin.auth.admin.getUserById(s.user_id);
+      const safeTitle = (pkg.seoTitle || "").replace(/</g, "&lt;");
+      await notify(admin, {
+        userId: s.user_id, email: u.user?.email ?? null, type: "seo_article_published", category: "subscription",
+        title: "A new article was published", message: pkg.seoTitle,
+        ctaLabel: "View the article", ctaUrl: res.url,
+        mail: { subject: "New article published on your website", html: `<p>${safeTitle}</p><p><a href="${res.url}">View it live</a></p><p>Not happy with it? Open <a href="${APP_URL}/dashboard/seo/autopilot">SEO Autopilot</a> and click Unpublish.</p>` },
+        dedup: { threshold: art.id as string, billingPeriod: "" },
+      });
+    } catch { /* notification is best-effort */ }
 
     return { status: "published", message: `Published. ${indexNow.message}`, title: pkg.seoTitle, postUrl: res.url, words, articleId: art.id };
   } catch (e) {

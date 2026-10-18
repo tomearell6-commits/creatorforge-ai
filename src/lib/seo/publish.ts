@@ -27,6 +27,22 @@ async function resolveTerm(site: string, auth: string, taxonomy: "categories" | 
   return null;
 }
 
+/** Move an existing post back to draft (unpublish) without deleting it. */
+export async function setWordPressPostStatus(input: { siteUrl: string; username: string; appPassword: string; postId: string; status: "draft" | "publish" }): Promise<{ ok: true } | { ok: false; error: string }> {
+  const site = normalizeSite(input.siteUrl);
+  try {
+    const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/posts/${encodeURIComponent(input.postId)}`, {
+      method: "POST",
+      headers: { Authorization: basicAuth(input.username, input.appPassword), "Content-Type": "application/json", "User-Agent": UA },
+      body: JSON.stringify({ status: input.status }),
+    });
+    if (!res.ok) return { ok: false, error: `WordPress error ${res.status}: ${(await res.text()).slice(0, 200)}` };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "WordPress request failed" };
+  }
+}
+
 export type WpPublishInput = {
   siteUrl: string;
   username: string;

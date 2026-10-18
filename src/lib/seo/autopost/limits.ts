@@ -13,6 +13,21 @@ export const PUBLISH_CREDITS = SEO_CREDIT_COSTS.publish;
 /** Stop writing new drafts while this many are still waiting for the owner. */
 export const MAX_PENDING_REVIEW = 5;
 
+/** How articles go live: all automatic, all reviewed, or review the first few then automatic. */
+export type AutopostMode = "auto" | "review" | "first3";
+export const REVIEW_FIRST_COUNT = 3;
+
+export function parseMode(v: unknown): AutopostMode | null {
+  return v === "auto" || v === "review" || v === "first3" ? v : null;
+}
+
+/** Does the next article need the owner's approval before it goes live? */
+export function needsReview(mode: string | null | undefined, postsPublished: number): boolean {
+  if (mode === "review") return true;
+  if (mode === "first3") return postsPublished < REVIEW_FIRST_COUNT;
+  return false;
+}
+
 /** One-time credits to analyse a website (brand, competitors, keywords and a 30-day plan). */
 export const SEO_ANALYSIS_CREDITS = 15;
 

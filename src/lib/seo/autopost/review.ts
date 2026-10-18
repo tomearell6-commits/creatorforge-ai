@@ -5,7 +5,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptSecret } from "@/lib/security/secrets";
 import { fetchWithTimeout } from "@/lib/http";
-import { publishArticleToWordPress } from "@/lib/seo/publish";
+import { publishArticleToWordPress, setWordPressPostStatus } from "@/lib/seo/publish";
 import { notifyIndexNow } from "@/lib/seo/indexnow";
 import { PUBLISH_CREDITS, ARTICLE_IMAGE_CREDITS } from "./limits";
 
@@ -81,6 +81,26 @@ export async function approveDraft(admin: SupabaseClient, articleId: string, use
     await admin.from("seo_autopost_sites").update({ posts_published: ((site?.posts_published as number) ?? 0) + 1, last_success_at: nowIso }).eq("id", d.autopost_site_id);
   }
   return { ok: true, message: `Published. ${indexNow.message}`, url: res.url };
+}
+
+/** Take a published auto-posted article offline (back to a WordPress draft). Credits are not refunded. */
+export async function unpublishArticle(admin: SupabaseClient, articleId: string, userId: string): Promise<ReviewResult> {
+  const { data: a } = await admin.from("seo_articles").select("id, status, wordpress_site_id, wordpress_post_id")
+    .eq("id", articleId).eq("user_id", userId).eq("source", "autopost").maybeSingle();
+  if (!a) return { ok: false, error: "Article not found.", status: 404 };
+  if (a.status !== "published" || !a.wordpress_post_id) return { ok: false, error: "This article is not live.", status: 409 };
+
+  const { data: wp } = await admin.from("wordpress_sites").select("*").eq("id", a.wordpress_site_id).maybeSingle();
+  if (!wp) return { ok: false, error: "The WordPress site is no longer connected.", status: 409 };
+  const appPassword = decryptSecret(wp.encrypted_application_password as string);
+  if (!appPassword) return { ok: false, error: "Could not read the saved WordPress login — please reconnect the site.", status: 409 };
+
+  const res = await setWordPressPostStatus({ siteUrl: wp.site_url as string, username: wp.username as string, appPassword, postId: String(a.wordpress_post_id), status: "draft" });
+  if (!res.ok) return { ok: false, error: `WordPress did not unpublish it: ${res.error}`, status: 502 };
+
+  await admin.from("seo_articles").update({ status: "unpublished", updated_at: new Date().toISOString() }).eq("id", articleId);
+  await admin.from("seo_autopost_log").update({ status: "unpublished", message: "You unpublished this article. It is now a draft in WordPress." }).eq("article_id", articleId).eq("status", "published");
+  return { ok: true, message: "Unpublished. The article is now a draft in WordPress; search engines may keep it for a short while." };
 }
 
 /** Discard a draft. Its writing cost is not refunded (the article was already produced). */

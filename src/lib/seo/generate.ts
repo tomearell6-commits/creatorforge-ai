@@ -171,6 +171,7 @@ function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boo
       JSON_SHAPE + ".",
     "articleContent must be well-structured HTML using h2/h3/p/ul/ol (no h1, no scripts, no inline styles). Write genuinely useful, original content for people — not keyword stuffing.",
     `Today's date is ${today}. Never present an earlier year as current. If a year appears in the title it must be ${year}.`,
+    "category: a short blog category for this article (1-3 words, Title Case, e.g. \"Buying Guides\" or \"Soil Health\"). Never \"Blog\", \"General\" or \"Uncategorized\".",
     `LENGTH: articleContent MUST contain at least ${minWords} words of real substance (aim for ${minWords + 300}). Do not pad with filler.`,
     "STRUCTURE (strict): the page title is the H1, so do NOT include an h1. Open with a 100-150 word introduction in <p> tags (no heading) that uses the focus keyword in the first sentence. " +
       "Then <h2>Key takeaways</h2> with a <ul> of 4-6 points. Then 6-9 more <h2> sections, each 150-350 words, each with 2-3 <h3> sub-sections where the topic allows. " +

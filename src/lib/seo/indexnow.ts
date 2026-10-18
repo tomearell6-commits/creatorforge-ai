@@ -133,3 +133,20 @@ export async function notifyIndexNow(admin: SupabaseClient, postUrl: string): Pr
   }
   return result;
 }
+
+/**
+ * Does this WordPress site run Rank Math? (Its REST API lists a "rankmath/v1" namespace.)
+ * Rank Math has its own Instant Indexing / IndexNow feature, so those sites can paste its key
+ * instead of uploading a file. Returns null when the site could not be checked.
+ */
+export async function detectRankMath(siteUrl: string): Promise<boolean | null> {
+  try {
+    const base = siteUrl.replace(/\/+$/, "");
+    const res = await fetchWithTimeout(`${base}/wp-json/`, { headers: { "User-Agent": "Mozilla/5.0 (compatible; CreatorsForgeBot/1.0)" } }, 8_000);
+    if (!res.ok) return null;
+    const j = (await res.json()) as { namespaces?: string[] };
+    return Array.isArray(j.namespaces) ? j.namespaces.some((n) => n.startsWith("rankmath/")) : null;
+  } catch {
+    return null;
+  }
+}

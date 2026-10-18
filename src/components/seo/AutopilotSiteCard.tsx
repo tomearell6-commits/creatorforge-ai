@@ -8,16 +8,16 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 
-export type LogRow = { id: string; status: string; stage: string | null; message: string | null; title: string | null; post_url: string | null; words: number | null; created_at: string };
+export type LogRow = { id: string; article_id: string | null; status: string; stage: string | null; message: string | null; title: string | null; post_url: string | null; words: number | null; created_at: string };
 export type PendingArticle = { id: string; title: string | null; words: number | null; created_at: string; cover: string | null };
 export type AutopostItem = {
-  id: string; project_id: string | null; mode: "auto" | "review"; pending: PendingArticle[]; wordpress_site_id: string; active: boolean; niche: string; posts_per_day: number; min_words: number;
+  id: string; project_id: string | null; mode: "auto" | "review" | "first3"; pending: PendingArticle[]; wordpress_site_id: string; active: boolean; niche: string; posts_per_day: number; min_words: number;
   publish_hours: number[]; posts_published: number; paused_reason: string | null; last_success_at: string | null;
   queued_topics: number; monthly_credit_estimate: number;
   site: { id: string; site_name: string; site_url: string; indexnow_connected: boolean } | null;
   recent: LogRow[];
 };
-export type IxSite = { id: string; siteName: string; siteUrl: string; connected: boolean; key: string | null; fileName: string | null; error: string | null };
+export type IxSite = { id: string; siteName: string; siteUrl: string; connected: boolean; key: string | null; fileName: string | null; error: string | null; rankMath?: boolean };
 
 export async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } });
@@ -155,7 +155,8 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
           <p className="text-xs text-muted-foreground">How articles go live</p>
           <select value={it.mode} onChange={(e) => run("mode", () => api("/api/seo/autopost", { method: "PATCH", body: JSON.stringify({ id: it.id, mode: e.target.value }) }))} className="mt-0.5 h-8 rounded-md border border-border bg-background px-2 text-sm">
             <option value="auto">Automatically</option>
-            <option value="review">I review each one first</option>
+            <option value="first3">I review the first 3, then automatic</option>
+            <option value="review">I review every article</option>
           </select>
         </div>
         <div><p className="text-xs text-muted-foreground">Articles published</p><p className="font-semibold">{it.posts_published}</p></div>
@@ -180,7 +181,17 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
       )}
       {!connected && ixOpen && ixSite && (
         <div className="space-y-3 rounded-lg border border-border p-4 text-sm">
-          <p className="font-semibold">Upload one small file (no plugin needed)</p>
+          {ixSite.rankMath && (
+            <div className="space-y-2 rounded-md bg-muted/50 p-3">
+              <p className="font-semibold">Rank Math detected — the easiest way</p>
+              <p className="text-xs text-muted-foreground">Rank Math has its own free Instant Indexing (IndexNow) feature, so you do not need to upload any file.</p>
+              <ol className="list-decimal space-y-1 pl-5 text-xs">
+                <li>In WordPress open <strong>Rank Math → Instant Indexing</strong> (turn the module on under Rank Math → Dashboard if you do not see it).</li>
+                <li>Copy the <strong>API key</strong> shown in its Settings and paste it in the box below, then click Verify.</li>
+              </ol>
+            </div>
+          )}
+          <p className="font-semibold">{ixSite.rankMath ? "Or upload one small file instead" : "Upload one small file (no plugin needed)"}</p>
           {!ixSite.key ? (
             <Button size="sm" disabled={busy === "ix"} onClick={() => run("ix", () => api("/api/seo/indexnow", { method: "POST", body: JSON.stringify({ siteId: ixSite.id }) }))}>
               {busy === "ix" ? <Spinner size="sm" /> : "1. Create my key"}
@@ -197,7 +208,8 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
               </li>
             </ol>
           )}
-          <p className="pt-2 font-semibold">Already use an IndexNow plugin?</p>
+          <p className="pt-2 font-semibold">{ixSite.rankMath ? "Paste your Rank Math key" : "Already use Rank Math or an IndexNow plugin?"}</p>
+          {ixSite.error && ixSite.key && <p className="text-xs text-red-600">{ixSite.error}</p>}
           <div className="flex gap-2">
             <Input value={pluginKey} onChange={(e) => setPluginKey(e.target.value)} placeholder="Paste the plugin's IndexNow key" />
             <Button size="sm" variant="outline" disabled={pluginKey.trim().length < 8 || busy === "ixk"} onClick={() => run("ixk", () => api("/api/seo/indexnow", { method: "POST", body: JSON.stringify({ siteId: ixSite.id, key: pluginKey.trim() }) }).then(() => setPluginKey("")))}>Verify</Button>
@@ -212,12 +224,20 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
             {it.recent.map((r) => (
               <li key={r.id} className="flex flex-wrap items-start justify-between gap-2 border-b border-border/50 pb-1.5 last:border-0">
                 <span>
-                  {r.status === "published" ? "✅" : "⚠️"}{" "}
+                  {r.status === "published" ? "✅" : r.status === "unpublished" || r.status === "rejected" ? "⏸️" : r.status === "drafted" ? "📝" : "⚠️"}{" "}
                   {r.status === "published"
                     ? <>{r.post_url ? <a href={r.post_url} target="_blank" rel="noreferrer" className="font-medium underline">{r.title ?? "Published"}</a> : r.title}{r.words ? <span className="text-xs text-muted-foreground"> · {r.words.toLocaleString()} words</span> : null}</>
                     : <span className="text-muted-foreground">{r.message}</span>}
                 </span>
-                <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {r.status === "published" && r.article_id && (
+                    <button type="button" disabled={busy !== null} className="underline hover:text-foreground"
+                      onClick={() => { const id = r.article_id!; if (confirm("Unpublish this article? It goes back to a draft in WordPress. The credits used are not refunded.")) run("unpub", () => api("/api/seo/autopost/review/" + id, { method: "POST", body: JSON.stringify({ action: "unpublish" }) }), "Article unpublished."); }}>
+                      Unpublish
+                    </button>
+                  )}
+                  {new Date(r.created_at).toLocaleString()}
+                </span>
               </li>
             ))}
           </ul>

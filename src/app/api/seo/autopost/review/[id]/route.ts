@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 import { sanitizeBlogHtml } from "@/lib/blog/blog";
-import { approveDraft, rejectDraft } from "@/lib/seo/autopost/review";
+import { approveDraft, rejectDraft, unpublishArticle } from "@/lib/seo/autopost/review";
 
 /** Publishing to WordPress with an image can take a while. */
 export const maxDuration = 120;
@@ -34,10 +34,12 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
   const body = await readJsonBody<{ action?: string }>(request);
-  if (!body || (body.action !== "approve" && body.action !== "reject")) return apiError("Choose approve or reject.", 400);
+  if (!body || (body.action !== "approve" && body.action !== "reject" && body.action !== "unpublish")) return apiError("Choose approve, reject or unpublish.", 400);
 
   const admin = createAdminClient();
-  const result = body.action === "approve" ? await approveDraft(admin, id, user.id) : await rejectDraft(admin, id, user.id);
+  const result = body.action === "approve" ? await approveDraft(admin, id, user.id)
+    : body.action === "unpublish" ? await unpublishArticle(admin, id, user.id)
+    : await rejectDraft(admin, id, user.id);
   if (!result.ok) return apiError(result.error, result.status);
   return NextResponse.json(result);
 }

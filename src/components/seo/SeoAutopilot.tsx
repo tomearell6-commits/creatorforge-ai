@@ -8,6 +8,7 @@ import { Input, Label } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { isHealthTopic } from "@/lib/seo/health";
 import { AutopilotSiteCard, api, type AutopostItem, type IxSite } from "./AutopilotSiteCard";
 
 type Brand = { name?: string; summary?: string; niche?: string; offerings?: string[]; audience?: string; tone?: string; country?: string; language?: string };
@@ -169,7 +170,7 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
   const [full, setFull] = useState<Full | null>(null);
   const [siteId, setSiteId] = useState("");
   const [perDay, setPerDay] = useState<1 | 2>(1);
-  const [mode, setMode] = useState<"auto" | "review">("review");
+  const [modeChoice, setModeChoice] = useState<"auto" | "review" | "first3" | null>(null);
   const [busy, setBusy] = useState(false);
   const [connect, setConnect] = useState({ username: "", appPassword: "" });
   const item = ap.items.find((i) => i.project_id === project.id);
@@ -215,6 +216,8 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
   if (!full) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Spinner size="sm" /> Loading your plan…</div>;
 
   const b = full.brand;
+  // Automatic suits most sites; health and medical sites default to checking articles first.
+  const mode = modeChoice ?? (isHealthTopic(b.niche, b.summary) ? "review" : "auto");
   const done = item?.posts_published ?? 0;
   const atLimit = !item && ap.items.length >= ap.siteLimit;
 
@@ -234,7 +237,7 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
     try {
       await api("/api/seo/autopost", { method: "POST", body: JSON.stringify({ projectId: full!.id, wordpressSiteId: siteId, postsPerDay: perDay, mode }) });
       await reload();
-      setMsg({ kind: "success", text: mode === "review" ? "Daily writing is on. Each article waits for your approval before it goes live." : "Daily posting is on. Your first article is published at the next scheduled time today." });
+      setMsg({ kind: "success", text: mode === "review" ? "Daily writing is on. Each article waits for your approval before it goes live." : mode === "first3" ? "Daily writing is on. You approve the first 3 articles, then they publish automatically." : "Daily posting is on. Your first article is published at the next scheduled time today." });
     } catch (e) { setMsg({ kind: "error", text: e instanceof Error ? e.message : "Could not start." }); }
     finally { setBusy(false); }
   }
@@ -313,11 +316,12 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
               </div>
               <div>
                 <Label htmlFor="ap-mode">How should articles go live?</Label>
-                <select id="ap-mode" value={mode} onChange={(e) => setMode(e.target.value === "auto" ? "auto" : "review")} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm sm:w-72">
-                  <option value="review">I approve each article first (recommended)</option>
-                  <option value="auto">Publish automatically</option>
+                <select id="ap-mode" value={mode} onChange={(e) => setModeChoice(e.target.value === "review" ? "review" : e.target.value === "first3" ? "first3" : "auto")} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm sm:w-72">
+                  <option value="auto">Publish automatically{isHealthTopic(b.niche, b.summary) ? "" : " (recommended)"}</option>
+                  <option value="first3">I approve the first 3, then automatic</option>
+                  <option value="review">I approve every article{isHealthTopic(b.niche, b.summary) ? " (recommended for health topics)" : ""}</option>
                 </select>
-                <p className="mt-1 text-xs text-muted-foreground">You can change this any time. With approval on, up to 5 articles wait for you, then writing pauses until you catch up.</p>
+                <p className="mt-1 text-xs text-muted-foreground">You can change this any time, and every published article has an Unpublish button. When approval is on, up to 5 articles can wait for you before writing pauses.</p>
               </div>
               <Button disabled={!siteId || busy} onClick={start}>{busy ? <><Spinner size="sm" /> Starting…</> : "Start daily publishing"}</Button>
               <p className="text-xs text-muted-foreground">Each article uses {ap.creditsPerPost} credits. Your balance: {ap.balance.toLocaleString()}. You can pause or stop at any time.</p>
