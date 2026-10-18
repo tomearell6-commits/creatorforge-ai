@@ -259,7 +259,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("social-accounts", "Social Accounts", "/dashboard/social", Share2, "YouTube, TikTok, Instagram and more", 2, { tour: "social-accounts" }),
           c("email-accounts", "Email Accounts", "/dashboard/email/settings", Mail, "Connected inboxes (Email Assistant)", 3),
           c("google-business", "Google Business Profile", "/dashboard/grow/local-business/settings", MapPin, "Google Business Profile Manager", 4),
-          c("social-business-accounts", "Social Accounts", "/dashboard/grow/social-business/accounts", Share2, "Connect Facebook, Instagram, LinkedIn, TikTok & more", 5),
+          c("social-business-accounts", "Social Business Accounts", "/dashboard/grow/social-business/accounts", Share2, "Connect Facebook, Instagram, LinkedIn, TikTok & more", 5),
           c("api-keys", "API Keys", "/dashboard/api", KeyRound, "Developer API access", 6),
         ],
       },
