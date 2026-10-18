@@ -21,7 +21,8 @@ import { generateArticleImage } from "@/lib/seo/images";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { composeArticleHtml } from "@/lib/seo/compose";
 import { notify } from "@/lib/notifications/service";
-import { notifyIndexNow } from "@/lib/seo/indexnow";
+import { notifyIndexNow, blogPostUrl } from "@/lib/seo/indexnow";
+import { slugifyBlog, estimateReadingMinutes, sanitizeBlogHtml } from "@/lib/blog/blog";
 import { captureError } from "@/lib/logger";
 import { planTopics, type Topic } from "./topics";
 import { isSiteDue, startOfUtcDay } from "./schedule";
@@ -59,7 +60,7 @@ export type RunOutcome = {
 };
 
 type SiteRow = {
-  id: string; user_id: string; wordpress_site_id: string; active: boolean; niche: string;
+  id: string; user_id: string; wordpress_site_id: string | null; destination?: string; active: boolean; niche: string;
   posts_per_day: number; audience: string; language: string; min_words: number;
   mode?: string; publish_hours: number[]; topic_queue: Topic[] | null; research: unknown;
   consecutive_failures: number; posts_published: number;
@@ -108,6 +109,130 @@ async function writeLog(admin: SupabaseClient, row: Record<string, unknown>) {
   await admin.from("seo_autopost_log").insert(row).then(() => {}, () => {});
 }
 
+/** The CreatorsForge blog's own base URL (used for internal links and IndexNow). */
+const BLOG_SITE = "https://www.creatorsforge.io";
+
+async function uniqueBlogSlug(admin: SupabaseClient, base: string): Promise<string> {
+  const root = base || "post";
+  let slug = root;
+  for (let n = 2; n < 50; n++) {
+    const { data } = await admin.from("blog_posts").select("id").eq("slug", slug).limit(1);
+    if (!(data ?? []).length) return slug;
+    slug = `${root}-${n}`.slice(0, 70);
+  }
+  return `${root}-${Date.now()}`.slice(0, 70);
+}
+
+/**
+ * Destination = the CreatorsForge blog (platform owner only). Same pipeline as WordPress, but the post is
+ * written straight into blog_posts. First-party content: no customer credits are charged.
+ * "review" mode saves a draft (publish it from Admin → Blog); every other mode publishes immediately.
+ */
+async function runBlogDestination(admin: SupabaseClient, s: SiteRow, started: number): Promise<RunOutcome> {
+  let title: string | undefined;
+  try {
+    const draft = s.mode === "review";
+
+    if (draft) {
+      const { count: pending } = await admin.from("blog_posts").select("id", { count: "exact", head: true }).eq("created_by", s.user_id).eq("source", "autopilot").eq("status", "draft");
+      if ((pending ?? 0) >= MAX_PENDING_REVIEW) {
+        throw new StageError("review", `You have ${pending} drafts waiting in Admin → Blog. Publish or delete some and writing will continue.`, { soft: true });
+      }
+    }
+
+    // Topic (avoid repeating what the blog already covers).
+    const { data: existing } = await admin.from("blog_posts").select("title, focus_keyword, slug, status").order("created_at", { ascending: false }).limit(200);
+    let queue: Topic[] = Array.isArray(s.topic_queue) ? s.topic_queue : [];
+    if (queue.length === 0) {
+      const have = (existing ?? []).flatMap((r) => [r.title as string, r.focus_keyword as string]).filter(Boolean);
+      try {
+        queue = await planTopics({ niche: s.niche, existingTitles: have, research: s.research });
+      } catch (e) {
+        throw new StageError("topic", `Could not plan new topics: ${errMsg(e)}`);
+      }
+      if (queue.length === 0) throw new StageError("topic", "The topic planner found no new topics to write.");
+    }
+    const topic = queue[0];
+    const rest = queue.slice(1);
+    title = topic.title || topic.keyword;
+
+    // Image first, so an image-service problem stops us before paying for the article.
+    let img;
+    try {
+      img = await generateArticleImage({ title, keyword: topic.keyword });
+    } catch (e) {
+      throw new StageError("image", `Image generation is unavailable right now: ${errMsg(e).slice(0, 200)}`, { soft: true });
+    }
+
+    // Article.
+    const links = (existing ?? []).filter((r) => r.status === "published" && r.slug && r.title).slice(0, 40).map((r) => ({ url: blogPostUrl(r.slug as string), title: r.title as string }));
+    let pkg;
+    try {
+      const research = (s.research ?? {}) as { brand?: { name?: string; summary?: string; offerings?: string[]; audience?: string; tone?: string } };
+      ({ pkg } = await generateSeoPackage(
+        {
+          mainKeyword: topic.keyword,
+          secondaryKeywords: topic.secondaryKeywords,
+          brandContext: research.brand,
+          angle: (topic as Topic & { angle?: string }).angle,
+          internalLinks: links.length ? links : undefined,
+          niche: s.niche,
+          targetAudience: "creators, marketers and small businesses",
+          searchIntent: topic.intent,
+          minWords: s.min_words,
+          language: s.language,
+          brandName: "CreatorsForge",
+          productName: "CreatorsForge",
+          cta: "Start free at CreatorsForge.io",
+          model: process.env.SEO_AUTOPOST_MODEL || "claude-sonnet-5-5",
+        },
+        { strict: true }
+      ));
+    } catch (e) {
+      throw new StageError("article", errMsg(e));
+    }
+    const words = countWords(pkg.articleContent);
+    // The blog page renders the FAQ from faq_json, so it is NOT composed into the body here.
+    const html = sanitizeBlogHtml(ensureInternalLinks(pkg.articleContent, links, { siteUrl: BLOG_SITE, keyword: topic.keyword, title: pkg.seoTitle || title || topic.keyword }).html);
+
+    let coverUrl: string;
+    try {
+      coverUrl = (await uploadMedia(admin, { userId: s.user_id, type: "image", bytes: img.data, contentType: img.contentType, ext: "jpg" })).url;
+    } catch (e) {
+      throw new StageError("publish", `Could not save the cover image: ${errMsg(e)}`);
+    }
+
+    const slug = await uniqueBlogSlug(admin, slugifyBlog(pkg.slug || topic.keyword));
+    const nowIso = new Date().toISOString();
+    const postTitle = pkg.seoTitle || pkg.h1 || topic.keyword;
+    const { data: post, error: insErr } = await admin.from("blog_posts").insert({
+      slug, title: postTitle, meta_title: pkg.metaTitle || null, meta_description: pkg.metaDescription || null, excerpt: pkg.excerpt || null,
+      content_html: html, cover_image_url: coverUrl, cover_image_alt: postTitle, tags: (pkg.tags ?? []).slice(0, 12),
+      category: chooseCategory({ fromWriter: pkg.category, intent: topic.intent }), focus_keyword: pkg.focusKeyword || topic.keyword, faq_json: pkg.faq ?? [],
+      status: draft ? "draft" : "published", published_at: draft ? null : nowIso, source: "autopilot",
+      reading_minutes: estimateReadingMinutes(html), seo_score: typeof pkg.seoScore === "number" ? pkg.seoScore : null, created_by: s.user_id,
+    }).select("id, slug").single();
+    if (insErr || !post) throw new StageError("publish", `Could not save the post: ${insErr?.message ?? "unknown error"}`);
+
+    const url = blogPostUrl(post.slug as string);
+    const indexNow = draft ? null : await notifyIndexNow(admin, url);
+    await admin.from("seo_autopost_sites").update({
+      topic_queue: rest, last_run_at: nowIso, consecutive_failures: 0, paused_reason: null, updated_at: nowIso,
+      ...(draft ? {} : { last_success_at: nowIso, posts_published: (s.posts_published ?? 0) + 1 }),
+    }).eq("id", s.id);
+    const message = draft ? "Draft saved. Publish it from Admin → Blog." : indexNow?.message ?? "Published.";
+    await writeLog(admin, { user_id: s.user_id, site_id: s.id, status: draft ? "drafted" : "published", message, title: postTitle, post_url: draft ? null : url, words, credits_charged: 0, duration_ms: Date.now() - started });
+
+    return { status: draft ? "drafted" : "published", message: draft ? message : `Published. ${message}`, title: postTitle, postUrl: draft ? undefined : url, words };
+  } catch (e) {
+    const err = e instanceof StageError ? e : new StageError("article", errMsg(e));
+    if (!(e instanceof StageError)) captureError(e, { category: "jobs", feature: "seo-autopost-blog", siteId: s.id });
+    return handleFailure(admin, s, err, title, started);
+  } finally {
+    await admin.from("seo_autopost_sites").update({ claimed_at: null }).eq("id", s.id);
+  }
+}
+
 export async function runAutopostForSite(admin: SupabaseClient, siteId: string, opts: { force?: boolean } = {}): Promise<RunOutcome> {
   const started = Date.now();
   const { data: s } = (await admin.from("seo_autopost_sites").select("*").eq("id", siteId).maybeSingle()) as { data: SiteRow | null };
@@ -123,10 +248,13 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     return { status: "skipped", message: opts.force ? `You have already used today's ${s.posts_per_day === 1 ? "article" : s.posts_per_day + " articles"} (your site is set to ${s.posts_per_day} a day). The next one goes out tomorrow at the usual time.${s.posts_per_day === 1 ? ' To write another one now, change "Articles per day" to 2.' : ""}` : "Not due yet." };
   }
 
+  // The CreatorsForge blog is its own destination (no WordPress, no customer credits).
+  if (s.destination === "creatorforge_blog") return runBlogDestination(admin, s, started);
+
   let title: string | undefined;
   try {
     // 1) Connection
-    const { data: wp } = await admin.from("wordpress_sites").select("*").eq("id", s.wordpress_site_id).maybeSingle();
+    const { data: wp } = await admin.from("wordpress_sites").select("*").eq("id", s.wordpress_site_id ?? "").maybeSingle();
     if (!wp) throw new StageError("connection", "The WordPress site was disconnected.", { hard: true });
     const appPassword = decryptSecret(wp.encrypted_application_password as string);
     if (!appPassword) throw new StageError("connection", "Could not read the saved WordPress login — please reconnect the site.", { hard: true });

@@ -20,7 +20,7 @@ type Full = Project & {
   gaps: string[];
   plan: { day: number; title: string; keyword: string; secondaryKeywords: string[]; intent: string; angle: string }[];
 };
-type AutopostData = { plan: string; siteLimit: number; creditsPerPost: number; balance: number; items: AutopostItem[] };
+type AutopostData = { plan: string; siteLimit: number; creditsPerPost: number; balance: number; canPublishToBlog?: boolean; items: AutopostItem[] };
 type Msg = { kind: "success" | "error" | "info"; text: string };
 
 const STEPS = [
@@ -232,6 +232,19 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
     finally { setBusy(false); }
   }
 
+  // CreatorsForge's own blog is not WordPress: posts go straight into the blog (platform owner only, no credits).
+  const isOwnBlog = /(^|\.)creatorsforge\.io$/i.test(bare(full.website_url).replace(/\/.*$/, ""));
+
+  async function startBlog() {
+    setBusy(true); setMsg(null);
+    try {
+      await api("/api/seo/autopost", { method: "POST", body: JSON.stringify({ projectId: full!.id, destination: "creatorforge_blog", postsPerDay: perDay, mode: mode === "first3" ? "auto" : mode }) });
+      await reload();
+      setMsg({ kind: "success", text: mode === "review" ? "Daily writing is on. Each article is saved as a draft in Admin → Blog." : "Daily publishing to the CreatorsForge blog is on." });
+    } catch (e) { setMsg({ kind: "error", text: e instanceof Error ? e.message : "Could not start." }); }
+    finally { setBusy(false); }
+  }
+
   async function start() {
     setBusy(true); setMsg(null);
     try {
@@ -258,7 +271,7 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
         </p>
       </Card>
 
-      {item && <AutopilotSiteCard it={item} ixSite={ix.find((s) => s.id === item.wordpress_site_id)} onChanged={reload} onMessage={(m) => setMsg(m)} />}
+      {item && <AutopilotSiteCard it={item} ixSite={ix.find((s) => s.id === (item.wordpress_site_id ?? ""))} onChanged={reload} onMessage={(m) => setMsg(m)} />}
 
       <Card className="space-y-3">
         <div>
@@ -278,7 +291,34 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
         </ol>
       </Card>
 
-      {!item && (
+      {!item && isOwnBlog && (
+        <Card className="space-y-4 border-brand-600">
+          <div><CardTitle>Publish to the CreatorsForge blog every day</CardTitle><p className="mt-1 text-sm text-muted-foreground">This is our own website, so there is nothing to connect. We publish the plan above straight into the CreatorsForge blog, with a real cover image and an instant search-engine notice. It uses no customer credits.</p></div>
+          {!ap.canPublishToBlog ? (
+            <Alert variant="info">The CreatorsForge blog is managed by the platform owner.</Alert>
+          ) : (
+            <>
+              <div>
+                <Label htmlFor="blog-rate">Articles per day</Label>
+                <select id="blog-rate" value={perDay} onChange={(e) => setPerDay(Number(e.target.value) === 2 ? 2 : 1)} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm sm:w-72">
+                  <option value={1}>1 a day</option>
+                  <option value={2}>2 a day</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="blog-mode">How should articles go live?</Label>
+                <select id="blog-mode" value={mode === "first3" ? "auto" : mode} onChange={(e) => setModeChoice(e.target.value === "review" ? "review" : "auto")} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm sm:w-72">
+                  <option value="auto">Publish automatically</option>
+                  <option value="review">Save as drafts for me to publish</option>
+                </select>
+              </div>
+              <Button disabled={busy} onClick={startBlog}>{busy ? <><Spinner size="sm" /> Starting…</> : "Start daily publishing"}</Button>
+            </>
+          )}
+        </Card>
+      )}
+
+      {!item && !isOwnBlog && (
         <Card className="space-y-4 border-brand-600">
           <div><CardTitle>Start publishing every day</CardTitle><p className="mt-1 text-sm text-muted-foreground">Connect your WordPress site once. We publish the plan above, one article a day, with a real image and instant search-engine notice.</p></div>
 

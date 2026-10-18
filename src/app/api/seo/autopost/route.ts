@@ -4,6 +4,7 @@ import { getUserPlan } from "@/lib/plan";
 import { getCreditBalance } from "@/lib/credits";
 import { apiError, readJsonBody } from "@/lib/api/respond";
 import { screenSite } from "@/lib/seo/policy-server";
+import { isPlatformAdmin, requireAdmin } from "@/lib/admin";
 import { POLICY_MESSAGE } from "@/lib/seo/policy";
 import { assignPublishHours } from "@/lib/seo/autopost/schedule";
 import { CREDITS_PER_POST, estimateMonthlyCredits, parseMode, siteLimitForPlan } from "@/lib/seo/autopost/limits";
@@ -16,7 +17,7 @@ import { CREDITS_PER_POST, estimateMonthlyCredits, parseMode, siteLimitForPlan }
  *  DELETE → stop and remove { id }
  * Users never set a date or time — hours are assigned automatically.
  */
-const COLUMNS = "id, project_id, mode, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
+const COLUMNS = "id, project_id, mode, destination, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
 
 function cleanNiche(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -34,7 +35,7 @@ export async function GET() {
   if (error) return apiError(error.message, 500);
 
   const ids = (rows ?? []).map((r) => r.id as string);
-  const wpIds = (rows ?? []).map((r) => r.wordpress_site_id as string);
+  const wpIds = (rows ?? []).map((r) => r.wordpress_site_id as string | null).filter((x): x is string => !!x);
   // Articles written in "review" mode that are waiting for the owner.
   const { data: pending } = ids.length
     ? await supabase.from("seo_articles").select("id, autopost_site_id, seo_title, word_count, created_at, metadata").in("autopost_site_id", ids).eq("status", "pending_review").order("created_at", { ascending: true }).limit(40)
@@ -49,6 +50,7 @@ export async function GET() {
     plan,
     siteLimit: siteLimitForPlan(plan),
     creditsPerPost: CREDITS_PER_POST,
+    canPublishToBlog: (await isPlatformAdmin()).ok,
     balance: await getCreditBalance(),
     items: (rows ?? []).map((r) => ({
       ...r,
@@ -56,6 +58,7 @@ export async function GET() {
       topic_queue: undefined,
       monthly_credit_estimate: estimateMonthlyCredits(r.posts_per_day as number),
       site: (() => {
+        if (r.destination === "creatorforge_blog") return { id: "creatorforge_blog", site_name: "CreatorsForge blog", site_url: "https://www.creatorsforge.io/blog", indexnow_connected: true };
         const s = (sites ?? []).find((x) => x.id === r.wordpress_site_id);
         if (!s) return null;
         const m = ((s as { metadata?: unknown }).metadata ?? {}) as { indexnow_verified_at?: string | null };
@@ -75,7 +78,7 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
-  const body = await readJsonBody<{ wordpressSiteId?: string; niche?: string; postsPerDay?: number; projectId?: string; mode?: string }>(request);
+  const body = await readJsonBody<{ wordpressSiteId?: string; niche?: string; postsPerDay?: number; projectId?: string; mode?: string; destination?: string }>(request);
   if (!body) return apiError("Invalid JSON body", 400);
 
   // Started from an analysed website: take the niche, language, plan and brand from it.
@@ -98,7 +101,13 @@ export async function POST(request: Request) {
 
   const niche = cleanNiche(fromProject ? fromProject.niche : body.niche);
   if (!niche) return apiError("Describe what the website is about (3–200 characters).", 400);
-  if (typeof body.wordpressSiteId !== "string") return apiError("Choose a connected WordPress site.", 400);
+  const toBlog = body.destination === "creatorforge_blog";
+  if (toBlog) {
+    // The CreatorsForge blog belongs to the platform owner: admins only (2FA enforced by requireAdmin).
+    const gate = await requireAdmin();
+    if ("error" in gate) return gate.error;
+    if (!fromProject) return apiError("Analyse the website first, then start publishing.", 400);
+  } else if (typeof body.wordpressSiteId !== "string") return apiError("Choose a connected WordPress site.", 400);
   const postsPerDay = body.postsPerDay === 2 ? 2 : 1;
 
   const plan = await getUserPlan(supabase);
@@ -106,12 +115,14 @@ export async function POST(request: Request) {
   if (limit === 0) return apiError("SEO Auto-Poster is available on paid plans. Upgrade to start daily automatic posting.", 403);
 
   // RLS guarantees this only returns the user's own sites.
-  const { data: wp } = await supabase.from("wordpress_sites").select("id, site_url").eq("id", body.wordpressSiteId).maybeSingle();
-  if (!wp) return apiError("That WordPress site was not found in your account.", 404);
+  const { data: wp } = toBlog ? { data: null } : await supabase.from("wordpress_sites").select("id, site_url").eq("id", body.wordpressSiteId as string).maybeSingle();
+  if (!toBlog && !wp) return apiError("That WordPress site was not found in your account.", 404);
 
   // Category check: we do not auto-post for sites that sell illegal drugs.
-  const policy = await screenSite(wp.site_url as string);
-  if (policy.blocked) return apiError(POLICY_MESSAGE, 403);
+  if (wp) {
+    const policy = await screenSite(wp.site_url as string);
+    if (policy.blocked) return apiError(POLICY_MESSAGE, 403);
+  }
 
   const { count } = await supabase.from("seo_autopost_sites").select("id", { count: "exact", head: true });
   if ((count ?? 0) >= limit) return apiError(`Your plan allows auto-posting on ${limit} website${limit === 1 ? "" : "s"}. Upgrade to add more.`, 403);
@@ -119,13 +130,13 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("seo_autopost_sites")
     .insert({
-      user_id: user.id, wordpress_site_id: wp.id, niche, posts_per_day: postsPerDay, mode: parseMode(body.mode) ?? "auto",
-      publish_hours: assignPublishHours(postsPerDay, wp.id as string),
+      user_id: user.id, wordpress_site_id: wp ? (wp.id as string) : null, destination: toBlog ? "creatorforge_blog" : "wordpress", niche, posts_per_day: postsPerDay, mode: parseMode(body.mode) ?? "auto",
+      publish_hours: assignPublishHours(postsPerDay, wp ? (wp.id as string) : user.id),
       ...(fromProject ? { project_id: fromProject.id, language: fromProject.language, topic_queue: fromProject.topics, research: fromProject.research } : {}),
     })
     .select(COLUMNS).single();
   if (error) {
-    if (error.code === "23505") return apiError("Auto-posting is already set up for that website.", 409);
+    if (error.code === "23505") return apiError(toBlog ? "Auto-posting to the CreatorsForge blog is already set up." : "Auto-posting is already set up for that website.", 409);
     return apiError(error.message, 500);
   }
   return NextResponse.json({ item: data }, { status: 201 });
@@ -148,7 +159,7 @@ export async function PATCH(request: Request) {
   }
   if (body.postsPerDay === 1 || body.postsPerDay === 2) {
     patch.posts_per_day = body.postsPerDay;
-    patch.publish_hours = assignPublishHours(body.postsPerDay, current.wordpress_site_id as string);
+    patch.publish_hours = assignPublishHours(body.postsPerDay, ((current.wordpress_site_id as string | null) ?? user.id));
   }
   if (body.niche !== undefined) {
     const n = cleanNiche(body.niche);

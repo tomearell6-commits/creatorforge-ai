@@ -11,7 +11,7 @@ import { Spinner } from "@/components/ui/Spinner";
 export type LogRow = { id: string; article_id: string | null; status: string; stage: string | null; message: string | null; title: string | null; post_url: string | null; words: number | null; created_at: string };
 export type PendingArticle = { id: string; title: string | null; words: number | null; created_at: string; cover: string | null };
 export type AutopostItem = {
-  id: string; project_id: string | null; mode: "auto" | "review" | "first3"; pending: PendingArticle[]; wordpress_site_id: string; active: boolean; niche: string; posts_per_day: number; min_words: number;
+  id: string; project_id: string | null; mode: "auto" | "review" | "first3"; destination: "wordpress" | "creatorforge_blog"; pending: PendingArticle[]; wordpress_site_id: string | null; active: boolean; niche: string; posts_per_day: number; min_words: number;
   publish_hours: number[]; posts_published: number; paused_reason: string | null; last_success_at: string | null;
   queued_topics: number; monthly_credit_estimate: number;
   site: { id: string; site_name: string; site_url: string; indexnow_connected: boolean } | null;
@@ -134,7 +134,7 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
             onClick={() => run("run", async () => {
               const r = await api<{ status: string; message: string }>("/api/seo/autopost/run", { method: "POST", body: JSON.stringify({ id: it.id }) });
               if (r.status !== "published" && r.status !== "drafted") throw new Error(r.message);
-              onMessage({ kind: "success", text: r.status === "drafted" ? "Your article is ready. Read it under “Waiting for your review” below, then approve it." : "Article published." });
+              onMessage({ kind: "success", text: r.status === "drafted" ? (it.destination === "creatorforge_blog" ? r.message : "Your article is ready. Read it under “Waiting for your review” below, then approve it.") : "Article published." });
             })}>
             {busy === "run" ? <><Spinner size="sm" /> Writing (2–3 min)…</> : "Publish one now"}
           </Button>
@@ -155,7 +155,7 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
           <p className="text-xs text-muted-foreground">How articles go live</p>
           <select value={it.mode} onChange={(e) => run("mode", () => api("/api/seo/autopost", { method: "PATCH", body: JSON.stringify({ id: it.id, mode: e.target.value }) }))} className="mt-0.5 h-8 rounded-md border border-border bg-background px-2 text-sm">
             <option value="auto">Automatically</option>
-            <option value="first3">I review the first 3, then automatic</option>
+            {it.destination !== "creatorforge_blog" && <option value="first3">I review the first 3, then automatic</option>}
             <option value="review">I review every article</option>
           </select>
         </div>
@@ -169,6 +169,7 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
         <div><p className="text-xs text-muted-foreground">Publishes around</p><p className="font-semibold">{it.publish_hours.map(localTime).join(" and ")}</p></div>
       </div>
 
+      {it.destination === "creatorforge_blog" && it.mode === "review" && <Alert variant="info">Drafts are saved in <strong>Admin → Blog</strong>. Publish them from there.</Alert>}
       {it.pending.length > 0 && <ReviewQueue items={it.pending} onChanged={onChanged} onMessage={onMessage} />}
 
       {connected ? (
