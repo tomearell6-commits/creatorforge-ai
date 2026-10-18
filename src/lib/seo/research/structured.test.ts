@@ -29,11 +29,11 @@ beforeEach(() => {
 });
 
 describe("askJson (structured result)", () => {
-  it("uses a forced tool call and returns the parsed object", async () => {
+  it("asks for the result through a tool call and returns the parsed object", async () => {
     replies.push(tool({ plan: [{ day: 1, title: 'A "quoted" title, with, commas' }] }));
     const r = await askJson<{ plan: { title: string }[] }>("sys", "user", 9000);
     expect(r.plan[0].title).toBe('A "quoted" title, with, commas');
-    expect(calls[0].tool_choice).toEqual({ type: "tool", name: "submit_result" });
+    expect(calls[0].tool_choice).toEqual({ type: "auto" });
   });
   it("big call: falls back to plain-text JSON when the tool result is empty", async () => {
     replies.push({ content: [] }, text('{"ok":true}'));

@@ -76,7 +76,8 @@ async function askViaTool(system: string, user: string, maxTokens: number, trace
     system: system + " Deliver the result by calling the submit_result tool with the object described above. Never write the result as plain text.",
     messages: [{ role: "user", content: user }],
     tools: [{ name: "submit_result", description: "Submit the finished result object exactly as described in the instructions.", input_schema: { type: "object", additionalProperties: true } }],
-    tool_choice: { type: "tool", name: "submit_result" },
+    // "auto": forcing a specific tool is rejected by this model (HTTP 400); the instruction above makes it call the tool.
+    tool_choice: { type: "auto" },
   });
   const msg = await stream.finalMessage();
   const block = msg.content.find((c): c is Anthropic.ToolUseBlock => c.type === "tool_use");
@@ -84,7 +85,8 @@ async function askViaTool(system: string, user: string, maxTokens: number, trace
     return block.input as Record<string, unknown>;
   }
   const blocks = msg.content.map((c) => c.type).join(",") || "none";
-  trace.push(`${label}: tool gave no object; stop_reason=${msg.stop_reason}; blocks=${blocks}; output_tokens=${msg.usage?.output_tokens}`);
+  const said = msg.content.filter((c): c is Anthropic.TextBlock => c.type === "text").map((c) => c.text).join(" ").replace(/s+/g, " ").slice(0, 400);
+  trace.push(`${label}: tool gave no object; stop_reason=${msg.stop_reason}; blocks=${blocks}; output_tokens=${msg.usage?.output_tokens}; model said: ${JSON.stringify(said)}`);
   console.error("[seo-analysis] tool call returned no usable object; stop_reason=", msg.stop_reason);
   throw new SyntaxError("no structured result");
 }
@@ -103,7 +105,7 @@ export async function askJson<T>(system: string, user: string, maxTokens: number
       const txt = await askClaude(system + " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote), and never use line breaks inside values.", user, maxTokens);
       try { JSON.parse(txt.trim().replace(/^```json?/i, "").replace(/```$/, "").trim().replace(/^[^[{]*/, "")); } catch (err) {
         const pos = Number(/position (d+)/.exec(err instanceof Error ? err.message : "")?.[1] ?? -1);
-        trace.push(`${label}: text JSON invalid (${err instanceof Error ? err.message.slice(0, 120) : "?"}); length=${txt.length}; around error: ${pos >= 0 ? JSON.stringify(txt.slice(Math.max(0, pos - 80), pos + 80)) : "n/a"}`);
+        trace.push(`${label}: text JSON invalid (${err instanceof Error ? err.message.slice(0, 120) : "?"}); length=${txt.length}; around error: ${pos >= 0 ? JSON.stringify(txt.slice(Math.max(0, pos - 80), pos + 80)) : JSON.stringify(txt.replace(/s+/g, " ").slice(0, 400))}`);
       }
       return txt;
     }, 1),
