@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { QuickWins } from "./QuickWins";
 
 type Site = { host: string; name: string; url: string; kind: "wordpress" | "blog" };
 type Conn = { id: string; email: string; status: string; error: string | null };
@@ -281,6 +282,8 @@ export function SeoResults() {
                 )}
                 {Object.values(inspected).some((i) => !("error" in i) && !i.indexed) && <p className="text-xs text-muted-foreground">“Not yet” is common for new pages: Google usually takes days to weeks to add a new page. A submitted sitemap and IndexNow speed up discovery, but Google decides when to index.</p>}
               </Card>
+
+              <QuickWins key={`${host}-${days}`} host={host} days={days} />
 
               <Card className="space-y-3">
                 <CardTitle>What people searched to find you</CardTitle>
