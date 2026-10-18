@@ -454,6 +454,8 @@ export const SEO_AUDIT_TYPES: SeoAuditTypeDef[] = [
 ];
 export const SEO_AUDIT_FIX_PLAN_CREDITS = 25;
 export const SEO_AUDIT_PDF_CREDITS = 5;
+/** "Fix it for me" prices in credits: the one place to change them. meta_rewrites is per batch of 10 pages. */
+export const SEO_AUDIT_FIX_PRICES = { create_page: 15, footer_links: 10, schema_org: 10, meta_rewrites: 10 } as const;
 export function seoAuditType(id: string): SeoAuditTypeDef {
   return SEO_AUDIT_TYPES.find((t) => t.id === id) ?? SEO_AUDIT_TYPES[0];
 }

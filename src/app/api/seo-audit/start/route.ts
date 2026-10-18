@@ -6,6 +6,8 @@ import { seoAuditType, SEO_AUDIT_TYPES } from "@/lib/constants";
 import { validateAuditUrl } from "@/lib/seo-audit/ssrf";
 import { runAudit } from "@/lib/seo-audit/engine";
 import { captureError } from "@/lib/logger";
+import { screenSite } from "@/lib/seo/policy-server";
+import { POLICY_MESSAGE } from "@/lib/seo/policy";
 
 /**
  * POST /api/seo-audit/start { url, auditType }
@@ -26,6 +28,10 @@ export async function POST(request: Request) {
   }
   const check = await validateAuditUrl(body.url ?? "");
   if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+
+  // We do not audit or fix websites that sell illegal drugs (nothing is charged).
+  const policy = await screenSite(check.url.origin);
+  if (policy.blocked) return NextResponse.json({ error: POLICY_MESSAGE }, { status: 403 });
 
   const type = seoAuditType(body.auditType);
   const cost = type.credits;
@@ -51,7 +57,10 @@ export async function POST(request: Request) {
       completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
     }).eq("id", audit.id);
 
-    await supabase.from("seo_audit_pages").insert({ audit_id: audit.id, url: report.scan.finalUrl, status_code: report.scan.statusCode, load_ms: report.scan.loadMs, metadata: { title: report.scan.title, words: report.scan.wordCount } });
+    // Every page that was read (the home page alone for a Quick audit).
+    await supabase.from("seo_audit_pages").insert(report.site
+      ? report.site.pages.map((pg) => ({ audit_id: audit.id, url: pg.url, status_code: pg.status, load_ms: null as number | null, metadata: { title: pg.title, words: pg.words } }))
+      : [{ audit_id: audit.id, url: report.scan.finalUrl, status_code: report.scan.statusCode, load_ms: report.scan.loadMs, metadata: { title: report.scan.title, words: report.scan.wordCount } }]);
     if (issues.length) await supabase.from("seo_audit_issues").insert(issues.map((i) => ({ audit_id: audit.id, issue_type: i.issue_type, severity: i.severity, title: i.title, description: i.description, recommended_fix: i.recommended_fix, affected_url: i.affected_url })));
     await supabase.from("seo_audit_scores").insert((Object.entries(scores) as [string, number][]).map(([category, score]) => ({ audit_id: audit.id, category, score })));
     if (report.recommendations.length) await supabase.from("seo_audit_recommendations").insert(report.recommendations.map((r) => ({ audit_id: audit.id, category: r.category, title: r.title, detail: r.detail, priority: r.priority })));
@@ -67,4 +76,4 @@ export async function POST(request: Request) {
   }
 }
 
-export const maxDuration = 60;
+export const maxDuration = 120;

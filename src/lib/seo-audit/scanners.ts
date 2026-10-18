@@ -18,7 +18,7 @@ const MAX_REDIRECTS = 5;
  * SSRF guard — a validated public host can otherwise 3xx-redirect to a private
  * / cloud-metadata address. The caller must validate the initial URL.
  */
-async function fetchText(url: string, timeout = TIMEOUT_MS): Promise<{ ok: boolean; status: number; text: string; ms: number; finalUrl: string }> {
+export async function fetchText(url: string, timeout = TIMEOUT_MS): Promise<{ ok: boolean; status: number; text: string; ms: number; finalUrl: string }> {
   const started = Date.now();
   let current = url;
   try {

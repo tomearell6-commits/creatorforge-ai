@@ -10,6 +10,8 @@ import { SEOIssueTable } from "./SEOIssueTable";
 import { SEORecommendationCard } from "./SEORecommendationCard";
 import { SEOFixPlan } from "./SEOFixPlan";
 import { SEOAuditPDFButton } from "./SEOAuditPDFButton";
+import { SEOAuditSite } from "./SEOAuditSite";
+import { SEOAuditFixes } from "./SEOAuditFixes";
 
 export function SEOAuditReport({ auditId, report, issues, fixPlan, onGenerateFixPlan, fixBusy }: {
   auditId: string; report: any; issues: any[]; fixPlan: any | null; onGenerateFixPlan: () => void; fixBusy: boolean;
@@ -68,6 +70,9 @@ export function SEOAuditReport({ auditId, report, issues, fixPlan, onGenerateFix
         </div>
       </Card>
 
+      {/* Whole-site structure (Full audits) */}
+      <SEOAuditSite report={report} />
+
       {/* Issues */}
       <Card>
         <CardTitle className="text-base">Issues & Checks</CardTitle>
@@ -96,6 +101,9 @@ export function SEOAuditReport({ auditId, report, issues, fixPlan, onGenerateFix
           </ul>
         </Card>
       )}
+
+      {/* Itemised, priced fixes (Full audits) */}
+      {report?.site && <SEOAuditFixes auditId={auditId} />}
 
       {/* Fix plan */}
       {fixPlan ? <SEOFixPlan plan={fixPlan} /> : (

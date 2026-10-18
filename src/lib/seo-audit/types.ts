@@ -69,6 +69,8 @@ export type AuditReport = {
   recommendations: Recommendation[];
   recommendedContent: { type: string; title: string; reason: string }[];
   usedAI: boolean;
+  /** Present for every audit type except Quick: what the whole-site read found. */
+  site?: import("./site").SiteScan;
 };
 
 export type FixPlan = {

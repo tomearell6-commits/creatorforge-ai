@@ -13,9 +13,15 @@ export function willUseRealSeoAI(): boolean { return !!process.env.ANTHROPIC_API
 
 type Analysis = { executiveSummary: string; recommendations: Recommendation[]; recommendedContent: { type: string; title: string; reason: string }[] };
 
-function compact(scan: ScanResult, scores: Scores, issues: AuditIssue[]) {
+function compact(scan: ScanResult, scores: Scores, issues: AuditIssue[], site?: import("./site").SiteScan) {
   return JSON.stringify({
     url: scan.finalUrl, scores,
+    ...(site ? {
+      pagesChecked: site.pagesCrawled, isShop: site.isShop,
+      missingEssentialPages: site.essentials.filter((e) => e.required && !e.found).map((e) => e.label),
+      footer: site.footer, contactDetailsFound: { emails: site.trust.emails.length, phones: site.trust.phones.length, address: site.trust.addressHint },
+      duplicateTitles: site.duplicateTitles.length, pagesWithoutDescription: site.missingDescriptions.length, thinPages: site.thinPages.length,
+    } : {}),
     critical: issues.filter((i) => i.severity === "critical").map((i) => i.title),
     warnings: issues.filter((i) => i.severity === "warning").map((i) => i.title),
     title: scan.title, metaDescription: scan.metaDescription, h1: scan.h1,
@@ -34,7 +40,7 @@ async function claudeJSON<T>(system: string, user: string, fallback: T): Promise
   } catch { return { data: fallback, usedAI: false }; }
 }
 
-export async function generateAnalysis(scan: ScanResult, scores: Scores, issues: AuditIssue[], auditType: string): Promise<Analysis & { usedAI: boolean }> {
+export async function generateAnalysis(scan: ScanResult, scores: Scores, issues: AuditIssue[], auditType: string, site?: import("./site").SiteScan): Promise<Analysis & { usedAI: boolean }> {
   const fallback: Analysis = {
     executiveSummary: `Overall SEO score ${scores.overall}/100. ${issues.filter((i) => i.severity === "critical").length} critical issue(s) and ${issues.filter((i) => i.severity === "warning").length} warning(s) were found. Address the critical items first (HTTPS, indexing, titles), then improve content depth, internal linking, and performance to raise ranking potential.`,
     recommendations: issues.filter((i) => i.severity !== "passed").slice(0, 10).map((i, idx) => ({ category: i.issue_type, title: i.title, detail: i.recommended_fix, priority: i.severity === "critical" ? 1 : 2 + idx })),
@@ -45,7 +51,7 @@ export async function generateAnalysis(scan: ScanResult, scores: Scores, issues:
     ],
   };
   const system = `You are a senior SEO consultant. Analyze the audit JSON and return ONLY minified JSON {executiveSummary:string, recommendations:[{category,title,detail,priority}], recommendedContent:[{type,title,reason}]}. Audit type: ${auditType}. Be specific, prioritized (priority 1=highest), and actionable. 8-12 recommendations.`;
-  return claudeJSON(system, compact(scan, scores, issues), fallback).then((r) => ({ ...r.data, usedAI: r.usedAI }));
+  return claudeJSON(system, compact(scan, scores, issues, site), fallback).then((r) => ({ ...r.data, usedAI: r.usedAI }));
 }
 
 export async function generateFixPlan(scan: ScanResult, scores: Scores, issues: AuditIssue[], auditType: string): Promise<FixPlan> {
