@@ -82,6 +82,23 @@ async function existingTitles(admin: SupabaseClient, siteId: string, wpBase: str
   return out;
 }
 
+/** The site's own published posts and pages (public REST), used for internal linking. */
+async function internalLinkCandidates(wpBase: string): Promise<{ url: string; title: string }[]> {
+  const out: { url: string; title: string }[] = [];
+  for (const kind of ["posts?per_page=40", "pages?per_page=20"]) {
+    try {
+      const res = await fetchWithTimeout(`${wpBase}/wp-json/wp/v2/${kind}&_fields=title,link`, { headers: { "User-Agent": UA } }, 15_000);
+      if (!res.ok) continue;
+      const rows = (await res.json()) as { title?: { rendered?: string }; link?: string }[];
+      for (const r of rows) {
+        const title = (r.title?.rendered ?? "").replace(/<[^>]+>/g, "").replace(/&#8217;|&#8216;/g, "'").replace(/&amp;/g, "&").trim();
+        if (r.link && title) out.push({ url: r.link, title });
+      }
+    } catch { /* best-effort */ }
+  }
+  return out.slice(0, 40);
+}
+
 async function writeLog(admin: SupabaseClient, row: Record<string, unknown>) {
   await admin.from("seo_autopost_log").insert(row).then(() => {}, () => {});
 }
@@ -146,10 +163,16 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     // 5) Article (strict: never placeholder text)
     let pkg;
     try {
+      // What the SEO analysis learned about this brand, and the real pages we can link to.
+      const research = (s.research ?? {}) as { brand?: { name?: string; summary?: string; offerings?: string[]; audience?: string; tone?: string } };
+      const links = await internalLinkCandidates(base);
       ({ pkg } = await generateSeoPackage(
         {
           mainKeyword: topic.keyword,
           secondaryKeywords: topic.secondaryKeywords,
+          brandContext: research.brand,
+          angle: (topic as Topic & { angle?: string }).angle,
+          internalLinks: links.length ? links : undefined,
           niche: s.niche,
           targetAudience: s.audience === "worldwide" ? "readers worldwide" : s.audience,
           searchIntent: topic.intent,

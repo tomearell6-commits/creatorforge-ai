@@ -14,7 +14,7 @@ import { CREDITS_PER_POST, estimateMonthlyCredits, siteLimitForPlan } from "@/li
  *  DELETE → stop and remove { id }
  * Users never set a date or time — hours are assigned automatically.
  */
-const COLUMNS = "id, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
+const COLUMNS = "id, project_id, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
 
 function cleanNiche(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -64,10 +64,28 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
-  const body = await readJsonBody<{ wordpressSiteId?: string; niche?: string; postsPerDay?: number }>(request);
+  const body = await readJsonBody<{ wordpressSiteId?: string; niche?: string; postsPerDay?: number; projectId?: string }>(request);
   if (!body) return apiError("Invalid JSON body", 400);
 
-  const niche = cleanNiche(body.niche);
+  // Started from an analysed website: take the niche, language, plan and brand from it.
+  let fromProject: { id: string; niche: string; language: string; topics: unknown[]; research: Record<string, unknown> } | null = null;
+  if (typeof body.projectId === "string") {
+    const { data: pr } = await supabase.from("seo_projects").select("id, status, brand, competitors, keywords, gaps, plan, language").eq("id", body.projectId).maybeSingle();
+    if (!pr) return apiError("That website analysis was not found.", 404);
+    if (pr.status !== "ready") return apiError("The website analysis isn't finished yet.", 409);
+    const brand = (pr.brand ?? {}) as { niche?: string; summary?: string };
+    const plan = (Array.isArray(pr.plan) ? pr.plan : []) as { title?: string; keyword?: string; secondaryKeywords?: string[]; intent?: string; angle?: string }[];
+    fromProject = {
+      id: pr.id as string,
+      niche: brand.niche || brand.summary || "",
+      language: (pr.language as string) || "en",
+      // Same shape the auto-poster's topic queue uses, plus the planned angle.
+      topics: plan.filter((p) => p.keyword).map((p) => ({ keyword: p.keyword, title: p.title ?? p.keyword, secondaryKeywords: p.secondaryKeywords ?? [], intent: p.intent ?? "informational", angle: p.angle ?? "" })),
+      research: { brand: pr.brand, competitors: Array.isArray(pr.competitors) ? (pr.competitors as unknown[]).slice(0, 6) : [], keywords: Array.isArray(pr.keywords) ? (pr.keywords as unknown[]).slice(0, 20) : [], gaps: pr.gaps ?? [] },
+    };
+  }
+
+  const niche = cleanNiche(fromProject ? fromProject.niche : body.niche);
   if (!niche) return apiError("Describe what the website is about (3–200 characters).", 400);
   if (typeof body.wordpressSiteId !== "string") return apiError("Choose a connected WordPress site.", 400);
   const postsPerDay = body.postsPerDay === 2 ? 2 : 1;
@@ -88,6 +106,7 @@ export async function POST(request: Request) {
     .insert({
       user_id: user.id, wordpress_site_id: wp.id, niche, posts_per_day: postsPerDay,
       publish_hours: assignPublishHours(postsPerDay, wp.id as string),
+      ...(fromProject ? { project_id: fromProject.id, language: fromProject.language, topic_queue: fromProject.topics, research: fromProject.research } : {}),
     })
     .select(COLUMNS).single();
   if (error) {

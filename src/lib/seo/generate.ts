@@ -35,6 +35,12 @@ export type SeoArticleInput = {
   cta?: string;
   /** Override the model (e.g. a faster/cheaper one for bulk automation). */
   model?: string;
+  /** What the website's brand is, learned from the SEO analysis — makes every post sound like the brand. */
+  brandContext?: { name?: string; summary?: string; offerings?: string[]; audience?: string; tone?: string };
+  /** The planned angle for this article (how to cover the topic better than what already ranks). */
+  angle?: string;
+  /** Real pages of the site the article may link to (internal linking). Any other link is removed. */
+  internalLinks?: { url: string; title: string }[];
 };
 
 export type SeoPackage = {
@@ -182,6 +188,28 @@ function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boo
       "AUDIENCE: readers WORLDWIDE, in every country. Do not assume one country's laws, prices, healthcare system, units or slang. Use clear international English, give metric and imperial units where relevant, and say explicitly when guidance, regulations or availability differ between countries or regions. Prefer international bodies and global evidence over single-country sources."
     );
   }
+  if (input.language && input.language.toLowerCase() !== "en") {
+    parts.push(`LANGUAGE: write the ENTIRE package (title, headings, body, FAQ, meta text) in the language with code "${input.language}". Do not mix languages.`);
+  }
+  const bc = input.brandContext;
+  if (bc && (bc.name || bc.summary)) {
+    parts.push(
+      `BRAND: you are writing for ${bc.name || "the brand"}${bc.summary ? ` — ${bc.summary}` : ""}. ` +
+        (bc.audience ? `Audience: ${bc.audience}. ` : "") +
+        (bc.tone ? `Voice: ${bc.tone}. ` : "") +
+        (bc.offerings?.length ? `Where it genuinely helps the reader, mention the brand's relevant offerings (${bc.offerings.join("; ")}) naturally in one or two places — never a hard sell, never invented prices, claims, awards or testimonials. ` : "") +
+        "Write as the brand's own expert voice."
+    );
+  }
+  if (input.angle?.trim()) {
+    parts.push(`ANGLE: ${input.angle.trim()} The article must cover the topic more completely and more usefully than the pages that already rank for it — specific, practical, no filler.`);
+  }
+  if (input.internalLinks?.length) {
+    parts.push(
+      "INTERNAL LINKS: where it is genuinely relevant, link to 2-4 of these pages of the same website (natural anchor text, never 'click here'). Use ONLY these URLs, copied exactly, and add no other links of any kind: " +
+        input.internalLinks.slice(0, 25).map((l) => `${l.title} → ${l.url}`).join(" | ")
+    );
+  }
   if (health) {
     parts.push(
       "HEALTH & MEDICAL RULES (strict): this is educational health information, never personal medical advice. " +
@@ -195,6 +223,16 @@ function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boo
     );
   }
   return parts.join(" ");
+}
+
+/** Keep only links to the allowed URLs (and in-page #anchors); other links become plain text. */
+export function restrictLinks(html: string, allowed: string[]): string {
+  const norm = (u: string) => u.replace(/[#?].*$/, "").replace(/\/+$/, "").toLowerCase();
+  const ok = new Set(allowed.map(norm));
+  return html.replace(/<a\b[^>]*\shref=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (full, href: string, inner: string) => {
+    if (href.startsWith("#")) return full;
+    return ok.has(norm(href)) ? full : inner;
+  });
 }
 
 function stripFences(text: string): string {
@@ -270,6 +308,7 @@ export async function generateSeoPackage(
               articleType: input.articleType,
               tone: input.tone,
               minWords,
+              angle: input.angle,
               language: input.language,
               brandName: input.brandName,
               productName: input.productName,
@@ -306,6 +345,9 @@ export async function generateSeoPackage(
         revision = `Your previous draft has heading-structure problems: ${structure.issues.join("; ")}. Return the complete JSON again fixing them, following the STRUCTURE rules exactly and keeping at least ${minWords} words.`;
         continue;
       }
+      // When real pages were offered for internal linking, remove any other link the AI
+      // may have added (it must never invent URLs).
+      if (input.internalLinks) raw.articleContent = restrictLinks(raw.articleContent, input.internalLinks.map((l) => l.url));
       raw.articleContent = addHeadingAnchorsAndToc(raw.articleContent);
 
       if (health) {
