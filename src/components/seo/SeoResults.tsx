@@ -7,6 +7,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { QuickWins } from "./QuickWins";
+import { RefreshPosts } from "./RefreshPosts";
 
 type Site = { host: string; name: string; url: string; kind: "wordpress" | "blog" };
 type Conn = { id: string; email: string; status: string; error: string | null };
@@ -284,6 +285,7 @@ export function SeoResults() {
               </Card>
 
               <QuickWins key={`${host}-${days}`} host={host} days={days} />
+              {data.site.kind === "blog" && <RefreshPosts />}
 
               <Card className="space-y-3">
                 <CardTitle>What people searched to find you</CardTitle>

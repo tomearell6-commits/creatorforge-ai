@@ -37,6 +37,8 @@ export type SeoArticleInput = {
   model?: string;
   /** What the website's brand is, learned from the SEO analysis — makes every post sound like the brand. */
   brandContext?: { name?: string; summary?: string; offerings?: string[]; audience?: string; tone?: string };
+  /** Set when REWRITING an existing article: its title and plain text, so the new version keeps what is sound. */
+  refreshOf?: { title: string; text: string };
   /** Hard facts about how the business really operates (minimums, payments, what it does NOT offer). The writer must never contradict them. */
   rules?: string;
   /** The planned angle for this article (how to cover the topic better than what already ranks). */
@@ -202,6 +204,14 @@ function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boo
         (bc.tone ? `Voice: ${bc.tone}. ` : "") +
         (bc.offerings?.length ? `Where it genuinely helps the reader, mention the brand's relevant offerings (${bc.offerings.join("; ")}) naturally in one or two places — never a hard sell, never invented prices, claims, awards or testimonials. ` : "") +
         "Write as the brand's own expert voice."
+    );
+  }
+  if (input.refreshOf?.text?.trim()) {
+    parts.push(
+      `REFRESH: you are rewriting an EXISTING article titled "${input.refreshOf.title}" so that it becomes the most complete, accurate and useful answer to its topic. ` +
+        "Keep the same topic, search intent and focus keyword. Keep every factual statement and every product statement from the original that is sound, and never contradict it. " +
+        "Fix what is vague or thin: add the missing sections, concrete examples, a comparison table and practical detail. Do not invent statistics, prices, quotes, studies or sources. " +
+        `Original text, for reference only (do not copy it word for word): ${input.refreshOf.text.slice(0, 6000)}`
     );
   }
   if (input.rules?.trim()) {
