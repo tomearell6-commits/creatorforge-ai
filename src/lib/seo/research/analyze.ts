@@ -64,13 +64,54 @@ export async function readJsonWithRetry<T>(ask: () => Promise<string>, tries: nu
 }
 
 /**
- * Ask Claude for JSON. A long answer can contain one stray quote or comma, so a bad answer is
- * asked for again (the big plan call gets 2 tries so the whole job stays inside its 5-minute limit).
+ * Ask Claude for a result object by making it CALL A TOOL. Tool input arrives already parsed by the API,
+ * so a stray quote or comma in a long answer can no longer break the analysis (the failure that happened
+ * with free-text JSON). Throws a SyntaxError when no usable object came back.
  */
-function askJson<T>(system: string, user: string, maxTokens: number): Promise<T> {
-  const reminder =
-    " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote or rephrase), and never use line breaks inside values.";
-  return readJsonWithRetry<T>(() => askClaude(system + reminder, user, maxTokens), maxTokens > 4000 ? 2 : 3);
+async function askViaTool(system: string, user: string, maxTokens: number): Promise<Record<string, unknown>> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+  const stream = client.messages.stream({
+    model: MODEL(),
+    max_tokens: maxTokens,
+    system: system + " Deliver the result by calling the submit_result tool with the object described above. Never write the result as plain text.",
+    messages: [{ role: "user", content: user }],
+    tools: [{ name: "submit_result", description: "Submit the finished result object exactly as described in the instructions.", input_schema: { type: "object", additionalProperties: true } }],
+    tool_choice: { type: "tool", name: "submit_result" },
+  });
+  const msg = await stream.finalMessage();
+  const block = msg.content.find((c): c is Anthropic.ToolUseBlock => c.type === "tool_use");
+  if (block && block.input && typeof block.input === "object" && !Array.isArray(block.input) && Object.keys(block.input).length > 0) {
+    return block.input as Record<string, unknown>;
+  }
+  console.error("[seo-analysis] tool call returned no usable object; stop_reason=", msg.stop_reason);
+  throw new SyntaxError("no structured result");
+}
+
+/**
+ * Get a result object from Claude. Order: structured tool call (reliable), then the same again for small
+ * calls, then plain-text JSON as a last resort. The big plan call stays at 2 attempts so the whole job
+ * fits its 5-minute limit.
+ */
+export async function askJson<T>(system: string, user: string, maxTokens: number): Promise<T> {
+  const big = maxTokens > 4000;
+  const strategies: (() => Promise<unknown>)[] = [
+    () => askViaTool(system, user, maxTokens),
+    ...(big ? [] : [() => askViaTool(system, user, maxTokens)]),
+    () => readJsonWithRetry(() => askClaude(system + " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote), and never use line breaks inside values.", user, maxTokens), 1),
+  ];
+  let lastErr: unknown;
+  for (const run of strategies) {
+    try {
+      return (await run()) as T;
+    } catch (e) {
+      lastErr = e;
+      // A bad answer, or the API refusing the tool request (HTTP 400), is worth the next strategy; network/auth errors are not.
+      const status = (e as { status?: number } | null)?.status;
+      if (!(e instanceof SyntaxError) && status !== 400 && !(e instanceof Error && e.message.includes("readable form"))) throw e;
+    }
+  }
+  console.error("[seo-analysis] no usable answer from the model:", lastErr);
+  throw new Error("The analysis didn't come back in a readable form. Please try again — no credits were charged.");
 }
 
 const str = (v: unknown, d = ""): string => (typeof v === "string" ? v.trim() : d);
