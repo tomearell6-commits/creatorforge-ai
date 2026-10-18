@@ -48,6 +48,31 @@ function parseJson<T>(text: string): T {
   return JSON.parse(first >= 0 && last > first ? t.slice(first, last + 1) : t) as T;
 }
 
+/** Read JSON from an answer-producing function; a malformed answer is asked for again (up to `tries`). */
+export async function readJsonWithRetry<T>(ask: () => Promise<string>, tries: number): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    try {
+      return parseJson<T>(await ask());
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) throw e;
+      lastErr = e;
+    }
+  }
+  console.error("[seo-analysis] model returned unreadable JSON after retries:", lastErr);
+  throw new Error("The analysis didn't come back in a readable form. Please try again — no credits were charged.");
+}
+
+/**
+ * Ask Claude for JSON. A long answer can contain one stray quote or comma, so a bad answer is
+ * asked for again (the big plan call gets 2 tries so the whole job stays inside its 5-minute limit).
+ */
+function askJson<T>(system: string, user: string, maxTokens: number): Promise<T> {
+  const reminder =
+    " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote or rephrase), and never use line breaks inside values.";
+  return readJsonWithRetry<T>(() => askClaude(system + reminder, user, maxTokens), maxTokens > 4000 ? 2 : 3);
+}
+
 const str = (v: unknown, d = ""): string => (typeof v === "string" ? v.trim() : d);
 const strs = (v: unknown, max: number): string[] => (Array.isArray(v) ? v.filter((x) => typeof x === "string" && x.trim()).map((x) => (x as string).trim()).slice(0, max) : []);
 
@@ -80,7 +105,7 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
 
   // 2) Brand profile.
   await onProgress("Learning your brand and customers…");
-  const profileRaw = await askClaude(
+  const p = await askJson<Record<string, unknown>>(
     "You are a senior SEO strategist. From the website content, return ONLY minified JSON: " +
       "{name,summary(2 sentences, plain),niche(short phrase, max 100 chars, what the site is about),businessType(ecommerce|services|local|saas|publisher|other)," +
       "offerings:string[](max 8, the products or services),audience(who buys, 1 sentence),tone(2-4 words),country(ISO-2 code of the main market, or \"\" if global),language(ISO-639-1 code of the site language)," +
@@ -89,7 +114,6 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
     siteText,
     2000
   );
-  const p = parseJson<Record<string, unknown>>(profileRaw);
   const brand: Brand = {
     name: str(p.name, ownHost), summary: str(p.summary), niche: str(p.niche, str(p.summary)).slice(0, 120) || ownHost,
     businessType: str(p.businessType, "other"), offerings: strs(p.offerings, 8), audience: str(p.audience), tone: str(p.tone, "professional, helpful"),
@@ -128,7 +152,7 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
 
   // 5) Strategy + 30-day plan.
   await onProgress("Building your 30-day content plan…");
-  const strategyRaw = await askClaude(
+  const s = await askJson<Record<string, unknown>>(
     "You are a senior SEO strategist planning content that can win real search traffic. Using ONLY the evidence given (real search results and the real headings of top-ranking pages), return ONLY minified JSON: " +
       "{keywords:[{keyword,intent(commercial|transactional|informational|problem),why}](16-20, the best keywords for THIS business to win),gaps:string[](6-8 topics the top pages cover that this site does not),competitorInsights:[{domain,whyTheyRank}](one per competitor, based on their page depth and coverage; never claim backlink or traffic numbers),plan:[{day,title,keyword,secondaryKeywords:string[](4-8),intent,angle}](EXACTLY 30 items, day 1..30)}. " +
       "PLAN RULES: about 45% buyer-focused (best X, X vs Y, X price/cost, where to buy X, how to choose X, X reviews/alternatives), about 35% informational how-it-works/explainers, about 20% problem-and-solution. " +
@@ -141,7 +165,6 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
     JSON.stringify(evidence),
     9000
   );
-  const s = parseJson<Record<string, unknown>>(strategyRaw);
 
   const insights = new Map<string, string>();
   for (const i of (Array.isArray(s.competitorInsights) ? s.competitorInsights : []) as Record<string, unknown>[]) insights.set(str(i.domain).replace(/^www\./, ""), str(i.whyTheyRank));
