@@ -169,6 +169,7 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
   const [full, setFull] = useState<Full | null>(null);
   const [siteId, setSiteId] = useState("");
   const [perDay, setPerDay] = useState<1 | 2>(1);
+  const [mode, setMode] = useState<"auto" | "review">("review");
   const [busy, setBusy] = useState(false);
   const [connect, setConnect] = useState({ username: "", appPassword: "" });
   const item = ap.items.find((i) => i.project_id === project.id);
@@ -231,9 +232,9 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
   async function start() {
     setBusy(true); setMsg(null);
     try {
-      await api("/api/seo/autopost", { method: "POST", body: JSON.stringify({ projectId: full!.id, wordpressSiteId: siteId, postsPerDay: perDay }) });
+      await api("/api/seo/autopost", { method: "POST", body: JSON.stringify({ projectId: full!.id, wordpressSiteId: siteId, postsPerDay: perDay, mode }) });
       await reload();
-      setMsg({ kind: "success", text: "Daily posting is on. Your first article is published at the next scheduled time today." });
+      setMsg({ kind: "success", text: mode === "review" ? "Daily writing is on. Each article waits for your approval before it goes live." : "Daily posting is on. Your first article is published at the next scheduled time today." });
     } catch (e) { setMsg({ kind: "error", text: e instanceof Error ? e.message : "Could not start." }); }
     finally { setBusy(false); }
   }
@@ -309,6 +310,14 @@ function ProjectView({ project, ap, ix, meta, reload, setMsg, reanalyze }: {
                   <option value={1}>1 a day (about {ap.creditsPerPost * 30} credits a month)</option>
                   <option value={2}>2 a day (about {ap.creditsPerPost * 60} credits a month)</option>
                 </select>
+              </div>
+              <div>
+                <Label htmlFor="ap-mode">How should articles go live?</Label>
+                <select id="ap-mode" value={mode} onChange={(e) => setMode(e.target.value === "auto" ? "auto" : "review")} className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm sm:w-72">
+                  <option value="review">I approve each article first (recommended)</option>
+                  <option value="auto">Publish automatically</option>
+                </select>
+                <p className="mt-1 text-xs text-muted-foreground">You can change this any time. With approval on, up to 5 articles wait for you, then writing pauses until you catch up.</p>
               </div>
               <Button disabled={!siteId || busy} onClick={start}>{busy ? <><Spinner size="sm" /> Starting…</> : "Start daily publishing"}</Button>
               <p className="text-xs text-muted-foreground">Each article uses {ap.creditsPerPost} credits. Your balance: {ap.balance.toLocaleString()}. You can pause or stop at any time.</p>

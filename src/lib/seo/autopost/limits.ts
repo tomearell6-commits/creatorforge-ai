@@ -7,6 +7,12 @@ import { SEO_CREDIT_COSTS } from "@/lib/constants";
 /** Credits for one finished post: article + WordPress publish + featured image. */
 export const CREDITS_PER_POST = SEO_CREDIT_COSTS.article + SEO_CREDIT_COSTS.publish + SEO_CREDIT_COSTS.featuredImage;
 
+/** In review mode the work is paid when the article is written, the publish fee when you approve it. */
+export const ARTICLE_IMAGE_CREDITS = SEO_CREDIT_COSTS.article + SEO_CREDIT_COSTS.featuredImage;
+export const PUBLISH_CREDITS = SEO_CREDIT_COSTS.publish;
+/** Stop writing new drafts while this many are still waiting for the owner. */
+export const MAX_PENDING_REVIEW = 5;
+
 /** One-time credits to analyse a website (brand, competitors, keywords and a 30-day plan). */
 export const SEO_ANALYSIS_CREDITS = 15;
 

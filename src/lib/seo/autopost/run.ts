@@ -16,7 +16,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptSecret } from "@/lib/security/secrets";
 import { normalizeSite, checkWordPressAuth } from "@/lib/publishing/providers/wordpress";
 import { fetchWithTimeout } from "@/lib/http";
-import { generateSeoPackage, countWords } from "@/lib/seo/generate";
+import { generateSeoPackage, countWords, type SeoPackage } from "@/lib/seo/generate";
 import { generateArticleImage } from "@/lib/seo/images";
 import { publishArticleToWordPress } from "@/lib/seo/publish";
 import { composeArticleHtml } from "@/lib/seo/compose";
@@ -25,13 +25,14 @@ import { notifyIndexNow } from "@/lib/seo/indexnow";
 import { captureError } from "@/lib/logger";
 import { planTopics, type Topic } from "./topics";
 import { isSiteDue, startOfUtcDay } from "./schedule";
-import { CREDITS_PER_POST } from "./limits";
+import { CREDITS_PER_POST, ARTICLE_IMAGE_CREDITS, MAX_PENDING_REVIEW } from "./limits";
+import { uploadMedia } from "@/lib/media/storage";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.creatorsforge.io";
 const MAX_FAILURES = 3;
 
-type Stage = "connection" | "credits" | "topic" | "image" | "article" | "publish";
+type Stage = "connection" | "credits" | "review" | "topic" | "image" | "article" | "publish";
 
 class StageError extends Error {
   constructor(
@@ -44,7 +45,7 @@ class StageError extends Error {
 }
 
 export type RunOutcome = {
-  status: "published" | "failed" | "skipped";
+  status: "published" | "drafted" | "failed" | "skipped";
   stage?: Stage;
   message: string;
   title?: string;
@@ -56,7 +57,7 @@ export type RunOutcome = {
 type SiteRow = {
   id: string; user_id: string; wordpress_site_id: string; active: boolean; niche: string;
   posts_per_day: number; audience: string; language: string; min_words: number;
-  publish_hours: number[]; topic_queue: Topic[] | null; research: unknown;
+  mode?: string; publish_hours: number[]; topic_queue: Topic[] | null; research: unknown;
   consecutive_failures: number; posts_published: number;
 };
 
@@ -111,7 +112,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
 
   // Due check (a manual "run now" is allowed only while today's quota is not used up).
   const since = startOfUtcDay(new Date()).toISOString();
-  const { count } = await admin.from("seo_autopost_log").select("id", { count: "exact", head: true }).eq("site_id", siteId).eq("status", "published").gte("created_at", since);
+  const { count } = await admin.from("seo_autopost_log").select("id", { count: "exact", head: true }).eq("site_id", siteId).in("status", ["published", "drafted"]).gte("created_at", since);
   const publishedToday = count ?? 0;
   if (opts.force ? publishedToday >= s.posts_per_day : !isSiteDue({ hours: s.publish_hours, publishedToday, now: new Date() })) {
     await admin.from("seo_autopost_sites").update({ claimed_at: null }).eq("id", siteId);
@@ -137,6 +138,15 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     const { data: prof } = await admin.from("profiles").select("credits").eq("user_id", s.user_id).maybeSingle();
     if ((prof?.credits ?? 0) < CREDITS_PER_POST) {
       throw new StageError("credits", `Not enough credits — each post needs ${CREDITS_PER_POST}. Top up to continue.`, { soft: true });
+    }
+
+    // 2b) Review mode: don't pile up drafts nobody has read (each one costs credits).
+    const reviewMode = s.mode === "review";
+    if (reviewMode) {
+      const { count: pending } = await admin.from("seo_articles").select("id", { count: "exact", head: true }).eq("autopost_site_id", s.id).eq("status", "pending_review");
+      if ((pending ?? 0) >= MAX_PENDING_REVIEW) {
+        throw new StageError("review", `You have ${pending} articles waiting for your review. Approve or reject some and writing will continue.`, { soft: true });
+      }
     }
 
     // 3) Topic
@@ -191,6 +201,11 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     const content = composeArticleHtml(pkg.articleContent, pkg.faq);
     const category = (wp.default_category as string | null) ?? null;
 
+    // 5b) Review mode: save the finished article + image for the owner and stop here.
+    if (reviewMode) {
+      return await saveDraftForReview({ admin, s, topic, pkg, content, words, category, img, rest, started });
+    }
+
     // 6) Save + publish
     const { data: art, error: insErr } = await admin.from("seo_articles").insert({
       user_id: s.user_id, wordpress_site_id: s.wordpress_site_id, main_keyword: topic.keyword,
@@ -237,6 +252,66 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
   } finally {
     await admin.from("seo_autopost_sites").update({ claimed_at: null }).eq("id", siteId);
   }
+}
+
+/**
+ * Review mode: keep the finished article and its image, and wait for the owner to approve.
+ * The writing cost (article + image) is charged now because it has been spent; the small
+ * publishing fee is charged when the owner approves.
+ */
+async function saveDraftForReview(a: {
+  admin: SupabaseClient; s: SiteRow; topic: Topic; pkg: SeoPackage; content: string; words: number;
+  category: string | null; img: { data: Uint8Array; contentType: string }; rest: Topic[]; started: number;
+}): Promise<RunOutcome> {
+  const { admin, s, topic, pkg, content, words, category, img, rest, started } = a;
+
+  let imageUrl: string;
+  try {
+    imageUrl = (await uploadMedia(admin, { userId: s.user_id, type: "image", bytes: img.data, contentType: img.contentType, ext: "jpg" })).url;
+  } catch (e) {
+    throw new StageError("publish", `Could not save the article image for review: ${errMsg(e)}`);
+  }
+
+  const { data: art, error: insErr } = await admin.from("seo_articles").insert({
+    user_id: s.user_id, wordpress_site_id: s.wordpress_site_id, main_keyword: topic.keyword,
+    secondary_keywords: pkg.secondaryKeywords, target_audience: s.audience, search_intent: pkg.searchIntent,
+    language: s.language, seo_title: pkg.seoTitle, meta_title: pkg.metaTitle, meta_description: pkg.metaDescription,
+    slug: pkg.slug, h1: pkg.h1, outline_json: pkg.outline, article_content: content, faq_json: pkg.faq,
+    featured_image_prompt: pkg.featuredImagePrompt, alt_text_json: pkg.altText, excerpt: pkg.excerpt,
+    tags: pkg.tags, category, internal_links: pkg.internalLinks, external_links: pkg.externalLinks,
+    seo_score: pkg.seoScore, readability_score: pkg.readabilityScore, word_count: words,
+    status: "pending_review", source: "autopost", autopost_site_id: s.id,
+    metadata: { featuredImageUrl: imageUrl, focusKeyword: pkg.focusKeyword },
+  }).select("id").single();
+  if (insErr || !art) throw new StageError("publish", `Could not save the draft: ${insErr?.message ?? "unknown error"}`);
+
+  const nowIso = new Date().toISOString();
+  const { data: logRow } = await admin.from("seo_autopost_log").insert({
+    user_id: s.user_id, site_id: s.id, article_id: art.id, status: "drafted", message: "Ready for your review.",
+    title: pkg.seoTitle, words, credits_charged: ARTICLE_IMAGE_CREDITS, duration_ms: Date.now() - started,
+  }).select("id").single();
+  if (logRow) {
+    await admin.from("seo_articles").update({ metadata: { featuredImageUrl: imageUrl, focusKeyword: pkg.focusKeyword, logId: logRow.id } }).eq("id", art.id);
+  }
+
+  await admin.rpc("wallet_adjust", { p_user: s.user_id, p_amount: -ARTICLE_IMAGE_CREDITS, p_type: "publishing", p_reason: "seo_autopost_draft" });
+  await admin.from("seo_autopost_sites").update({
+    topic_queue: rest, last_run_at: nowIso, consecutive_failures: 0, paused_reason: null, updated_at: nowIso,
+  }).eq("id", s.id);
+
+  // Tell the owner there is something to read (best-effort).
+  try {
+    const { data: u } = await admin.auth.admin.getUserById(s.user_id);
+    await notify(admin, {
+      userId: s.user_id, email: u.user?.email ?? null, type: "seo_article_review", category: "subscription",
+      title: "A new article is ready for your review", message: pkg.seoTitle,
+      ctaLabel: "Review the article", ctaUrl: "/dashboard/seo/autopilot",
+      mail: { subject: "A new article is ready for your review", html: `<p>${pkg.seoTitle.replace(/</g, "&lt;")}</p><p><a href="${APP_URL}/dashboard/seo/autopilot">Read it and approve or reject</a></p>` },
+      dedup: { threshold: art.id as string, billingPeriod: "" },
+    });
+  } catch { /* notification is best-effort */ }
+
+  return { status: "drafted", message: "Draft ready for your review.", title: pkg.seoTitle, words, articleId: art.id as string };
 }
 
 async function handleFailure(admin: SupabaseClient, s: SiteRow, err: StageError, title: string | undefined, started: number): Promise<RunOutcome> {

@@ -14,7 +14,7 @@ import { CREDITS_PER_POST, estimateMonthlyCredits, siteLimitForPlan } from "@/li
  *  DELETE → stop and remove { id }
  * Users never set a date or time — hours are assigned automatically.
  */
-const COLUMNS = "id, project_id, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
+const COLUMNS = "id, project_id, mode, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
 
 function cleanNiche(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -33,6 +33,11 @@ export async function GET() {
 
   const ids = (rows ?? []).map((r) => r.id as string);
   const wpIds = (rows ?? []).map((r) => r.wordpress_site_id as string);
+  // Articles written in "review" mode that are waiting for the owner.
+  const { data: pending } = ids.length
+    ? await supabase.from("seo_articles").select("id, autopost_site_id, seo_title, word_count, created_at, metadata").in("autopost_site_id", ids).eq("status", "pending_review").order("created_at", { ascending: true }).limit(40)
+    : { data: [] };
+
   const [{ data: sites }, { data: logs }] = await Promise.all([
     wpIds.length ? supabase.from("wordpress_sites").select("id, site_name, site_url, metadata").in("id", wpIds) : Promise.resolve({ data: [] }),
     ids.length ? supabase.from("seo_autopost_log").select("id, site_id, status, stage, message, title, post_url, words, created_at").in("site_id", ids).order("created_at", { ascending: false }).limit(60) : Promise.resolve({ data: [] }),
@@ -56,6 +61,10 @@ export async function GET() {
         return { id: s.id, site_name: s.site_name, site_url: s.site_url, indexnow_connected: !!m.indexnow_verified_at };
       })(),
       recent: (logs ?? []).filter((l) => l.site_id === r.id).slice(0, 5),
+      pending: (pending ?? []).filter((a) => a.autopost_site_id === r.id).map((a) => ({
+        id: a.id, title: a.seo_title, words: a.word_count, created_at: a.created_at,
+        cover: ((a.metadata ?? {}) as { featuredImageUrl?: string }).featuredImageUrl ?? null,
+      })),
     })),
   });
 }
@@ -64,7 +73,7 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
-  const body = await readJsonBody<{ wordpressSiteId?: string; niche?: string; postsPerDay?: number; projectId?: string }>(request);
+  const body = await readJsonBody<{ wordpressSiteId?: string; niche?: string; postsPerDay?: number; projectId?: string; mode?: string }>(request);
   if (!body) return apiError("Invalid JSON body", 400);
 
   // Started from an analysed website: take the niche, language, plan and brand from it.
@@ -104,7 +113,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("seo_autopost_sites")
     .insert({
-      user_id: user.id, wordpress_site_id: wp.id, niche, posts_per_day: postsPerDay,
+      user_id: user.id, wordpress_site_id: wp.id, niche, posts_per_day: postsPerDay, mode: body.mode === "review" ? "review" : "auto",
       publish_hours: assignPublishHours(postsPerDay, wp.id as string),
       ...(fromProject ? { project_id: fromProject.id, language: fromProject.language, topic_queue: fromProject.topics, research: fromProject.research } : {}),
     })
@@ -120,7 +129,7 @@ export async function PATCH(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
-  const body = await readJsonBody<{ id?: string; active?: boolean; postsPerDay?: number; niche?: string; minWords?: number }>(request);
+  const body = await readJsonBody<{ id?: string; active?: boolean; postsPerDay?: number; niche?: string; minWords?: number; mode?: string }>(request);
   if (!body || typeof body.id !== "string") return apiError("Missing id.", 400);
 
   const { data: current } = await supabase.from("seo_autopost_sites").select("id, wordpress_site_id, posts_per_day").eq("id", body.id).maybeSingle();
@@ -141,6 +150,7 @@ export async function PATCH(request: Request) {
     patch.niche = n;
     patch.topic_queue = []; // a new niche needs a fresh topic plan
   }
+  if (body.mode === "auto" || body.mode === "review") patch.mode = body.mode;
   if (typeof body.minWords === "number") patch.min_words = Math.min(4000, Math.max(1500, Math.round(body.minWords)));
 
   const { data, error } = await supabase.from("seo_autopost_sites").update(patch).eq("id", body.id).select(COLUMNS).single();

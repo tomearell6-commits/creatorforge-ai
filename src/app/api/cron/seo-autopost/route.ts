@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
   const { data: done } = await admin
     .from("seo_autopost_log").select("site_id")
-    .eq("status", "published").gte("created_at", startOfUtcDay(now).toISOString());
+    .in("status", ["published", "drafted"]).gte("created_at", startOfUtcDay(now).toISOString());
   const publishedToday = new Map<string, number>();
   for (const r of done ?? []) publishedToday.set(r.site_id as string, (publishedToday.get(r.site_id as string) ?? 0) + 1);
 

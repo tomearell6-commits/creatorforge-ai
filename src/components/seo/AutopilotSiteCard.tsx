@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 
 export type LogRow = { id: string; status: string; stage: string | null; message: string | null; title: string | null; post_url: string | null; words: number | null; created_at: string };
+export type PendingArticle = { id: string; title: string | null; words: number | null; created_at: string; cover: string | null };
 export type AutopostItem = {
-  id: string; project_id: string | null; wordpress_site_id: string; active: boolean; niche: string; posts_per_day: number; min_words: number;
+  id: string; project_id: string | null; mode: "auto" | "review"; pending: PendingArticle[]; wordpress_site_id: string; active: boolean; niche: string; posts_per_day: number; min_words: number;
   publish_hours: number[]; posts_published: number; paused_reason: string | null; last_success_at: string | null;
   queued_topics: number; monthly_credit_estimate: number;
   site: { id: string; site_name: string; site_url: string; indexnow_connected: boolean } | null;
@@ -27,6 +28,76 @@ export async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 const localTime = (utcHour: number) =>
   new Date(Date.UTC(2000, 0, 1, utcHour)).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+type Preview = { id: string; title: string | null; metaDescription: string | null; words: number | null; coverUrl: string | null; html: string };
+
+/** Articles written in "review" mode: read each one, then approve (publish) or reject. */
+function ReviewQueue({ items, onChanged, onMessage }: {
+  items: PendingArticle[];
+  onChanged: () => Promise<void> | void;
+  onMessage: (m: { kind: "success" | "error"; text: string }) => void;
+}) {
+  const [open, setOpen] = useState<Preview | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function preview(id: string) {
+    setBusy(`p-${id}`);
+    try { setOpen((await api<{ article: Preview }>(`/api/seo/autopost/review/${id}`)).article); }
+    catch (e) { onMessage({ kind: "error", text: e instanceof Error ? e.message : "Could not open the article." }); }
+    finally { setBusy(null); }
+  }
+  async function decide(id: string, action: "approve" | "reject") {
+    if (action === "reject" && !confirm("Reject this article? It will not be published, and the credits already used to write it are not refunded.")) return;
+    setBusy(`${action}-${id}`);
+    try {
+      const r = await api<{ message: string }>(`/api/seo/autopost/review/${id}`, { method: "POST", body: JSON.stringify({ action }) });
+      onMessage({ kind: "success", text: r.message });
+      setOpen(null);
+      await onChanged();
+    } catch (e) { onMessage({ kind: "error", text: e instanceof Error ? e.message : "Something went wrong." }); }
+    finally { setBusy(null); }
+  }
+
+  return (
+    <div className="space-y-3 rounded-lg border border-brand-600 p-4">
+      <p className="text-sm font-semibold">Waiting for your review ({items.length})</p>
+      <ul className="space-y-2">
+        {items.map((a) => (
+          <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <span className="min-w-0 flex-1">
+              <span className="font-medium">{a.title ?? "Untitled article"}</span>
+              <span className="text-xs text-muted-foreground"> · {a.words ? `${a.words.toLocaleString()} words · ` : ""}{new Date(a.created_at).toLocaleDateString()}</span>
+            </span>
+            <span className="flex gap-2">
+              <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => preview(a.id)}>{busy === `p-${a.id}` ? <Spinner size="sm" /> : "Read it"}</Button>
+              <Button size="sm" disabled={busy !== null} onClick={() => decide(a.id, "approve")}>{busy === `approve-${a.id}` ? <><Spinner size="sm" /> Publishing…</> : "Approve & publish"}</Button>
+              <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => decide(a.id, "reject")}>Reject</Button>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {open && (
+        <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-lg font-bold">{open.title}</p>
+              {open.metaDescription && <p className="text-xs text-muted-foreground">Search description: {open.metaDescription}</p>}
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => setOpen(null)}>Close</Button>
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {open.coverUrl && <img src={open.coverUrl} alt="" className="w-full max-w-xl rounded-lg border border-border" />}
+          <div className="blog-content max-h-[28rem] overflow-y-auto pr-2" dangerouslySetInnerHTML={{ __html: open.html }} />
+          <div className="flex gap-2">
+            <Button size="sm" disabled={busy !== null} onClick={() => decide(open.id, "approve")}>{busy === `approve-${open.id}` ? <><Spinner size="sm" /> Publishing…</> : "Approve & publish"}</Button>
+            <Button size="sm" variant="ghost" disabled={busy !== null} onClick={() => decide(open.id, "reject")}>Reject</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Status + controls for one website that is posting automatically. */
 export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
@@ -60,7 +131,11 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" disabled={busy === "run" || !it.active}
-            onClick={() => run("run", () => api<{ status: string; message: string }>("/api/seo/autopost/run", { method: "POST", body: JSON.stringify({ id: it.id }) }).then((r) => { if (r.status !== "published") throw new Error(r.message); }), "Article published.")}>
+            onClick={() => run("run", async () => {
+              const r = await api<{ status: string; message: string }>("/api/seo/autopost/run", { method: "POST", body: JSON.stringify({ id: it.id }) });
+              if (r.status !== "published" && r.status !== "drafted") throw new Error(r.message);
+              onMessage({ kind: "success", text: r.status === "drafted" ? "Your article is ready. Read it under “Waiting for your review” below, then approve it." : "Article published." });
+            })}>
             {busy === "run" ? <><Spinner size="sm" /> Writing (2–3 min)…</> : "Publish one now"}
           </Button>
           <Button size="sm" variant="outline" disabled={busy === "tog"} onClick={() => run("tog", () => api("/api/seo/autopost", { method: "PATCH", body: JSON.stringify({ id: it.id, active: !it.active }) }))}>
@@ -75,7 +150,14 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
 
       {it.paused_reason && <Alert variant={it.active ? "info" : "warning"}>{it.paused_reason}</Alert>}
 
-      <div className="grid gap-3 text-sm sm:grid-cols-3">
+      <div className="grid gap-3 text-sm sm:grid-cols-4">
+        <div>
+          <p className="text-xs text-muted-foreground">How articles go live</p>
+          <select value={it.mode} onChange={(e) => run("mode", () => api("/api/seo/autopost", { method: "PATCH", body: JSON.stringify({ id: it.id, mode: e.target.value }) }))} className="mt-0.5 h-8 rounded-md border border-border bg-background px-2 text-sm">
+            <option value="auto">Automatically</option>
+            <option value="review">I review each one first</option>
+          </select>
+        </div>
         <div><p className="text-xs text-muted-foreground">Articles published</p><p className="font-semibold">{it.posts_published}</p></div>
         <div>
           <p className="text-xs text-muted-foreground">Articles per day</p>
@@ -85,6 +167,8 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
         </div>
         <div><p className="text-xs text-muted-foreground">Publishes around</p><p className="font-semibold">{it.publish_hours.map(localTime).join(" and ")}</p></div>
       </div>
+
+      {it.pending.length > 0 && <ReviewQueue items={it.pending} onChanged={onChanged} onMessage={onMessage} />}
 
       {connected ? (
         <Alert variant="success" title="Search engines are told instantly">Every article is announced to Bing, Yandex, Naver, Seznam and Yep (IndexNow) the moment it is published. DuckDuckGo and Yahoo follow Bing.</Alert>
