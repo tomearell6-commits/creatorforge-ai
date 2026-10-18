@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { SEOAuditFacts } from "./SEOAuditFacts";
+import { countFacts, type BusinessFacts } from "@/lib/seo-audit/facts";
 
 type Offer = { id: string; fix: string; title: string; why: string; credits: number; mode: "auto" | "paste"; severity: "critical" | "warning"; targets?: string[] };
 type Result =
   | { kind: "draft_created"; title: string; editUrl: string; previewUrl: string; notes: string[]; placeholders: string[] }
   | { kind: "paste"; title: string; html?: string; code?: string; rows?: { url: string; title: string; description: string }[]; instructions: string[]; notes: string[]; placeholders: string[] };
 type Stored = { status: string; result: Result | Record<string, never>; error: string | null; credits: number };
-type Loaded = { offers: Offer[]; fixes: Record<string, Stored>; balance: number; wordpress: { name: string } | null; host?: string; origin?: string; needsFullAudit?: boolean };
+type Loaded = { offers: Offer[]; fixes: Record<string, Stored>; balance: number; wordpress: { name: string } | null; host?: string; origin?: string; needsFullAudit?: boolean; facts?: BusinessFacts; defaults?: BusinessFacts };
 
 /**
  * Connect WordPress right inside the audit. The connection is the same one Autopilot uses (one shared list),
@@ -113,12 +115,14 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [done, setDone] = useState<Record<string, Stored>>({});
+  const [facts, setFacts] = useState<BusinessFacts>({});
 
   const load = useCallback(async () => {
     const r = await api<Loaded>(`/api/seo-audit/offers?id=${auditId}`);
     if (!r.ok) { setMsg({ kind: "error", text: "Could not load the fixes." }); return; }
     setData(r.data);
     setDone(r.data.fixes);
+    setFacts(r.data.facts ?? {});
     setPicked(new Set(r.data.offers.filter((o) => r.data.fixes[o.id]?.status !== "done").map((o) => o.id)));
   }, [auditId]);
   useEffect(() => { void load(); }, [load]);
@@ -163,6 +167,10 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
         ? <p className="rounded-lg bg-muted/40 px-3 py-2 text-xs"><span className="font-semibold text-green-600">● Connected</span> to {data.wordpress.name}. Fixes are applied to it as drafts, never published without you.</p>
         : data.origin && data.host && <ConnectWordPress origin={data.origin} host={data.host} onConnected={() => { setMsg({ kind: "success", text: "WordPress connected. Your fixes below will now be created on your site as drafts." }); void load(); }} />}
 
+      {data.host && data.offers.some((o) => o.fix !== "meta_rewrites" && done[o.id]?.status !== "done") && (
+        <SEOAuditFacts host={data.host} saved={facts} defaults={data.defaults ?? {}} onSaved={setFacts} />
+      )}
+
       {data.offers.length === 0 && <Alert variant="success">Nothing to fix: your essential pages, footer and basic structure look complete.</Alert>}
 
       <ul className="space-y-3">
@@ -190,6 +198,10 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
           );
         })}
       </ul>
+
+      {chosen.some((o) => o.fix === "create_page") && countFacts(facts) === 0 && (
+        <Alert variant="warning">Tip: save your business details above first. Without them these pages will contain “[Fill in]” markers for you to complete by hand.</Alert>
+      )}
 
       {pending.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/40 p-3">

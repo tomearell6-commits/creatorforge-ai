@@ -105,6 +105,37 @@ describe("runOffer: create_page on a connected site that will not take pages", (
   });
 });
 
+describe("business details", () => {
+  const facts = { businessName: "Shop Example Ltd", email: "orders@shop.example", phone: "+1 555 0100", address: "1 Main St, Austin, USA", refunds: "30 days, unused items", legalName: "Shop Example LLC", founded: "2019" };
+  it("go to the page writer as owner facts, with the rule that they are true", async () => {
+    const body = "<h2>FAQ</h2><p>" + "We sell poly mailers in bulk to online shops and ship them in cartons. ".repeat(6) + "</p>";
+    ask.mockResolvedValueOnce({ title: "FAQ", html: body });
+    await runOffer(offer({ page: "faq" }), { site: site(), wp: null, facts });
+    expect(String(ask.mock.calls[0][0])).toMatch(/ownerFacts/);
+    expect(JSON.parse(String(ask.mock.calls[0][1])).ownerFacts.refunds).toBe("30 days, unused items");
+  });
+  it("send no ownerFacts when the owner typed nothing", async () => {
+    const body = "<h2>FAQ</h2><p>" + "We sell poly mailers in bulk to online shops and ship them in cartons. ".repeat(6) + "</p>";
+    ask.mockResolvedValueOnce({ title: "FAQ", html: body });
+    await runOffer(offer({ page: "faq" }), { site: site(), wp: null, facts: {} });
+    expect(JSON.parse(String(ask.mock.calls[0][1])).ownerFacts).toBeUndefined();
+  });
+  it("fill the footer and structured data with the real details", () => {
+    const f = (footerSnippet(site({ trust: { emails: [], phones: [], addressHint: false } }), facts) as { code: string }).code;
+    expect(f).toContain("orders@shop.example");
+    expect(f).toContain("1 Main St, Austin, USA");
+    expect(f).not.toContain("[Fill in");
+    const code = (schemaSnippet(site(), facts) as { code: string }).code;
+    const json = JSON.parse(code.replace(/^<script[^>]*>/, "").replace("</script>", ""));
+    const org = json["@graph"].find((x: { "@type": string }) => x["@type"] === "Organization");
+    expect(org.name).toBe("Shop Example Ltd");
+    expect(org.legalName).toBe("Shop Example LLC");
+    expect(org.foundingDate).toBe("2019");
+    expect(org.address.streetAddress).toBe("1 Main St, Austin, USA");
+    expect(org.contactPoint.email).toBe("orders@shop.example");
+  });
+});
+
 describe("runOffer: meta_rewrites", () => {
   it("keeps only rows for pages that exist, trims lengths, and returns a paste table", async () => {
     ask.mockResolvedValueOnce({ pages: [

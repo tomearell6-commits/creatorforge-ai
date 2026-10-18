@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCreditBalance } from "@/lib/credits";
 import { buildOffers, type SiteScan } from "@/lib/seo-audit/site";
+import { cleanFacts } from "@/lib/seo-audit/facts";
 
 /**
  * GET /api/seo-audit/offers?id=<auditId>
@@ -32,7 +33,11 @@ export async function GET(request: Request) {
   const fixes: Record<string, { status: string; result: unknown; error: string | null; credits: number }> = {};
   for (const f of fixRows ?? []) fixes[f.offer_id as string] = { status: f.status as string, result: f.result, error: (f.error as string | null) ?? null, credits: f.credits as number };
 
+  const { data: factsRow } = await supabase.from("seo_business_facts").select("facts").eq("user_id", user.id).eq("host", site.host).maybeSingle();
+  const defaults = cleanFacts({ businessName: (site.homeTitle ?? "").split(/[|–—-]/)[0], email: site.trust.emails[0], phone: site.trust.phones[0] });
+
   return NextResponse.json({
+    facts: cleanFacts(factsRow?.facts), defaults,
     offers: buildOffers(site, !!wp), fixes, balance: await getCreditBalance(),
     wordpress: wp ? { name: wp.site_name } : null, host: site.host, origin: site.origin,
   });

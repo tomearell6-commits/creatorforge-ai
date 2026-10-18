@@ -9,6 +9,7 @@ import { screenSite } from "@/lib/seo/policy-server";
 import { POLICY_MESSAGE } from "@/lib/seo/policy";
 import { buildOffers, type SiteScan } from "@/lib/seo-audit/site";
 import { runOffer, type FixContext, type FixResult } from "@/lib/seo-audit/fixes";
+import { cleanFacts } from "@/lib/seo-audit/facts";
 
 /**
  * POST /api/seo-audit/fix { auditId, offerIds: string[] }
@@ -43,7 +44,8 @@ export async function POST(request: Request) {
   const { data: wps } = await supabase.from("wordpress_sites").select("*");
   const wpRow = (wps ?? []).find((w) => { try { return new URL(w.site_url as string).hostname.toLowerCase().replace(/^www\./, "") === site.host; } catch { return false; } });
   const password = wpRow ? decryptSecret(wpRow.encrypted_application_password as string) : null;
-  const ctx: FixContext = { site, wp: wpRow && password ? { siteUrl: wpRow.site_url as string, username: wpRow.username as string, appPassword: password } : null };
+  const { data: factsRow } = await supabase.from("seo_business_facts").select("facts").eq("user_id", user.id).eq("host", site.host).maybeSingle();
+  const ctx: FixContext = { site, wp: wpRow && password ? { siteUrl: wpRow.site_url as string, username: wpRow.username as string, appPassword: password } : null, facts: cleanFacts(factsRow?.facts) };
 
   const offers = new Map(buildOffers(site, !!ctx.wp).map((o) => [o.id, o]));
   const chosen = [...new Set(body.offerIds)].map((id) => offers.get(id));
