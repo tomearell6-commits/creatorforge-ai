@@ -80,9 +80,9 @@ export async function tokenFor(admin: SupabaseClient, c: Connection): Promise<{ 
   }
 }
 
-async function gjson<T>(token: string, url: string, init?: RequestInit): Promise<{ ok: true; data: T } | { ok: false; status: number; message: string }> {
+async function gjson<T>(token: string, url: string, init?: RequestInit, timeoutMs = 30_000): Promise<{ ok: true; data: T } | { ok: false; status: number; message: string }> {
   try {
-    const res = await fetchWithTimeout(url, { ...init, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(init?.headers ?? {}) } }, 30_000);
+    const res = await fetchWithTimeout(url, { ...init, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(init?.headers ?? {}) } }, timeoutMs);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {
       const e = (body as { error?: { message?: string; status?: string } }).error;
@@ -109,10 +109,11 @@ export async function queryAnalytics(token: string, property: string, body: Quer
 export type Inspection = { verdict: string; state: string; lastCrawl: string | null; indexed: boolean };
 
 /** Whether Google has this page in its index (URL Inspection API). */
-export async function inspectUrl(token: string, property: string, url: string) {
+export async function inspectUrl(token: string, property: string, url: string, timeoutMs = 15_000) {
   const r = await gjson<{ inspectionResult?: { indexStatusResult?: { verdict?: string; coverageState?: string; lastCrawlTime?: string } } }>(
     token, "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect",
     { method: "POST", body: JSON.stringify({ inspectionUrl: url, siteUrl: property, languageCode: "en-US" }) },
+    timeoutMs,
   );
   if (!r.ok) return r;
   const s = r.data.inspectionResult?.indexStatusResult;

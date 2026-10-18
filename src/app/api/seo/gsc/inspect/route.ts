@@ -38,14 +38,16 @@ export async function POST(request: Request) {
   const r = await resolveProperty(admin, user.id, host);
   if (r.state !== "ok") return NextResponse.json({ ...r });
 
+  // Five at a time: asking Google for ten pages one after another could outlast the request.
   const results: Record<string, Inspection | { error: string }> = {};
-  for (const u of urls) {
+  const one = async (u: string) => {
     const hit = await cacheGet<Inspection>(admin, user.id, "inspect", u, TTL);
-    if (hit) { results[u] = hit; continue; }
+    if (hit) { results[u] = hit; return; }
     const res = await inspectUrl(r.token, r.property, u);
-    if (!res.ok) { results[u] = { error: res.message }; continue; }
+    if (!res.ok) { results[u] = { error: res.message }; return; }
     results[u] = res.data;
     await cacheSet(admin, user.id, "inspect", u, res.data);
-  }
+  };
+  for (let i = 0; i < urls.length; i += 5) await Promise.all(urls.slice(i, i + 5).map(one));
   return NextResponse.json({ state: "ok", results });
 }

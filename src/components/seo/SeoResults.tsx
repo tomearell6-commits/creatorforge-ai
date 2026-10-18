@@ -24,7 +24,14 @@ type Inspect = { verdict: string; state: string; indexed: boolean } | { error: s
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } });
   const j = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((j as { error?: string }).error || "Something went wrong.");
+  if (!res.ok) {
+    const said = (j as { error?: string }).error;
+    if (said) throw new Error(said);
+    // Not our own error message: usually the request ran out of time.
+    throw new Error(res.status === 504 || res.status === 502 || res.status === 524
+      ? "Google took too long to answer. Please try again; answers already received are saved."
+      : "Something went wrong. Please try again in a moment.");
+  }
   return j as T;
 }
 
@@ -218,7 +225,7 @@ export function SeoResults() {
               <p className="text-sm text-muted-foreground">None of your connected Google accounts has <strong>{host}</strong> as a verified website. Google only shares results for sites whose owner has verified them. It takes about 5 minutes:</p>
               <ol className="list-decimal space-y-1.5 pl-5 text-sm">
                 <li>Open <a className="font-semibold text-brand-600 underline" href="https://search.google.com/search-console" target="_blank" rel="noreferrer">Google Search Console</a> with the Google account you connected, and click <strong>Add property</strong>.</li>
-                <li>Enter <code>{site?.url}</code> and verify ownership (the easiest ways are a DNS record or an HTML tag; Search Console walks you through it).</li>
+                <li>Enter the whole website, not a sub-folder: <code>{`https://${host}/`}</code> (or choose a <strong>Domain</strong> property for the main domain, which also covers sub-domains and needs one DNS record). Then verify ownership; Search Console walks you through it.</li>
                 <li>Open <strong>Sitemaps</strong> and submit <code>{`https://${host}/sitemap.xml`}</code>.</li>
                 <li>Come back here and click <strong>Refresh</strong>. Google needs a few days to collect data for a newly added site.</li>
               </ol>
@@ -245,7 +252,7 @@ export function SeoResults() {
 
               <Card className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div><CardTitle>Your Autopilot articles</CardTitle><p className="mt-1 text-xs text-muted-foreground">Results for the articles published for you, newest first.</p></div>
+                  <div><CardTitle>{data.site.kind === "blog" ? "Your blog articles" : "Your Autopilot articles"}</CardTitle><p className="mt-1 text-xs text-muted-foreground">{data.site.kind === "blog" ? "Every published article on the blog, newest first." : "Results for the articles published for you, newest first."}</p></div>
                   {data.articles.length > 0 && (
                     <Button size="sm" variant="outline" disabled={inspecting} onClick={() => checkIndexing(data.articles.map((a) => a.url))}>{inspecting ? <><Spinner size="sm" /> Asking Google…</> : "Check indexing (latest 10)"}</Button>
                   )}
@@ -272,7 +279,7 @@ export function SeoResults() {
                     </table>
                   </div>
                 )}
-                {Object.values(inspected).some((i) => !("error" in i) && !i.indexed) && <p className="text-xs text-muted-foreground">“Not yet” is common for new pages: Google usually takes days to weeks to add a new page. Hover is not needed; a submitted sitemap and IndexNow speed up discovery, but Google decides when to index.</p>}
+                {Object.values(inspected).some((i) => !("error" in i) && !i.indexed) && <p className="text-xs text-muted-foreground">“Not yet” is common for new pages: Google usually takes days to weeks to add a new page. A submitted sitemap and IndexNow speed up discovery, but Google decides when to index.</p>}
               </Card>
 
               <Card className="space-y-3">
