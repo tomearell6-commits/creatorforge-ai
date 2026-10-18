@@ -37,6 +37,8 @@ export type SeoArticleInput = {
   model?: string;
   /** What the website's brand is, learned from the SEO analysis — makes every post sound like the brand. */
   brandContext?: { name?: string; summary?: string; offerings?: string[]; audience?: string; tone?: string };
+  /** Hard facts about how the business really operates (minimums, payments, what it does NOT offer). The writer must never contradict them. */
+  rules?: string;
   /** The planned angle for this article (how to cover the topic better than what already ranks). */
   angle?: string;
   /** Real pages of the site the article may link to (internal linking). Any other link is removed. */
@@ -200,6 +202,12 @@ function buildSystemPrompt(input: SeoArticleInput, minWords: number, health: boo
         (bc.tone ? `Voice: ${bc.tone}. ` : "") +
         (bc.offerings?.length ? `Where it genuinely helps the reader, mention the brand's relevant offerings (${bc.offerings.join("; ")}) naturally in one or two places — never a hard sell, never invented prices, claims, awards or testimonials. ` : "") +
         "Write as the brand's own expert voice."
+    );
+  }
+  if (input.rules?.trim()) {
+    parts.push(
+      `BUSINESS RULES (hard facts about how this business really operates — follow them exactly): ${input.rules.trim().slice(0, 1500)}\n` +
+        "Never contradict these rules. Never recommend or imply anything the business does not offer (for example samples, discounts, payment methods, services or guarantees that are not listed), and never invent policies, prices, lead times or guarantees. If general buying advice would normally suggest something the rules rule out, give the advice in a way that fits the rules instead."
     );
   }
   if (input.angle?.trim()) {

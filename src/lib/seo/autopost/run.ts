@@ -62,7 +62,7 @@ export type RunOutcome = {
 type SiteRow = {
   id: string; user_id: string; wordpress_site_id: string | null; destination?: string; active: boolean; niche: string;
   posts_per_day: number; audience: string; language: string; min_words: number;
-  mode?: string; publish_hours: number[]; topic_queue: Topic[] | null; research: unknown;
+  mode?: string; writer_rules?: string; publish_hours: number[]; topic_queue: Topic[] | null; research: unknown;
   consecutive_failures: number; posts_published: number;
 };
 
@@ -175,6 +175,7 @@ async function runBlogDestination(admin: SupabaseClient, s: SiteRow, started: nu
           secondaryKeywords: topic.secondaryKeywords,
           brandContext: research.brand,
           angle: (topic as Topic & { angle?: string }).angle,
+          rules: s.writer_rules || undefined,
           internalLinks: links.length ? links : undefined,
           niche: s.niche,
           targetAudience: "creators, marketers and small businesses",
@@ -238,6 +239,14 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
   const { data: s } = (await admin.from("seo_autopost_sites").select("*").eq("id", siteId).maybeSingle()) as { data: SiteRow | null };
   if (!s) return { status: "skipped", message: "Auto-poster not found." };
   if (!s.active && !opts.force) return { status: "skipped", message: "Auto-poster is paused." };
+
+  // A manual run takes the site's lock first, so a second click (or a click during a scheduled run)
+  // can never write the same topic twice in parallel. The lock is released in every path's finally block.
+  if (opts.force) {
+    const cutoff = new Date(Date.now() - 10 * 60_000).toISOString();
+    const { data: got } = await admin.from("seo_autopost_sites").update({ claimed_at: new Date().toISOString() }).eq("id", siteId).or(`claimed_at.is.null,claimed_at.lt.${cutoff}`).select("id");
+    if (!got || got.length === 0) return { status: "skipped", message: "An article is already being written for this site. Please wait about 3 minutes. You do not need to click again." };
+  }
 
   // Due check (a manual "run now" is allowed only while today's quota is not used up).
   const since = startOfUtcDay(new Date()).toISOString();
@@ -320,6 +329,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
           secondaryKeywords: topic.secondaryKeywords,
           brandContext: research.brand,
           angle: (topic as Topic & { angle?: string }).angle,
+          rules: s.writer_rules || undefined,
           internalLinks: links.length ? links : undefined,
           niche: s.niche,
           targetAudience: s.audience === "worldwide" ? "readers worldwide" : s.audience,

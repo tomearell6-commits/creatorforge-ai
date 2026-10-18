@@ -25,6 +25,8 @@ import { isHealthTopic } from "@/lib/seo/health";
 export type Brand = {
   name: string; summary: string; niche: string; businessType: string;
   offerings: string[]; audience: string; tone: string; country: string; language: string; isHealthRelated: boolean;
+  /** How the business really sells (from its own pages); the writer must not contradict these. */
+  rules?: string[];
 };
 export type Competitor = { domain: string; rank: number; topPage: string; whyTheyRank: string };
 export type KeywordIdea = { keyword: string; intent: string; why: string };
@@ -168,7 +170,7 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
     "You are a senior SEO strategist. From the website content, return ONLY minified JSON: " +
       "{name,summary(2 sentences, plain),niche(short phrase, max 100 chars, what the site is about),businessType(ecommerce|services|local|saas|publisher|other)," +
       "offerings:string[](max 8, the products or services),audience(who buys, 1 sentence),tone(2-4 words),country(ISO-2 code of the main market, or \"\" if global),language(ISO-639-1 code of the site language)," +
-      "isHealthRelated:boolean,seedKeywords:string[](10 real search phrases real customers type: mix of buying-intent phrases like 'best X', 'X price', 'buy X', 'X near me', and informational ones)}. " +
+      "isHealthRelated:boolean,rules:string[](max 8 short plain statements of how this business really sells and what it does NOT offer, taken only from the site: minimum order quantities or values, payment methods, shipping and returns terms, whether samples are offered, custom work; empty array if the site says nothing),seedKeywords:string[](10 real search phrases real customers type: mix of buying-intent phrases like 'best X', 'X price', 'buy X', 'X near me', and informational ones)}. " +
       "Base everything on the content; never invent products the site does not offer.",
     siteText,
     2000,
@@ -179,6 +181,7 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
     name: str(p.name, ownHost), summary: str(p.summary), niche: str(p.niche, str(p.summary)).slice(0, 120) || ownHost,
     businessType: str(p.businessType, "other"), offerings: strs(p.offerings, 8), audience: str(p.audience), tone: str(p.tone, "professional, helpful"),
     country: str(p.country).toLowerCase().slice(0, 2), language: str(p.language, "en").toLowerCase().slice(0, 5) || "en",
+    rules: strs(p.rules, 8),
     isHealthRelated: p.isHealthRelated === true || isHealthTopic(str(p.niche), str(p.summary)),
   };
   const seeds = strs(p.seedKeywords, 12);

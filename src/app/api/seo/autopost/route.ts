@@ -17,7 +17,7 @@ import { CREDITS_PER_POST, estimateMonthlyCredits, parseMode, siteLimitForPlan }
  *  DELETE → stop and remove { id }
  * Users never set a date or time — hours are assigned automatically.
  */
-const COLUMNS = "id, project_id, mode, destination, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
+const COLUMNS = "id, project_id, mode, destination, writer_rules, wordpress_site_id, active, niche, posts_per_day, audience, language, min_words, publish_hours, posts_published, consecutive_failures, paused_reason, last_run_at, last_success_at, created_at, topic_queue";
 
 function cleanNiche(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -82,17 +82,18 @@ export async function POST(request: Request) {
   if (!body) return apiError("Invalid JSON body", 400);
 
   // Started from an analysed website: take the niche, language, plan and brand from it.
-  let fromProject: { id: string; niche: string; language: string; topics: unknown[]; research: Record<string, unknown> } | null = null;
+  let fromProject: { id: string; niche: string; language: string; rules: string; topics: unknown[]; research: Record<string, unknown> } | null = null;
   if (typeof body.projectId === "string") {
     const { data: pr } = await supabase.from("seo_projects").select("id, status, brand, competitors, keywords, gaps, plan, language").eq("id", body.projectId).maybeSingle();
     if (!pr) return apiError("That website analysis was not found.", 404);
     if (pr.status !== "ready") return apiError("The website analysis isn't finished yet.", 409);
-    const brand = (pr.brand ?? {}) as { niche?: string; summary?: string };
+    const brand = (pr.brand ?? {}) as { niche?: string; summary?: string; rules?: string[] };
     const plan = (Array.isArray(pr.plan) ? pr.plan : []) as { title?: string; keyword?: string; secondaryKeywords?: string[]; intent?: string; angle?: string }[];
     fromProject = {
       id: pr.id as string,
       niche: brand.niche || brand.summary || "",
       language: (pr.language as string) || "en",
+      rules: Array.isArray(brand.rules) ? brand.rules.filter((r) => typeof r === "string").join("\n").slice(0, 1500) : "",
       // Same shape the auto-poster's topic queue uses, plus the planned angle.
       topics: plan.filter((p) => p.keyword).map((p) => ({ keyword: p.keyword, title: p.title ?? p.keyword, secondaryKeywords: p.secondaryKeywords ?? [], intent: p.intent ?? "informational", angle: p.angle ?? "" })),
       research: { brand: pr.brand, competitors: Array.isArray(pr.competitors) ? (pr.competitors as unknown[]).slice(0, 6) : [], keywords: Array.isArray(pr.keywords) ? (pr.keywords as unknown[]).slice(0, 20) : [], gaps: pr.gaps ?? [] },
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
     .insert({
       user_id: user.id, wordpress_site_id: wp ? (wp.id as string) : null, destination: toBlog ? "creatorforge_blog" : "wordpress", niche, posts_per_day: postsPerDay, mode: parseMode(body.mode) ?? "auto",
       publish_hours: assignPublishHours(postsPerDay, wp ? (wp.id as string) : user.id),
-      ...(fromProject ? { project_id: fromProject.id, language: fromProject.language, topic_queue: fromProject.topics, research: fromProject.research } : {}),
+      ...(fromProject ? { project_id: fromProject.id, language: fromProject.language, writer_rules: fromProject.rules, topic_queue: fromProject.topics, research: fromProject.research } : {}),
     })
     .select(COLUMNS).single();
   if (error) {
@@ -146,7 +147,7 @@ export async function PATCH(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return apiError("Unauthorized", 401);
-  const body = await readJsonBody<{ id?: string; active?: boolean; postsPerDay?: number; niche?: string; minWords?: number; mode?: string }>(request);
+  const body = await readJsonBody<{ id?: string; active?: boolean; postsPerDay?: number; niche?: string; minWords?: number; mode?: string; rules?: string }>(request);
   if (!body || typeof body.id !== "string") return apiError("Missing id.", 400);
 
   const { data: current } = await supabase.from("seo_autopost_sites").select("id, wordpress_site_id, posts_per_day").eq("id", body.id).maybeSingle();
@@ -167,6 +168,7 @@ export async function PATCH(request: Request) {
     patch.niche = n;
     patch.topic_queue = []; // a new niche needs a fresh topic plan
   }
+  if (typeof body.rules === "string") patch.writer_rules = body.rules.replace(/\r/g, "").trim().slice(0, 1500);
   const newMode = parseMode(body.mode);
   if (newMode) patch.mode = newMode;
   if (typeof body.minWords === "number") patch.min_words = Math.min(4000, Math.max(1500, Math.round(body.minWords)));

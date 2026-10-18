@@ -11,7 +11,7 @@ import { Spinner } from "@/components/ui/Spinner";
 export type LogRow = { id: string; article_id: string | null; status: string; stage: string | null; message: string | null; title: string | null; post_url: string | null; words: number | null; created_at: string };
 export type PendingArticle = { id: string; title: string | null; words: number | null; created_at: string; cover: string | null };
 export type AutopostItem = {
-  id: string; project_id: string | null; mode: "auto" | "review" | "first3"; destination: "wordpress" | "creatorforge_blog"; pending: PendingArticle[]; wordpress_site_id: string | null; active: boolean; niche: string; posts_per_day: number; min_words: number;
+  id: string; project_id: string | null; mode: "auto" | "review" | "first3"; writer_rules?: string; destination: "wordpress" | "creatorforge_blog"; pending: PendingArticle[]; wordpress_site_id: string | null; active: boolean; niche: string; posts_per_day: number; min_words: number;
   publish_hours: number[]; posts_published: number; paused_reason: string | null; last_success_at: string | null;
   queued_topics: number; monthly_credit_estimate: number;
   site: { id: string; site_name: string; site_url: string; indexnow_connected: boolean } | null;
@@ -95,6 +95,37 @@ function ReviewQueue({ items, onChanged, onMessage }: {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Plain-language facts about how the business really works; the article writer must never contradict them. */
+function RulesEditor({ it, onChanged, onMessage }: {
+  it: AutopostItem;
+  onChanged: () => Promise<void> | void;
+  onMessage: (m: { kind: "success" | "error"; text: string }) => void;
+}) {
+  const saved = it.writer_rules ?? "";
+  const [text, setText] = useState(saved);
+  const [busy, setBusy] = useState(false);
+  const dirty = text.trim() !== saved.trim();
+
+  async function save() {
+    setBusy(true);
+    try {
+      await api("/api/seo/autopost", { method: "PATCH", body: JSON.stringify({ id: it.id, rules: text }) });
+      onMessage({ kind: "success", text: "Rules saved. The next article follows them." });
+      await onChanged();
+    } catch (e) { onMessage({ kind: "error", text: e instanceof Error ? e.message : "Could not save." }); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="space-y-2 rounded-lg border border-border p-4">
+      <p className="text-sm font-semibold">Rules for the writer</p>
+      <p className="text-xs text-muted-foreground">How your business really works, one rule per line. Articles will never contradict them or recommend something you do not offer. Example: “We do not offer samples.” “Minimum order is $500.” “Payment by bank transfer, USDT or BTC.”</p>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={1500} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={"We do not offer samples.\nMinimum order is $500."} />
+      <Button size="sm" disabled={busy || !dirty} onClick={save}>{busy ? <Spinner size="sm" /> : "Save rules"}</Button>
     </div>
   );
 }
@@ -217,6 +248,8 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
           </div>
         </div>
       )}
+
+      <RulesEditor key={it.writer_rules ?? ""} it={it} onChanged={onChanged} onMessage={onMessage} />
 
       {it.recent.length > 0 && (
         <div>
