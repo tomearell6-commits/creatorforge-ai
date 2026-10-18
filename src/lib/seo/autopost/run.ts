@@ -27,6 +27,7 @@ import { planTopics, type Topic } from "./topics";
 import { isSiteDue, startOfUtcDay } from "./schedule";
 import { CREDITS_PER_POST, ARTICLE_IMAGE_CREDITS, MAX_PENDING_REVIEW, needsReview } from "./limits";
 import { chooseCategory } from "./category";
+import { ensureInternalLinks } from "./links";
 import { uploadMedia } from "@/lib/media/storage";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -174,10 +175,11 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
 
     // 5) Article (strict: never placeholder text)
     let pkg;
+    let links: { url: string; title: string }[] = [];
     try {
       // What the SEO analysis learned about this brand, and the real pages we can link to.
       const research = (s.research ?? {}) as { brand?: { name?: string; summary?: string; offerings?: string[]; audience?: string; tone?: string } };
-      const links = await internalLinkCandidates(base);
+      links = await internalLinkCandidates(base);
       ({ pkg } = await generateSeoPackage(
         {
           mainKeyword: topic.keyword,
@@ -199,7 +201,8 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       throw new StageError("article", errMsg(e));
     }
     const words = countWords(pkg.articleContent);
-    const content = composeArticleHtml(pkg.articleContent, pkg.faq);
+    // The writer sometimes skips internal links; guarantee at least a few real ones.
+    const content = ensureInternalLinks(composeArticleHtml(pkg.articleContent, pkg.faq), links, { siteUrl: base, keyword: topic.keyword, title: pkg.seoTitle || title || topic.keyword }).html;
     const category = chooseCategory({ siteDefault: wp.default_category as string | null, fromWriter: pkg.category, intent: topic.intent });
 
     // 5b) Review mode: save the finished article + image for the owner and stop here.
