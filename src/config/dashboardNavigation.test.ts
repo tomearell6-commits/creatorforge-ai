@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import {
   DASHBOARD_NAV,
   SECTION_REDIRECTS,
@@ -10,7 +10,7 @@ import {
 
 const base = (r: string) => r.split("?")[0].split("#")[0];
 
-describe("Create · Grow · Manage config", () => {
+describe("Create Â· Grow Â· Manage config", () => {
   it("has exactly the three areas in order", () => {
     expect(DASHBOARD_NAV.map((a) => a.id)).toEqual(["create", "grow", "manage"]);
     expect(DASHBOARD_NAV.map((a) => a.headline)).toEqual([
@@ -76,9 +76,9 @@ describe("Create · Grow · Manage config", () => {
     }
   });
 
-  it("quick create has its 9 options (8 from the spec + Generate Leads); home has 4 actions per area", () => {
+  it("quick create has its 9 options (8 from the spec + Generate Leads); home has 5 Create actions and 4 for each other area", () => {
     expect(QUICK_CREATE_ITEMS).toHaveLength(9);
-    expect(HOME_QUICK_ACTIONS.create).toHaveLength(4);
+    expect(HOME_QUICK_ACTIONS.create).toHaveLength(5);
     expect(HOME_QUICK_ACTIONS.grow).toHaveLength(4);
     expect(HOME_QUICK_ACTIONS.manage).toHaveLength(4);
   });
