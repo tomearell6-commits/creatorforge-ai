@@ -92,7 +92,7 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
       }
       setDone(next);
       setData((d) => (d ? { ...d, balance: r.data.balance ?? d.balance } : d));
-      setMsg(problems.length ? { kind: "error", text: problems.join(" ") } : { kind: "success", text: `Done. ${r.data.charged ?? 0} credits used.` });
+      setMsg(problems.length ? { kind: "error", text: [...new Set(problems)].join(" ") } : { kind: "success", text: `Done. ${r.data.charged ?? 0} credits used.` });
     } catch { setMsg({ kind: "error", text: "Something went wrong. Nothing was charged for a fix that did not finish." }); }
     finally { setBusy(false); }
   }
@@ -129,7 +129,7 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
                 </span>
               </div>
               {isDone && d.result && "kind" in d.result && <ResultView r={d.result as Result} />}
-              {d?.status === "failed" && d.error && <p className="mt-1 text-xs text-red-600">{d.error} No credits were charged.</p>}
+              {d?.status === "failed" && d.error && <p className="mt-1 text-xs text-red-600">{/no credits were charged/i.test(d.error) ? d.error : `${d.error} No credits were charged.`}</p>}
             </li>
           );
         })}

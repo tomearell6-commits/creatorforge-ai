@@ -75,8 +75,9 @@ export async function POST(request: Request) {
       results.push({ offerId: offer.id, status: "done", credits: offer.credits, result });
     } catch (e) {
       const message = e instanceof Error ? e.message.slice(0, 200) : "The fix could not be completed.";
-      await admin.from("seo_audit_fixes").upsert({ audit_id: body.auditId, user_id: user.id, offer_id: offer.id, status: "failed", credits: 0, result: {}, error: message }, { onConflict: "audit_id,offer_id" });
-      results.push({ offerId: offer.id, status: "failed", credits: 0, error: `${message} No credits were charged for this one.` });
+      const diag = (e as { diag?: unknown } | null)?.diag;
+      await admin.from("seo_audit_fixes").upsert({ audit_id: body.auditId, user_id: user.id, offer_id: offer.id, status: "failed", credits: 0, result: Array.isArray(diag) ? { diag: diag.slice(0, 6).map((x) => String(x).slice(0, 600)) } : {}, error: message }, { onConflict: "audit_id,offer_id" });
+      results.push({ offerId: offer.id, status: "failed", credits: 0, error: /no credits were charged/i.test(message) ? message : `${message} No credits were charged for this one.` });
     }
   }
   return NextResponse.json({ results, charged: results.reduce((n, r) => n + r.credits, 0), balance: await getCreditBalance() });

@@ -4,7 +4,6 @@ import { sanitizeBlogHtml } from "@/lib/blog/blog";
 import { normalizeSite } from "@/lib/publishing/providers/wordpress";
 import { fetchWithTimeout } from "@/lib/http";
 import type { EssentialId, FixOffer, SiteScan } from "./site";
-import { META_BATCH } from "./site";
 
 /**
  * Carries out the fixes a user paid for. Two honesty rules apply to everything written here:
@@ -82,7 +81,14 @@ async function createPage(offer: FixOffer, ctx: FixContext): Promise<FixResult> 
 
   if (ctx.wp) {
     const r = await wpCreateDraft(ctx.wp, title, html, spec.slug);
-    if (!r.ok) throw new Error(r.error);
+    if (!r.ok) {
+      // The site is connected for posts but will not take pages (for example a custom site): the written page is still worth having.
+      return {
+        kind: "paste", title, html, placeholders,
+        notes: [...notes, `We could not save it as a draft on your connected site (${r.error.replace(/[.]$/, "")}), so here is the page to paste in yourself.`],
+        instructions: ["Create a new page in your website editor and paste this text into it.", `Use the page name “${title}” and the address /${spec.slug}.`, "Keep it unpublished until the [Fill in] markers are done."],
+      };
+    }
     return { kind: "draft_created", title, editUrl: r.editUrl, previewUrl: r.previewUrl, notes: [...notes, "It was saved as a DRAFT. Nothing is public until you publish it."], placeholders };
   }
   return {
@@ -157,27 +163,34 @@ function trimTo(s: string, n: number) {
   return t.slice(0, n).replace(/\s+\S*$/, "").trim();
 }
 
+const AI_META_BATCH = 5;
+
 async function metaRewrites(offer: FixOffer, ctx: FixContext): Promise<FixResult> {
+  const trace: string[] = [];
   const targets = (offer.targets ?? []).slice(0, 30);
   const byUrl = new Map(ctx.site.pages.map((p) => [p.url, p]));
   const rows: { url: string; title: string; description: string }[] = [];
-  for (let i = 0; i < targets.length; i += META_BATCH) {
-    const batch = targets.slice(i, i + META_BATCH).map((u) => byUrl.get(u)).filter((p): p is NonNullable<typeof p> => !!p);
+  let lastError: unknown = null;
+  for (let i = 0; i < targets.length; i += AI_META_BATCH) {
+    const batch = targets.slice(i, i + AI_META_BATCH).map((u) => byUrl.get(u)).filter((p): p is NonNullable<typeof p> => !!p);
     if (batch.length === 0) continue;
-    const out = await askJson<{ pages?: { url?: string; title?: string; description?: string }[] }>(
+    let out: { pages?: { url?: string; title?: string; description?: string }[] };
+    try {
+      out = await askJson<{ pages?: { url?: string; title?: string; description?: string }[] }>(
       "You are a careful SEO editor. For each page write a search-result title and meta description. Return {pages:[{url,title,description}]} with one entry per page, same url strings. " +
         "RULES: title 45-60 characters, description 130-155 characters; accurate to what the page contains (use only the material given); the page's main subject near the start; each title and description UNIQUE across the pages; " +
         "no clickbait, no ALL CAPS, no exclamation marks, no invented numbers, prices, years or claims, no promises of results. Write in the page's own language.",
       JSON.stringify({ site: ctx.site.host, lang: ctx.site.lang ?? "en", pages: batch.map((p) => ({ url: p.url, currentTitle: p.title, currentDescription: p.metaDescription, text: p.snippet })) }),
-      2500, "meta", [],
+      3000, "meta", trace,
     );
+    } catch (e) { lastError = e; continue; }
     for (const p of out.pages ?? []) {
       if (typeof p.url === "string" && byUrl.has(p.url) && typeof p.title === "string" && typeof p.description === "string" && p.title.trim() && p.description.trim()) {
         rows.push({ url: p.url, title: trimTo(p.title, 65), description: trimTo(p.description, 160) });
       }
     }
   }
-  if (rows.length === 0) throw new Error("No usable titles came back.");
+  if (rows.length === 0) throw Object.assign(lastError instanceof Error ? lastError : new Error("No usable titles came back."), { diag: trace });
   return {
     kind: "paste", title: `Search titles and descriptions (${rows.length} pages)`, rows, placeholders: [],
     notes: ["Written from what each page says today. Read each one and keep only what you agree with."],

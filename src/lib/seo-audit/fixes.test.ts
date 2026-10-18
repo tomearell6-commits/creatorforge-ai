@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 const ask = vi.fn();
 vi.mock("@/lib/seo/research/analyze", () => ({ askJson: (...a: unknown[]) => ask(...a) }));
+const http = vi.fn();
+vi.mock("@/lib/http", () => ({ fetchWithTimeout: (...a: unknown[]) => http(...a) }));
 
 import { footerSnippet, runOffer, schemaSnippet } from "./fixes";
 import type { FixOffer, SiteScan } from "./site";
@@ -89,6 +91,17 @@ describe("runOffer: create_page", () => {
     ask.mockResolvedValueOnce({ title: "FAQ", html: body + "<script>alert(1)</script>" });
     const r = await runOffer(offer({ page: "faq" }), { site: site(), wp: null });
     expect(r.kind === "paste" && r.html).not.toMatch(/<script/i);
+  });
+});
+
+describe("runOffer: create_page on a connected site that will not take pages", () => {
+  it("hands back the written page to paste instead of failing", async () => {
+    const body = "<h2>FAQ</h2><p>" + "We sell poly mailers in bulk to online shops and ship them in cartons. ".repeat(6) + "</p>";
+    ask.mockResolvedValueOnce({ title: "FAQ", html: body });
+    http.mockResolvedValueOnce({ ok: false, status: 404 });
+    const r = await runOffer(offer({ page: "faq" }), { site: site(), wp: { siteUrl: "https://shop.example", username: "u", appPassword: "p" } });
+    expect(r.kind).toBe("paste");
+    if (r.kind === "paste") expect(r.notes.join(" ")).toMatch(/404/);
   });
 });
 
