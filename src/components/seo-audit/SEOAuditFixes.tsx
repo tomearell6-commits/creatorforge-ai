@@ -12,8 +12,8 @@ import { countFacts, type BusinessFacts } from "@/lib/seo-audit/facts";
 
 type Offer = { id: string; fix: string; title: string; why: string; credits: number; mode: "auto" | "paste"; severity: "critical" | "warning"; targets?: string[] };
 type Result =
-  | { kind: "draft_created"; title: string; editUrl: string; previewUrl: string; notes: string[]; placeholders: string[] }
-  | { kind: "paste"; title: string; html?: string; code?: string; rows?: { url: string; title: string; description: string }[]; instructions: string[]; notes: string[]; placeholders: string[] };
+  | { kind: "draft_created"; title: string; editUrl: string; previewUrl: string; notes: string[]; placeholders: string[]; pageId?: number; state?: "draft" | "published"; liveUrl?: string }
+  | { kind: "paste"; title: string; html?: string; code?: string; rows?: { url: string; title: string; description: string }[]; instructions: string[]; notes: string[]; placeholders: string[]; rewritten?: boolean };
 type Stored = { status: string; result: Result | Record<string, never>; error: string | null; credits: number };
 type Loaded = { offers: Offer[]; fixes: Record<string, Stored>; balance: number; wordpress: { name: string } | null; host?: string; origin?: string; needsFullAudit?: boolean; facts?: BusinessFacts; defaults?: BusinessFacts };
 
@@ -79,11 +79,18 @@ function Copy({ text, label = "Copy" }: { text: string; label?: string }) {
   return <Button size="sm" variant="outline" onClick={() => { void navigator.clipboard?.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500); }}>{done ? "Copied" : label}</Button>;
 }
 
-function ResultView({ r }: { r: Result }) {
+function ResultView({ r, onPublish, publishing }: { r: Result; onPublish?: () => void; publishing?: boolean }) {
   return (
     <div className="mt-2 space-y-2 rounded-lg bg-muted/40 p-3 text-sm">
       {r.kind === "draft_created" ? (
-        <p>Saved as a <strong>draft</strong> on your site: <a className="font-semibold text-brand-600 underline" href={r.editUrl} target="_blank" rel="noreferrer">open it to review and publish</a>. Nothing is public yet.</p>
+        r.state === "published"
+          ? <p><strong className="text-green-600">Published</strong> on your site{r.liveUrl ? <>: <a className="font-semibold text-brand-600 underline" href={r.liveUrl} target="_blank" rel="noreferrer">view the live page</a></> : null}. <a className="underline" href={r.editUrl} target="_blank" rel="noreferrer">Edit in WordPress</a></p>
+          : (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="min-w-0 flex-1">Saved as a <strong>draft</strong> on your site, waiting for your approval. <a className="font-semibold text-brand-600 underline" href={r.previewUrl} target="_blank" rel="noreferrer">Preview it</a> or <a className="underline" href={r.editUrl} target="_blank" rel="noreferrer">edit it</a> first. Nothing is public yet.</p>
+              {onPublish && typeof r.pageId === "number" && <Button size="sm" disabled={publishing} onClick={onPublish}>{publishing ? <><Spinner size="sm" /> Publishing…</> : "Approve and publish"}</Button>}
+            </div>
+          )
       ) : (
         <>
           {r.html && <div className="max-h-64 overflow-y-auto rounded border border-border bg-background p-3" dangerouslySetInnerHTML={{ __html: r.html }} />}
@@ -116,6 +123,9 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [done, setDone] = useState<Record<string, Stored>>({});
   const [facts, setFacts] = useState<BusinessFacts>({});
+  const [rewriting, setRewriting] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState<string | null>(null);
+  const [publishMode, setPublishMode] = useState<"auto" | "draft">("auto");
 
   const load = useCallback(async () => {
     const r = await api<Loaded>(`/api/seo-audit/offers?id=${auditId}`);
@@ -135,10 +145,28 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
   const total = chosen.reduce((n, o) => n + o.credits, 0);
   const short = total > data.balance;
 
-  async function run() {
+  async function rewrite(offerId: string) {
+    setRewriting(offerId); setMsg(null);
+    const r = await api<{ result?: Result; error?: string }>("/api/seo-audit/rewrite", { method: "POST", body: JSON.stringify({ auditId, offerId }) });
+    setRewriting(null);
+    if (!r.ok || !r.data.result) { setMsg({ kind: "error", text: r.data.error ?? "Could not rewrite the page." }); return; }
+    setDone((d) => ({ ...d, [offerId]: { ...d[offerId], result: r.data.result as Result } }));
+    setMsg({ kind: "success", text: "Rewritten with your details. No credits were used." });
+  }
+
+  async function publishNow(offerId: string) {
+    setPublishing(offerId); setMsg(null);
+    const r = await api<{ result?: Result; error?: string }>("/api/seo-audit/publish", { method: "POST", body: JSON.stringify({ auditId, offerId }) });
+    setPublishing(null);
+    if (!r.ok || !r.data.result) { setMsg({ kind: "error", text: r.data.error ?? "Could not publish the page." }); return; }
+    setDone((d) => ({ ...d, [offerId]: { ...d[offerId], result: r.data.result as Result } }));
+    setMsg({ kind: "success", text: "Published on your site." });
+  }
+
+  async function run(list: Offer[]) {
     setBusy(true); setMsg(null);
     try {
-      const r = await api<{ results?: { offerId: string; status: string; credits: number; result?: Result; error?: string }[]; charged?: number; balance?: number; error?: string }>("/api/seo-audit/fix", { method: "POST", body: JSON.stringify({ auditId, offerIds: chosen.map((o) => o.id) }) });
+      const r = await api<{ results?: { offerId: string; status: string; credits: number; result?: Result; error?: string }[]; charged?: number; balance?: number; error?: string }>("/api/seo-audit/fix", { method: "POST", body: JSON.stringify({ auditId, offerIds: list.map((o) => o.id), publish: publishMode }) });
       if (!r.ok) { setMsg({ kind: "error", text: r.data.error ?? "Could not start the fixes." }); return; }
       const next = { ...done };
       const problems: string[] = [];
@@ -192,7 +220,13 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
                   {isDone ? <Badge variant="success">Done</Badge> : <span className="text-sm font-semibold">{o.credits} credits</span>}
                 </span>
               </div>
-              {isDone && d.result && "kind" in d.result && <ResultView r={d.result as Result} />}
+              {isDone && d.result && "kind" in d.result && <ResultView r={d.result as Result} onPublish={() => void publishNow(o.id)} publishing={publishing === o.id} />}
+              {isDone && o.fix === "create_page" && d.result && "kind" in d.result && d.result.kind === "paste" && !d.result.rewritten && countFacts(facts) > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <Button size="sm" variant="outline" disabled={rewriting !== null} onClick={() => void rewrite(o.id)}>{rewriting === o.id ? <><Spinner size="sm" /> Rewriting…</> : "Rewrite with my saved details (free, once)"}</Button>
+                  <span>Replaces this text with a version that uses your real details instead of [Fill in] markers.</span>
+                </div>
+              )}
               {d?.status === "failed" && d.error && <p className="mt-1 text-xs text-red-600">{/no credits were charged/i.test(d.error) ? d.error : `${d.error} No credits were charged.`}</p>}
             </li>
           );
@@ -203,12 +237,29 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
         <Alert variant="warning">Tip: save your business details above first. Without them these pages will contain “[Fill in]” markers for you to complete by hand.</Alert>
       )}
 
+      {data.wordpress && pending.some((o) => o.fix === "create_page") && (
+        <fieldset className="space-y-2 rounded-xl border border-border p-3">
+          <legend className="px-1 text-xs font-semibold">When Forge creates a page on {data.wordpress.name}</legend>
+          {([["auto", "Publish it automatically", "The page goes live as soon as it is written. Legal pages, and pages that still have a [Fill in] marker, are always saved as drafts for you instead."], ["draft", "Save it as a draft for my approval", "Nothing goes live until you press “Approve and publish” on it."]] as const).map(([v, label, hint]) => (
+            <label key={v} className="flex cursor-pointer items-start gap-2 text-sm">
+              <input type="radio" name="publish-mode" className="mt-1" checked={publishMode === v} onChange={() => setPublishMode(v)} />
+              <span><span className="font-medium">{label}</span><span className="block text-xs text-muted-foreground">{hint}</span></span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+
       {pending.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted/40 p-3">
           <p className="text-sm">{chosen.length} selected · <strong>{total} credits</strong>{short ? <span className="ml-2 text-red-600">You need {total - data.balance} more.</span> : null}</p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {short && <Button asChild variant="outline" size="sm"><Link href="/dashboard/credits">Top up credits</Link></Button>}
-            <Button size="sm" disabled={busy || chosen.length === 0 || short} onClick={run}>{busy ? <><Spinner size="sm" /> Fixing… (up to a few minutes)</> : `Fix selected (${total} credits)`}</Button>
+            {chosen.length < pending.length && (
+              <Button size="sm" variant="outline" disabled={busy || chosen.length === 0 || short} onClick={() => void run(chosen)}>{busy ? <Spinner size="sm" /> : null} Fix selected ({total} credits)</Button>
+            )}
+            <Button size="sm" disabled={busy || (chosen.length < pending.length ? pending.reduce((n, o) => n + o.credits, 0) > data.balance : short)} onClick={() => void run(pending)}>
+              {busy ? <><Spinner size="sm" /> Fixing… (up to a few minutes)</> : `Fix everything (${pending.reduce((n, o) => n + o.credits, 0)} credits)`}
+            </Button>
           </div>
         </div>
       )}

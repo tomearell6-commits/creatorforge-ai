@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   const rl = await limitRequestAsync(request, "seo-audit-fix-run", 8, 60_000);
   if (!rl.ok) return apiError("Please wait a moment before the next fix.", 429);
 
-  const body = await readJsonBody<{ auditId?: string; offerIds?: string[] }>(request);
+  const body = await readJsonBody<{ auditId?: string; offerIds?: string[]; publish?: string }>(request);
   if (!body || typeof body.auditId !== "string" || !Array.isArray(body.offerIds) || body.offerIds.length === 0) return apiError("Choose at least one fix.", 400);
 
   const { data: audit } = await supabase.from("seo_audits").select("id").eq("id", body.auditId).eq("user_id", user.id).maybeSingle();
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   const wpRow = (wps ?? []).find((w) => { try { return new URL(w.site_url as string).hostname.toLowerCase().replace(/^www\./, "") === site.host; } catch { return false; } });
   const password = wpRow ? decryptSecret(wpRow.encrypted_application_password as string) : null;
   const { data: factsRow } = await supabase.from("seo_business_facts").select("facts").eq("user_id", user.id).eq("host", site.host).maybeSingle();
-  const ctx: FixContext = { site, wp: wpRow && password ? { siteUrl: wpRow.site_url as string, username: wpRow.username as string, appPassword: password } : null, facts: cleanFacts(factsRow?.facts) };
+  const ctx: FixContext = { site, wp: wpRow && password ? { siteUrl: wpRow.site_url as string, username: wpRow.username as string, appPassword: password } : null, facts: cleanFacts(factsRow?.facts), publish: body.publish === "draft" ? "draft" : "auto" };
 
   const offers = new Map(buildOffers(site, !!ctx.wp).map((o) => [o.id, o]));
   const chosen = [...new Set(body.offerIds)].map((id) => offers.get(id));

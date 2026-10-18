@@ -29,7 +29,7 @@ const site = (over: Partial<SiteScan> = {}): SiteScan => ({
 
 const offer = (over: Partial<FixOffer>): FixOffer => ({ id: "x", fix: "create_page", title: "t", why: "w", credits: 15, mode: "paste", severity: "warning", ...over });
 
-beforeEach(() => ask.mockReset());
+beforeEach(() => { ask.mockReset(); http.mockReset(); });
 
 describe("footerSnippet", () => {
   const r = footerSnippet(site());
@@ -102,6 +102,41 @@ describe("runOffer: create_page on a connected site that will not take pages", (
     const r = await runOffer(offer({ page: "faq" }), { site: site(), wp: { siteUrl: "https://shop.example", username: "u", appPassword: "p" } });
     expect(r.kind).toBe("paste");
     if (r.kind === "paste") expect(r.notes.join(" ")).toMatch(/404/);
+  });
+});
+
+describe("publishing on a connected WordPress site", () => {
+  const wp = { siteUrl: "https://shop.example", username: "u", appPassword: "p" };
+  const clean = "<h2>FAQ</h2><p>" + "We sell poly mailers in bulk to online shops and ship them in cartons. ".repeat(6) + "</p>";
+  const withMarker = clean + "<p>Reply time: [Fill in: reply time]</p>";
+  const sentStatus = () => JSON.parse(String((http.mock.calls[0][1] as { body: string }).body)).status;
+  const okPage = () => http.mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({ id: 7, link: "https://shop.example/faq/" }) });
+
+  it("publishes a finished, non-legal page when the owner chose automatic", async () => {
+    ask.mockResolvedValueOnce({ title: "FAQ", html: clean }); okPage();
+    const r = await runOffer(offer({ page: "faq" }), { site: site(), wp, publish: "auto" });
+    expect(sentStatus()).toBe("publish");
+    expect(r.kind === "draft_created" && r.state).toBe("published");
+    expect(r.kind === "draft_created" && r.liveUrl).toBe("https://shop.example/faq/");
+  });
+  it("keeps a page as a draft when it still has a [Fill in] marker, even on automatic", async () => {
+    ask.mockResolvedValueOnce({ title: "FAQ", html: withMarker }); okPage();
+    const r = await runOffer(offer({ page: "faq" }), { site: site(), wp, publish: "auto" });
+    expect(sentStatus()).toBe("draft");
+    expect(r.kind === "draft_created" && r.state).toBe("draft");
+    expect(r.kind === "draft_created" && r.notes.join(" ")).toMatch(/Fill in/);
+  });
+  it("always keeps legal pages as drafts for the owner to read", async () => {
+    ask.mockResolvedValueOnce({ title: "Privacy Policy", html: clean }); okPage();
+    const r = await runOffer(offer({ page: "privacy" }), { site: site(), wp, publish: "auto" });
+    expect(sentStatus()).toBe("draft");
+    expect(r.kind === "draft_created" && r.notes.join(" ")).toMatch(/legal pages/);
+  });
+  it("saves a draft when the owner wants to approve first", async () => {
+    ask.mockResolvedValueOnce({ title: "FAQ", html: clean }); okPage();
+    const r = await runOffer(offer({ page: "faq" }), { site: site(), wp, publish: "draft" });
+    expect(sentStatus()).toBe("draft");
+    expect(r.kind === "draft_created" && r.pageId).toBe(7);
   });
 });
 

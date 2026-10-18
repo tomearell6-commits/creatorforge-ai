@@ -15,10 +15,10 @@ import type { BusinessFacts } from "./facts";
  * returned as ready-to-paste text with instructions.
  */
 export type FixResult =
-  | { kind: "draft_created"; title: string; editUrl: string; previewUrl: string; notes: string[]; placeholders: string[] }
+  | { kind: "draft_created"; title: string; editUrl: string; previewUrl: string; notes: string[]; placeholders: string[]; pageId?: number; state?: "draft" | "published"; liveUrl?: string }
   | { kind: "paste"; title: string; html?: string; code?: string; rows?: { url: string; title: string; description: string }[]; instructions: string[]; notes: string[]; placeholders: string[] };
 
-export type FixContext = { site: SiteScan; wp: { siteUrl: string; username: string; appPassword: string } | null; facts?: BusinessFacts };
+export type FixContext = { site: SiteScan; wp: { siteUrl: string; username: string; appPassword: string } | null; facts?: BusinessFacts; publish?: "auto" | "draft" };
 
 const PAGES: Record<string, { title: string; slug: string; brief: string; legal: boolean }> = {
   about: { title: "About Us", slug: "about-us", legal: false, brief: "About page, 300-450 words: who the business is and what it offers (only from the site material), how it works with customers (only if stated), and how to get in touch. Use markers for founding story, location and team." },
@@ -51,18 +51,18 @@ function context(site: SiteScan, facts?: BusinessFacts) {
   };
 }
 
-async function wpCreateDraft(wp: NonNullable<FixContext["wp"]>, title: string, html: string, slug: string) {
+async function wpCreateDraft(wp: NonNullable<FixContext["wp"]>, title: string, html: string, slug: string, status: "draft" | "publish" = "draft") {
   const site = normalizeSite(wp.siteUrl);
   const auth = `Basic ${Buffer.from(`${wp.username}:${wp.appPassword.replace(/\s+/g, "")}`).toString("base64")}`;
   try {
     const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/pages`, {
       method: "POST",
       headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (compatible; CreatorsForgeSEOFixer/1.0)" },
-      body: JSON.stringify({ title, content: html, status: "draft", slug }),
+      body: JSON.stringify({ title, content: html, status, slug }),
     }, 30_000);
     if (!res.ok) return { ok: false as const, error: `WordPress did not accept the page (HTTP ${res.status}).` };
     const j = (await res.json()) as { id: number; link?: string };
-    return { ok: true as const, editUrl: `${site}/wp-admin/post.php?post=${j.id}&action=edit`, previewUrl: j.link ?? `${site}/?page_id=${j.id}&preview=true` };
+    return { ok: true as const, id: j.id, link: j.link, editUrl: `${site}/wp-admin/post.php?post=${j.id}&action=edit`, previewUrl: j.link ?? `${site}/?page_id=${j.id}&preview=true` };
   } catch {
     return { ok: false as const, error: "Could not reach your WordPress site." };
   }
@@ -83,7 +83,12 @@ async function createPage(offer: FixOffer, ctx: FixContext): Promise<FixResult> 
   if (placeholders.length) notes.push("Fill in the highlighted [Fill in: …] markers with your real details before publishing.");
 
   if (ctx.wp) {
-    const r = await wpCreateDraft(ctx.wp, title, html, spec.slug);
+    // Publish straight away only when the owner chose automatic AND the page is safe to show: it is not a legal template and has no [Fill in] markers left.
+    const wantsLive = ctx.publish === "auto";
+    const safeToPublish = !spec.legal && placeholders.length === 0;
+    const r = await wpCreateDraft(ctx.wp, title, html, spec.slug, wantsLive && safeToPublish ? "publish" : "draft");
+    const live = wantsLive && safeToPublish;
+    if (wantsLive && !safeToPublish) notes.push(spec.legal ? "Saved as a draft instead of being published: legal pages should be read by you before they go live." : "Saved as a draft instead of being published: it still has [Fill in] markers that would show to visitors.");
     if (!r.ok) {
       // The site is connected for posts but will not take pages (for example a custom site): the written page is still worth having.
       return {
@@ -92,7 +97,9 @@ async function createPage(offer: FixOffer, ctx: FixContext): Promise<FixResult> 
         instructions: ["Create a new page in your website editor and paste this text into it.", `Use the page name “${title}” and the address /${spec.slug}.`, "Keep it unpublished until the [Fill in] markers are done."],
       };
     }
-    return { kind: "draft_created", title, editUrl: r.editUrl, previewUrl: r.previewUrl, notes: [...notes, "It was saved as a DRAFT. Nothing is public until you publish it."], placeholders };
+    return live
+      ? { kind: "draft_created", title, editUrl: r.editUrl, previewUrl: r.previewUrl, notes, placeholders, pageId: r.id, state: "published", liveUrl: r.link }
+      : { kind: "draft_created", title, editUrl: r.editUrl, previewUrl: r.previewUrl, notes: [...notes, "It was saved as a DRAFT. Nothing is public until you publish it."], placeholders, pageId: r.id, state: "draft" };
   }
   return {
     kind: "paste", title, html, placeholders, notes,
