@@ -13,7 +13,59 @@ type Result =
   | { kind: "draft_created"; title: string; editUrl: string; previewUrl: string; notes: string[]; placeholders: string[] }
   | { kind: "paste"; title: string; html?: string; code?: string; rows?: { url: string; title: string; description: string }[]; instructions: string[]; notes: string[]; placeholders: string[] };
 type Stored = { status: string; result: Result | Record<string, never>; error: string | null; credits: number };
-type Loaded = { offers: Offer[]; fixes: Record<string, Stored>; balance: number; wordpress: { name: string } | null; host?: string; needsFullAudit?: boolean };
+type Loaded = { offers: Offer[]; fixes: Record<string, Stored>; balance: number; wordpress: { name: string } | null; host?: string; origin?: string; needsFullAudit?: boolean };
+
+/**
+ * Connect WordPress right inside the audit. The connection is the same one Autopilot uses (one shared list),
+ * so a site connected in either place is picked up automatically in the other.
+ */
+function ConnectWordPress({ origin, host, onConnected }: { origin: string; host: string; onConnected: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState("");
+  const [appPassword, setAppPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<{ text: string; upgrade?: boolean } | null>(null);
+
+  async function connect() {
+    setBusy(true); setErr(null);
+    const r = await api<{ error?: string; code?: string }>("/api/wordpress/sites", { method: "POST", body: JSON.stringify({ siteUrl: origin, username: username.trim(), appPassword: appPassword.trim(), defaultCategory: "" }) });
+    setBusy(false);
+    if (!r.ok) { setErr({ text: r.data.error ?? "Could not connect. Check the username and application password.", upgrade: r.data.code === "upgrade_required" }); return; }
+    setAppPassword("");
+    onConnected();
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-brand-500/40 bg-muted/30 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">Want Forge to fix {host} for you?</p>
+          <p className="mt-1 text-xs text-muted-foreground">Connect your WordPress site once. New pages are then created on your site as <strong>drafts</strong> for you to review, instead of text you paste in yourself. This is the same connection Autopilot uses, so you never connect twice.</p>
+        </div>
+        {!open && <Button size="sm" onClick={() => setOpen(true)}>Connect WordPress</Button>}
+      </div>
+      {open && (
+        <div className="space-y-3">
+          <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
+            <li>In WordPress, open <strong>Users → Profile</strong> and scroll to <strong>Application Passwords</strong>.</li>
+            <li>Type the name “CreatorsForge” and click <strong>Add New Application Password</strong>.</li>
+            <li>Copy the password WordPress shows you and paste it below with your WordPress username.</li>
+          </ol>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div><label htmlFor="sa-wp-user" className="text-xs font-medium">WordPress username</label><input id="sa-wp-user" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="off" className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm" /></div>
+            <div><label htmlFor="sa-wp-pass" className="text-xs font-medium">Application password</label><input id="sa-wp-pass" value={appPassword} onChange={(e) => setAppPassword(e.target.value)} autoComplete="off" placeholder="xxxx xxxx xxxx xxxx" className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm" /></div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="sm" disabled={busy || !username.trim() || !appPassword.trim()} onClick={connect}>{busy ? <><Spinner size="sm" /> Checking…</> : "Connect and continue"}</Button>
+            <span className="text-xs text-muted-foreground">Stored encrypted. We never see your normal password, and you can delete the application password in WordPress any time.</span>
+          </div>
+          {err && <Alert variant="error">{err.text}{err.upgrade && <> <Link href="/dashboard/billing" className="font-semibold underline">See plans</Link></>}</Alert>}
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">Not on WordPress? Nothing to connect: every fix below still comes as ready-to-paste text with instructions.</p>
+    </div>
+  );
+}
 
 async function api<T>(url: string, init?: RequestInit): Promise<{ ok: boolean; status: number; data: T }> {
   const res = await fetch(url, { ...init, headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) } });
@@ -106,6 +158,10 @@ export function SEOAuditFixes({ auditId }: { auditId: string }) {
         </div>
         <p className="text-sm">Balance: <strong>{data.balance.toLocaleString()}</strong> credits</p>
       </div>
+
+      {data.wordpress
+        ? <p className="rounded-lg bg-muted/40 px-3 py-2 text-xs"><span className="font-semibold text-green-600">● Connected</span> to {data.wordpress.name}. Fixes are applied to it as drafts, never published without you.</p>
+        : data.origin && data.host && <ConnectWordPress origin={data.origin} host={data.host} onConnected={() => { setMsg({ kind: "success", text: "WordPress connected. Your fixes below will now be created on your site as drafts." }); void load(); }} />}
 
       {data.offers.length === 0 && <Alert variant="success">Nothing to fix: your essential pages, footer and basic structure look complete.</Alert>}
 

@@ -34,6 +34,6 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     offers: buildOffers(site, !!wp), fixes, balance: await getCreditBalance(),
-    wordpress: wp ? { name: wp.site_name } : null, host: site.host,
+    wordpress: wp ? { name: wp.site_name } : null, host: site.host, origin: site.origin,
   });
 }
