@@ -49,8 +49,11 @@ export async function fetchText(url: string, timeout = TIMEOUT_MS): Promise<{ ok
 const stripTags = (html: string) => html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const attr = (tag: string, name: string) => new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, "i").exec(tag)?.[1] ?? null;
 
+/** Turn common HTML entities back into characters, so lengths are counted as visitors see them. */
+const unescapeHtml = (s: string) => s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#0?39;|&#x27;|&apos;/g, "'").replace(/&nbsp;/g, " ").replace(/&#([0-9]+);/g, (_, n) => String.fromCharCode(Number(n)));
+
 export function metadataScanner(html: string) {
-  const title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1]?.trim() ?? null;
+  let title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1]?.trim() ?? null;
   const metaTags = html.match(/<meta\b[^>]*>/gi) ?? [];
   let metaDescription: string | null = null, robotsMeta: string | null = null, viewport = false, ogTags = 0;
   for (const m of metaTags) {
@@ -62,6 +65,8 @@ export function metadataScanner(html: string) {
   }
   const canonical = (html.match(/<link\b[^>]*>/gi) ?? []).map((l) => ({ rel: (attr(l, "rel") ?? "").toLowerCase(), href: attr(l, "href") })).find((l) => l.rel === "canonical")?.href ?? null;
   const lang = attr(/<html\b[^>]*>/i.exec(html)?.[0] ?? "", "lang");
+  title = title === null ? null : unescapeHtml(title);
+  if (metaDescription !== null) metaDescription = unescapeHtml(metaDescription);
   return { title, titleLength: title?.length ?? 0, metaDescription, metaDescriptionLength: metaDescription?.length ?? 0, canonical, robotsMeta, viewport, lang, ogTags };
 }
 
