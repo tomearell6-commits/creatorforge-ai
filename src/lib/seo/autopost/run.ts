@@ -14,7 +14,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptSecret } from "@/lib/security/secrets";
-import { normalizeSite } from "@/lib/publishing/providers/wordpress";
+import { normalizeSite, checkWordPressAuth } from "@/lib/publishing/providers/wordpress";
 import { fetchWithTimeout } from "@/lib/http";
 import { generateSeoPackage, countWords } from "@/lib/seo/generate";
 import { generateArticleImage } from "@/lib/seo/images";
@@ -127,10 +127,11 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     if (!appPassword) throw new StageError("connection", "Could not read the saved WordPress login — please reconnect the site.", { hard: true });
     const base = normalizeSite(wp.site_url as string);
     const auth = `Basic ${Buffer.from(`${wp.username}:${appPassword.replace(/\s+/g, "")}`).toString("base64")}`;
-    const me = await fetchWithTimeout(`${base}/wp-json/wp/v2/users/me`, { headers: { Authorization: auth, "User-Agent": UA } }, 20_000).catch(() => null);
-    if (!me) throw new StageError("connection", "Could not reach the website (it may be down or blocking our server).");
-    if (me.status === 401 || me.status === 403) throw new StageError("connection", "WordPress rejected the login — create a new application password and reconnect the site.", { hard: true });
-    if (!me.ok) throw new StageError("connection", `The website answered with an error (${me.status}).`);
+    const check = await checkWordPressAuth(base, auth);
+    if (!check.ok) {
+      // A wrong login or a firewall block needs the owner's attention (pause); a down site just retries.
+      throw new StageError("connection", check.message, { hard: check.kind === "bad_login" || check.kind === "blocked" });
+    }
 
     // 2) Credits
     const { data: prof } = await admin.from("profiles").select("credits").eq("user_id", s.user_id).maybeSingle();

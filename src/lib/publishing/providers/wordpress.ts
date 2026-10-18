@@ -40,26 +40,63 @@ function toHtml(body: string): string {
   return body.split(/\n{2,}/).map((p) => `<p>${p.trim().replace(/\n/g, "<br/>")}</p>`).join("\n");
 }
 
+export type WpAuthCheck =
+  | { ok: true }
+  | { ok: false; kind: "bad_login" | "blocked" | "unreachable" | "rest_off"; message: string };
+
+/**
+ * Check a WordPress login WITHOUT depending on one specific page. Many hosts and security
+ * plugins block /wp-json/wp/v2/users (to stop user enumeration) and answer 403 even for a
+ * correct login, so we try several admin-only pages and read WordPress's own error code to
+ * tell a wrong password apart from a firewall block.
+ */
+export async function checkWordPressAuth(site: string, auth: string): Promise<WpAuthCheck> {
+  const paths = [
+    "/wp-json/wp/v2/users/me?context=edit",
+    "/wp-json/wp/v2/posts?context=edit&per_page=1",
+    "/wp-json/wp/v2/settings",
+  ];
+  let blocked = false;
+  let headerNotAccepted = false;
+  for (const p of paths) {
+    let res: Response;
+    try {
+      res = await fetchWithTimeout(`${site}${p}`, { headers: { Authorization: auth, "User-Agent": UA, Accept: "application/json" } }, 20_000);
+    } catch {
+      return { ok: false, kind: "unreachable", message: "Could not reach the site. Check the address and that the website is online and public." };
+    }
+    if (res.ok) return { ok: true };
+    const text = await res.text().catch(() => "");
+    let code = "";
+    try { code = (JSON.parse(text) as { code?: string }).code ?? ""; } catch { /* not JSON = a firewall page */ }
+
+    if (code === "incorrect_password") return { ok: false, kind: "bad_login", message: "WordPress says the application password is wrong or was revoked. Create a new Application Password and copy it again, exactly." };
+    if (code === "invalid_username" || code === "invalid_email") return { ok: false, kind: "bad_login", message: "That username does not exist on this WordPress site. Use the username you log in with (see Users in WordPress)." };
+    if (code === "rest_forbidden_context" || code === "rest_forbidden" || code === "rest_cannot_view") { headerNotAccepted = true; continue; }
+    if (!code && (res.status === 401 || res.status === 403 || res.status === 406 || res.status === 429)) { blocked = true; continue; } // firewall / security page
+    if (res.status === 404) continue;
+  }
+  if (headerNotAccepted) {
+    return { ok: false, kind: "bad_login", message: "WordPress did not accept the login. Either the user is not an Administrator or Editor, or the host is removing the login header (an .htaccess rule fixes that — ask your host)." };
+  }
+  if (blocked) {
+    return { ok: false, kind: "blocked", message: "The website's firewall or a security plugin is blocking the connection (it returned a security page, not WordPress). Allow the WordPress REST API for logged-in requests, or ask your host to allow it." };
+  }
+  return { ok: false, kind: "rest_off", message: "WordPress's REST API is not reachable on this site. Check that it is enabled (Settings → Permalinks must not be 'Plain') and not disabled by a plugin." };
+}
+
 export async function verifyWordPress(input: { siteUrl: string; username: string; appPassword: string }): Promise<
   { ok: true; siteName: string; userName: string } | { ok: false; error: string }
 > {
   const site = normalizeSite(input.siteUrl);
+  const check = await checkWordPressAuth(site, basicAuth(input.username, input.appPassword));
+  if (!check.ok) return { ok: false, error: check.message };
+  let siteName = site;
   try {
-    const me = await fetchWithTimeout(`${site}/wp-json/wp/v2/users/me?context=edit`, {
-      headers: { Authorization: basicAuth(input.username, input.appPassword), "User-Agent": UA },
-    });
-    if (me.status === 401 || me.status === 403) return { ok: false, error: "Invalid username or application password (or the host is blocking the Authorization header — see WordPress setup notes)." };
-    if (!me.ok) return { ok: false, error: `WordPress REST API not reachable (HTTP ${me.status}). Is the REST API enabled?` };
-    const user = await me.json();
-    let siteName = site;
-    try {
-      const root = await fetchWithTimeout(`${site}/wp-json`, { headers: { "User-Agent": UA } });
-      if (root.ok) siteName = (await root.json())?.name || site;
-    } catch { /* non-fatal */ }
-    return { ok: true, siteName, userName: user?.name || input.username };
-  } catch {
-    return { ok: false, error: "Could not reach the site. Check the URL and that it's publicly accessible." };
-  }
+    const root = await fetchWithTimeout(`${site}/wp-json`, { headers: { "User-Agent": UA } });
+    if (root.ok) siteName = (await root.json())?.name || site;
+  } catch { /* non-fatal */ }
+  return { ok: true, siteName, userName: input.username };
 }
 
 /** Resolve a taxonomy term by name, creating it if it doesn't exist. Returns id or null. */
