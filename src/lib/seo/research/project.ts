@@ -6,6 +6,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { captureError } from "@/lib/logger";
 import { analyzeWebsite } from "./analyze";
+import { PolicyBlockedError } from "@/lib/seo/policy";
 import { SEO_ANALYSIS_CREDITS } from "@/lib/seo/autopost/limits";
 
 export async function runProjectAnalysis(admin: SupabaseClient, projectId: string, userId: string, origin: string): Promise<void> {
@@ -23,7 +24,7 @@ export async function runProjectAnalysis(admin: SupabaseClient, projectId: strin
     if (error) throw new Error(error.message);
     await admin.rpc("wallet_adjust", { p_user: userId, p_amount: -SEO_ANALYSIS_CREDITS, p_type: "generation", p_reason: "seo_website_analysis" });
   } catch (e) {
-    captureError(e, { category: "jobs", feature: "seo-analysis", projectId });
+    if (!(e instanceof PolicyBlockedError)) captureError(e, { category: "jobs", feature: "seo-analysis", projectId });
     const message = e instanceof Error ? e.message : "The analysis failed.";
     // Technical notes (if any) go into a field the dashboard does not show, so support can see what the model returned.
     const diag = (e as { diag?: string[] } | null)?.diag;

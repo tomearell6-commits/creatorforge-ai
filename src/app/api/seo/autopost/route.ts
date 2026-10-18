@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/plan";
 import { getCreditBalance } from "@/lib/credits";
 import { apiError, readJsonBody } from "@/lib/api/respond";
+import { screenSite } from "@/lib/seo/policy-server";
+import { POLICY_MESSAGE } from "@/lib/seo/policy";
 import { assignPublishHours } from "@/lib/seo/autopost/schedule";
 import { CREDITS_PER_POST, estimateMonthlyCredits, parseMode, siteLimitForPlan } from "@/lib/seo/autopost/limits";
 
@@ -104,8 +106,12 @@ export async function POST(request: Request) {
   if (limit === 0) return apiError("SEO Auto-Poster is available on paid plans. Upgrade to start daily automatic posting.", 403);
 
   // RLS guarantees this only returns the user's own sites.
-  const { data: wp } = await supabase.from("wordpress_sites").select("id").eq("id", body.wordpressSiteId).maybeSingle();
+  const { data: wp } = await supabase.from("wordpress_sites").select("id, site_url").eq("id", body.wordpressSiteId).maybeSingle();
   if (!wp) return apiError("That WordPress site was not found in your account.", 404);
+
+  // Category check: we do not auto-post for sites that sell illegal drugs.
+  const policy = await screenSite(wp.site_url as string);
+  if (policy.blocked) return apiError(POLICY_MESSAGE, 403);
 
   const { count } = await supabase.from("seo_autopost_sites").select("id", { count: "exact", head: true });
   if ((count ?? 0) >= limit) return apiError(`Your plan allows auto-posting on ${limit} website${limit === 1 ? "" : "s"}. Upgrade to add more.`, 403);

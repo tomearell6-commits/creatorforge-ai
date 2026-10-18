@@ -28,13 +28,15 @@ import { isSiteDue, startOfUtcDay } from "./schedule";
 import { CREDITS_PER_POST, ARTICLE_IMAGE_CREDITS, MAX_PENDING_REVIEW, needsReview } from "./limits";
 import { chooseCategory } from "./category";
 import { ensureInternalLinks } from "./links";
+import { screenSite } from "@/lib/seo/policy-server";
+import { POLICY_MESSAGE } from "@/lib/seo/policy";
 import { uploadMedia } from "@/lib/media/storage";
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.creatorsforge.io";
 const MAX_FAILURES = 3;
 
-type Stage = "connection" | "credits" | "review" | "topic" | "image" | "article" | "publish";
+type Stage = "connection" | "policy" | "credits" | "review" | "topic" | "image" | "article" | "publish";
 
 class StageError extends Error {
   constructor(
@@ -135,6 +137,10 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       // A wrong login or a firewall block needs the owner's attention (pause); a down site just retries.
       throw new StageError("connection", check.message, { hard: check.kind === "bad_login" || check.kind === "blocked" });
     }
+
+    // 1b) Category check on every run: pause (and tell the owner) if the site sells products we cannot promote.
+    const policy = await screenSite(base);
+    if (policy.blocked) throw new StageError("policy", POLICY_MESSAGE, { hard: true });
 
     // 2) Credits
     const { data: prof } = await admin.from("profiles").select("credits").eq("user_id", s.user_id).maybeSingle();

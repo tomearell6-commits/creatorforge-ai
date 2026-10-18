@@ -11,6 +11,7 @@
  * pages that rank, but NOT search volumes or difficulty scores (those need a paid keyword
  * data source). Nothing here guarantees a ranking.
  */
+import { screenSiteContent, PolicyBlockedError } from "@/lib/seo/policy";
 import Anthropic from "@anthropic-ai/sdk";
 import { validateAuditUrl } from "@/lib/seo-audit/ssrf";
 import { fcScrape, fcSearch, hasFirecrawl } from "./firecrawl";
@@ -86,7 +87,7 @@ async function askViaTool(system: string, user: string, maxTokens: number, trace
     return block.input as Record<string, unknown>;
   }
   const blocks = msg.content.map((c) => c.type).join(",") || "none";
-  const said = msg.content.filter((c): c is Anthropic.TextBlock => c.type === "text").map((c) => c.text).join(" ").replace(/s+/g, " ").slice(0, 400);
+  const said = msg.content.filter((c): c is Anthropic.TextBlock => c.type === "text").map((c) => c.text).join(" ").replace(/\s+/g, " ").slice(0, 400);
   trace.push(`${label}: tool gave no object; stop_reason=${msg.stop_reason}; blocks=${blocks}; output_tokens=${msg.usage?.output_tokens}; model said: ${JSON.stringify(said)}`);
   console.error("[seo-analysis] tool call returned no usable object; stop_reason=", msg.stop_reason);
   throw new SyntaxError("no structured result");
@@ -105,8 +106,8 @@ export async function askJson<T>(system: string, user: string, maxTokens: number
     () => readJsonWithRetry(async () => {
       const txt = await askClaude(system + " JSON RULES: output one valid minified JSON value and nothing else. Never put a double-quote character inside a text value (use a single quote), and never use line breaks inside values.", user, maxTokens);
       try { JSON.parse(txt.trim().replace(/^```json?/i, "").replace(/```$/, "").trim().replace(/^[^[{]*/, "")); } catch (err) {
-        const pos = Number(/position (d+)/.exec(err instanceof Error ? err.message : "")?.[1] ?? -1);
-        trace.push(`${label}: text JSON invalid (${err instanceof Error ? err.message.slice(0, 120) : "?"}); length=${txt.length}; around error: ${pos >= 0 ? JSON.stringify(txt.slice(Math.max(0, pos - 80), pos + 80)) : JSON.stringify(txt.replace(/s+/g, " ").slice(0, 400))}`);
+        const pos = Number(/position (\d+)/.exec(err instanceof Error ? err.message : "")?.[1] ?? -1);
+        trace.push(`${label}: text JSON invalid (${err instanceof Error ? err.message.slice(0, 120) : "?"}); length=${txt.length}; around error: ${pos >= 0 ? JSON.stringify(txt.slice(Math.max(0, pos - 80), pos + 80)) : JSON.stringify(txt.replace(/\s+/g, " ").slice(0, 400))}`);
       }
       return txt;
     }, 1),
@@ -157,6 +158,9 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
     `HOME (${origin}) title: ${home.title}\nmeta: ${home.description}\n${cleanMarkdown(home.markdown).slice(0, 7000)}`,
     ...extras.map((p) => `PAGE ${p.url} title: ${p.title}\n${cleanMarkdown(p.markdown).slice(0, 2300)}`),
   ].join("\n\n---\n\n");
+
+  // 1b) Category check: we do not analyse or promote sites that sell illegal drugs (nothing is charged).
+  if (screenSiteContent(`${home.title} ${home.description} ${siteText}`).blocked) throw new PolicyBlockedError();
 
   // 2) Brand profile.
   await onProgress("Learning your brand and customers…");
