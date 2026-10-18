@@ -77,6 +77,7 @@ export const DASHBOARD_NAV: DashNavArea[] = [
           c("ai-shorts", "AI Shorts", "/dashboard/create/ai-shorts", Clapperboard, "Vertical short-form for Reels/Shorts/TikTok", 3, { isEnabled: false }),
           c("seo-autopilot", "SEO Autopilot", "/dashboard/seo/autopilot", Rocket, "Enter your website — we plan and publish SEO articles every day", 4, { tour: "seo-studio" }),
           c("seo-results", "SEO Results", "/dashboard/seo/results", BarChart3, "Real Google Search results for your websites", 4),
+          c("seo-audit-content", "SEO Audit", "/dashboard/seo/audit", FileSearch, "Check a whole website, see what is missing and what each fix costs", 4),
           c("seo-articles", "SEO Writer (manual)", "/dashboard/seo", Search, "Write and publish a single SEO article yourself", 4),
           c("blog-writer", "Script & Blog Writer", "/dashboard/generate", FileText, "Scripts, blogs and written content", 5),
           c("image-generator", "Image Generator", "/dashboard/create?group=image", ImageIcon, "AI images and thumbnails", 6),
