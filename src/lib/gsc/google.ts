@@ -5,14 +5,16 @@ import { fetchWithTimeout } from "@/lib/http";
 import type { GscProperty, GscRow } from "./overview";
 
 /**
- * Google Search Console, read-only. Uses the same Google Cloud project as the YouTube connection
- * (GSC_CLIENT_ID / GSC_CLIENT_SECRET override YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET if you want a
- * separate client). Scope: webmasters.readonly: it can read results and inspect URLs, never change anything.
+ * Google Search Console, read-only. Which Google client it signs in with, first one set wins:
+ * GSC_CLIENT_ID/SECRET, then the Google Business Profile client (GOOGLE_BUSINESS_CLIENT_ID/SECRET), then the
+ * YouTube client. The redirect address and the Search Console permission must be set on THAT client's project. Scope: webmasters.readonly: it can read results and inspect URLs, never change anything.
  */
 export const GSC_SCOPE = "openid email https://www.googleapis.com/auth/webmasters.readonly";
 
-const clientId = () => process.env.GSC_CLIENT_ID || process.env.YOUTUBE_CLIENT_ID || "";
-const clientSecret = () => process.env.GSC_CLIENT_SECRET || process.env.YOUTUBE_CLIENT_SECRET || "";
+const clientId = () => process.env.GSC_CLIENT_ID || process.env.GOOGLE_BUSINESS_CLIENT_ID || process.env.YOUTUBE_CLIENT_ID || "";
+const clientSecret = () => process.env.GSC_CLIENT_SECRET || process.env.GOOGLE_BUSINESS_CLIENT_SECRET || process.env.YOUTUBE_CLIENT_SECRET || "";
+/** The Google Cloud project number (the digits before the first dash of the client id). Not a secret; shown so the right project can be checked. */
+export const gscProjectNumber = () => clientId().split("-")[0] || null;
 export const gscConfigured = () => !!clientId() && !!clientSecret();
 export const gscRedirectUri = () => `${process.env.NEXT_PUBLIC_APP_URL || "https://www.creatorsforge.io"}/api/seo/gsc/callback`;
 

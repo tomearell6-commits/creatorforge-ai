@@ -9,7 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 
 type Site = { host: string; name: string; url: string; kind: "wordpress" | "blog" };
 type Conn = { id: string; email: string; status: string; error: string | null };
-type Boot = { configured: boolean; connections: Conn[]; sites: Site[] };
+type Boot = { configured: boolean; project?: string | null; connections: Conn[]; sites: Site[] };
 type Totals = { clicks: number; impressions: number; ctr: number; position: number };
 type Article = { title: string; url: string; publishedAt: string | null; clicks: number; impressions: number; position: number | null; daysLive: number | null };
 type Overview =
@@ -173,6 +173,7 @@ export function SeoResults() {
           </div>
           <Button size="sm" disabled={busy || !boot.configured} onClick={connect}>{busy ? <Spinner size="sm" /> : connected ? "Add another Google account" : "Connect Google Search Console"}</Button>
         </div>
+        {boot.configured && boot.project && <p className="text-xs text-muted-foreground">Signs in through Google Cloud project {boot.project}.</p>}
         {!boot.configured && <Alert variant="warning">Search Console isn’t set up on this server yet (the Google keys are missing).</Alert>}
         {connected && (
           <ul className="space-y-1.5 text-sm">

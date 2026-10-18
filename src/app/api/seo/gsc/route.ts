@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPlatformAdmin } from "@/lib/admin";
 import { apiError, readJsonBody } from "@/lib/api/respond";
-import { gscConfigured } from "@/lib/gsc/google";
+import { gscConfigured, gscProjectNumber } from "@/lib/gsc/google";
 import { listSites } from "@/lib/gsc/sites";
 
 /**
@@ -22,6 +22,7 @@ export async function GET() {
   const sites = await listSites(supabase, (await isPlatformAdmin()).ok);
   return NextResponse.json({
     configured: gscConfigured(),
+    project: gscProjectNumber(),
     connections: (conns ?? []).map((c) => ({ id: c.id, email: c.google_email, status: c.status, error: c.last_error })),
     sites,
   });
