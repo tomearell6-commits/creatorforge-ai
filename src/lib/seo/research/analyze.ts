@@ -80,6 +80,7 @@ async function askViaTool(system: string, user: string, maxTokens: number, trace
     tool_choice: { type: "auto" },
   });
   const msg = await stream.finalMessage();
+  if (msg.stop_reason === "max_tokens") trace.push(`${label}: hit the output limit (max_tokens=${maxTokens}, output_tokens=${msg.usage?.output_tokens}); the result may be cut short`);
   const block = msg.content.find((c): c is Anthropic.ToolUseBlock => c.type === "tool_use");
   if (block && block.input && typeof block.input === "object" && !Array.isArray(block.input) && Object.keys(block.input).length > 0) {
     return block.input as Record<string, unknown>;
@@ -219,7 +220,7 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
         : "") +
       "Do not invent search volumes or rankings.",
     JSON.stringify(evidence),
-    9000,
+    16000,
     "plan",
     trace
   );
@@ -232,7 +233,10 @@ export async function analyzeWebsite(origin: string, onProgress: Progress = () =
     .map((r) => ({ keyword: str(r.keyword), title: str(r.title, str(r.keyword)), secondaryKeywords: strs(r.secondaryKeywords, 8), intent: str(r.intent, "informational"), angle: str(r.angle) }))
     .filter((t) => t.keyword);
   const unique = filterNewTopics(asTopics, [], 0.7) as (Topic & { angle: string })[];
-  if (unique.length < 10) throw new Error("The plan came back too short. Please try the analysis again.");
+  if (unique.length < 10) {
+    trace.push(`plan: only ${unique.length} usable topics of ${rawPlan.length} returned; keys=${Object.keys(s).join(",")}`);
+    throw Object.assign(new Error("The plan came back too short. Please try the analysis again."), { diag: trace });
+  }
   const plan: PlanItem[] = unique.slice(0, 30).map((t, i) => ({ day: i + 1, title: t.title, keyword: t.keyword, secondaryKeywords: t.secondaryKeywords, intent: t.intent, angle: (t as { angle?: string }).angle ?? "" }));
 
   return {
