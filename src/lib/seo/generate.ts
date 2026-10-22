@@ -313,7 +313,10 @@ export async function generateSeoPackage(
       const stream = client.messages.stream({
         model,
         max_tokens: 12000,
-        system,
+        system: system + "\n\nDeliver the finished JSON object by calling the submit_article tool with it as the input. Do not write the article as plain text.",
+        tools: [{ name: "submit_article", description: "Submit the finished article package exactly as described in the instructions.", input_schema: { type: "object", additionalProperties: true } }],
+        // "auto": forcing a specific tool is rejected by this model; the instruction above makes it call the tool.
+        tool_choice: { type: "auto" },
         messages: [
           {
             role: "user",
@@ -338,11 +341,20 @@ export async function generateSeoPackage(
         ],
       });
       const msg = await stream.finalMessage();
-      const text = msg.content
-        .filter((b): b is Anthropic.TextBlock => b.type === "text")
-        .map((b) => b.text)
-        .join("");
-      const raw = JSON.parse(stripFences(text)) as SeoPackage;
+      // The article arrives as a tool call, already parsed by the API: a stray quote inside a 2,500-word
+      // article can no longer break it (the "Expected ',' or ']' after array element" failures). Plain-text
+      // JSON stays as the fallback if the model answers in text instead.
+      const toolBlock = msg.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
+      let raw: SeoPackage;
+      if (toolBlock && toolBlock.input && typeof toolBlock.input === "object" && !Array.isArray(toolBlock.input) && Object.keys(toolBlock.input).length > 0) {
+        raw = toolBlock.input as SeoPackage;
+      } else {
+        const text = msg.content
+          .filter((b): b is Anthropic.TextBlock => b.type === "text")
+          .map((b) => b.text)
+          .join("");
+        raw = JSON.parse(stripFences(text)) as SeoPackage;
+      }
       if (typeof raw.articleContent !== "string" || !raw.articleContent.trim()) {
         lastErr = "the model returned no article body";
         revision = "Your previous reply had no articleContent. Return the complete JSON including a full articleContent.";
