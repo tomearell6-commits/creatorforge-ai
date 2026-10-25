@@ -40,7 +40,7 @@ export const PROVIDERS: ProviderDef[] = [
   { id: "openai", name: "OpenAI", category: "ai", envKeys: ["OPENAI_API_KEY"], authType: "api_key",
     apiEndpoint: "https://api.openai.com", docsUrl: "https://platform.openai.com/docs", supportUrl: "https://help.openai.com",
     renewalRequired: false, supportsUsageReporting: true, supportsBalanceReporting: true, supportsHealthChecks: true, supportsWebhooks: false,
-    note: "gpt-image-1 image generation (quality: high)." },
+    note: "gpt-image image generation (gpt-image-2 with automatic fallback; set OPENAI_IMAGE_MODEL to pin one)." },
   { id: "elevenlabs", name: "ElevenLabs", category: "ai", envKeys: ["ELEVENLABS_API_KEY"], authType: "api_key",
     apiEndpoint: "https://api.elevenlabs.io", docsUrl: "https://elevenlabs.io/docs", supportUrl: "https://help.elevenlabs.io",
     renewalRequired: true, supportsUsageReporting: true, supportsBalanceReporting: true, supportsHealthChecks: true, supportsWebhooks: false,

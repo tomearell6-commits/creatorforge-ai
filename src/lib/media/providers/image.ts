@@ -25,13 +25,25 @@ const placeholderImageProvider: ImageProvider = {
 };
 
 /**
- * OpenAI image provider (gpt-image-1). Returns base64 JPEG bytes.
- * Activated by IMAGE_PROVIDER=openai + OPENAI_API_KEY. gpt-image-1 supports a
+ * OpenAI image models, newest first. OpenAI retired "gpt-image-1" (HTTP 400 "model does not exist"), which stopped
+ * every article image, so the provider now tries the configured model (OPENAI_IMAGE_MODEL) and then these in order,
+ * moving on only when OpenAI says the model does not exist. The one that works is remembered for the process.
+ */
+export const OPENAI_IMAGE_MODELS = ["gpt-image-2", "gpt-image-1.5", "gpt-image-1-mini", "gpt-image-1"];
+let workingImageModel: string | null = null;
+
+export function isModelMissingError(status: number, body: string): boolean {
+  return (status === 400 || status === 404) && /does not exist|model_not_found|not found|do not have access to (?:the )?model/i.test(body);
+}
+
+/**
+ * OpenAI image provider. Returns base64 JPEG bytes.
+ * Activated by IMAGE_PROVIDER=openai + OPENAI_API_KEY. The models support a
  * fixed set of sizes, so we map to the nearest by aspect ratio.
  */
 const openAIImageProvider: ImageProvider = {
   id: "openai",
-  name: "OpenAI gpt-image-1",
+  name: "OpenAI gpt-image",
   async generate(input: ImageGenInput) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
@@ -42,21 +54,23 @@ const openAIImageProvider: ImageProvider = {
     const envQ = process.env.OPENAI_IMAGE_QUALITY;
     const quality = input.quality ?? (envQ === "low" || envQ === "medium" || envQ === "high" ? envQ : "high");
 
-    const res = await fetchWithTimeout("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-image-1",
-        prompt: input.prompt,
-        n: 1,
-        size,
-        quality,
-        output_format: "jpeg",
-      }),
-    }, 90_000);
-    if (!res.ok) {
-      throw new Error(`OpenAI image error ${res.status}: ${await res.text()}`);
+    const configured = process.env.OPENAI_IMAGE_MODEL?.trim();
+    const candidates = [...new Set([workingImageModel, configured, ...OPENAI_IMAGE_MODELS].filter((m): m is string => !!m))];
+    let res: Response | null = null;
+    let lastFailure = "";
+    for (const model of candidates) {
+      const attempt = await fetchWithTimeout("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model, prompt: input.prompt, n: 1, size, quality, output_format: "jpeg" }),
+      }, 90_000);
+      if (attempt.ok) { workingImageModel = model; res = attempt; break; }
+      const body = await attempt.text();
+      lastFailure = `OpenAI image error ${attempt.status}: ${body}`;
+      if (!isModelMissingError(attempt.status, body)) throw new Error(lastFailure);
+      if (workingImageModel === model) workingImageModel = null;
     }
+    if (!res) throw new Error(lastFailure || "OpenAI image error: no image model is available");
     const json = (await res.json()) as { data?: { b64_json?: string }[] };
     const b64 = json.data?.[0]?.b64_json;
     if (!b64) throw new Error("OpenAI image response had no image data");

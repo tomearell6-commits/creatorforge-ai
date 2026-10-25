@@ -31,10 +31,10 @@ export async function POST() {
       });
     }
     const json = JSON.parse(bodyText) as { data?: { id: string }[] };
-    const hasImageModel = (json.data ?? []).some((m) => m.id === "gpt-image-1");
+    const hasImageModel = (json.data ?? []).some((m) => ["gpt-image-2", "gpt-image-1.5", "gpt-image-1-mini"].includes(m.id));
     return NextResponse.json({
       ok: true, authenticated: true, modelCount: json.data?.length ?? 0, hasImageModel,
-      message: hasImageModel ? "OpenAI accepted the key; gpt-image-1 is accessible." : "OpenAI accepted the key, but gpt-image-1 was not in the model list for this account.",
+      message: hasImageModel ? "OpenAI accepted the key; a current gpt-image model is accessible." : "OpenAI accepted the key, but no current gpt-image model (gpt-image-2, 1.5 or mini) was in the model list for this account.",
     });
   } catch (err) {
     return NextResponse.json({ ok: false, authenticated: false, message: err instanceof Error ? err.message : "Network error reaching OpenAI" }, { status: 502 });
