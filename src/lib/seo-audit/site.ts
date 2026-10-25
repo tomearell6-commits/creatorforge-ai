@@ -76,7 +76,9 @@ export function looksLikeShop(text: string, urls: string[]): boolean {
 
 export function findTrust(text: string): TrustInfo {
   const emails = [...new Set((text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? []).map((e) => e.toLowerCase()))].filter((e) => !/\.(png|jpg|jpeg|gif|webp|svg)$/.test(e)).slice(0, 3);
-  const phones = [...new Set((text.match(/(?:\+\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)[\s.-]?)?\d{3,4}[\s.-]\d{3,4}(?:[\s.-]\d{2,4})?/g) ?? []).map((p) => p.trim()))].filter((p) => p.replace(/\D/g, "").length >= 8).slice(0, 3);
+  // Business registration and tax numbers (ABN 99 098 515 283, VAT 123 4567 89 ...) look like phone numbers: drop them first.
+  const withoutRegNumbers = text.replace(/\b(?:ABN|ACN|ARBN|VAT|GST|EIN|TIN|ORN|CRN|NZBN|Company\s+(?:No|Number|Reg\w*)|Reg(?:istration)?\.?\s*(?:No|Number)?)\b[\s.:#-]*(?:(?:No|Number)\b\.?[\s.:#-]*)?(?:[A-Z]{2}\s?)?[\d][\d\s.-]{6,}/gi, " ");
+  const phones = [...new Set((withoutRegNumbers.match(/(?:\+\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)[\s.-]?)?\d{3,4}[\s.-]\d{3,4}(?:[\s.-]\d{2,4})?/g) ?? []).map((p) => p.trim()))].filter((p) => p.replace(/\D/g, "").length >= 8).slice(0, 3);
   const addressHint = /\b\d{1,5}\s+[A-Za-z][A-Za-z .'-]{2,}\s+(street|st\.?|road|rd\.?|avenue|ave\.?|lane|ln\.?|drive|dr\.?|boulevard|blvd|way|place|court|highway|hwy)\b/i.test(text);
   return { emails, phones, addressHint };
 }

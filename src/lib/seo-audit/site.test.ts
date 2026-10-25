@@ -65,6 +65,11 @@ describe("shop, trust and footer detection", () => {
     expect(t.addressHint).toBe(true);
     expect(findTrust("Nothing here").emails).toEqual([]);
   });
+  it("does not mistake a business registration number for a phone number", () => {
+    const t = findTrust("Tel: 0420 129 507 WhatsApp +61 485 933 924 Kapunda Rd, Hamilton SA 5373 ABN 99 098 515 283");
+    expect(t.phones).toEqual(["0420 129 507", "+61 485 933 924"]);
+    expect(findTrust("VAT No. GB 123 4567 89 and ACN: 123 456 789").phones).toEqual([]);
+  });
   it("reads a footer", () => {
     const f = analyseFooter("<footer><a href='/privacy'>Privacy</a> © 2026 Shop. hello@shop.example</footer>", [{ href: "/privacy", text: "Privacy", inFooter: true }], []);
     expect(f).toMatchObject({ found: true, hasContact: true, hasCopyright: true });
