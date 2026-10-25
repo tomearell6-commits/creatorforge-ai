@@ -82,14 +82,25 @@ export async function planTopics(opts: {
       : "Target the niche's own educational keywords. Only add a health angle where it genuinely fits the niche. ") +
     "Do not repeat or closely rephrase any title listed in existingTitles. No duplicate topics in your list.";
 
+  // The plan arrives as a tool call, already parsed by the API, so a stray quote in a title cannot break it
+  // ("Expected ',' or ']' after array element"). Plain-text JSON stays as the fallback.
   const msg = await client.messages.create({
     model,
     max_tokens: 4000,
-    system,
+    system: system + " Deliver the array by calling the submit_topics tool with {topics: [...]} as the input. Do not write it as plain text.",
+    tools: [{ name: "submit_topics", description: "Submit the planned article topics.", input_schema: { type: "object", additionalProperties: true } }],
+    tool_choice: { type: "auto" },
     messages: [{ role: "user", content: JSON.stringify({ niche: opts.niche, existingTitles: opts.existingTitles.slice(0, 150), research: opts.research ?? null }) }],
   });
-  const text = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
-  const raw = parseJson<Topic[]>(text);
+  const toolBlock = msg.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
+  const toolTopics = toolBlock && toolBlock.input && typeof toolBlock.input === "object" ? (toolBlock.input as { topics?: unknown }).topics : undefined;
+  let raw: Topic[];
+  if (Array.isArray(toolTopics) && toolTopics.length > 0) {
+    raw = toolTopics as Topic[];
+  } else {
+    const text = msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("");
+    raw = parseJson<Topic[]>(text);
+  }
   if (!Array.isArray(raw)) throw new Error("Topic planner returned an unexpected format.");
   return filterNewTopics(raw, opts.existingTitles);
 }
