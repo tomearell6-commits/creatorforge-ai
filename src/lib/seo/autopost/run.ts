@@ -379,21 +379,27 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       throw new StageError("publish", res.error);
     }
 
-    // Live. Record it, then charge (only now).
+    // Some sites keep a new post as pending or draft until their owner approves it (the site answers with that status).
+    // It is delivered, but it is NOT public: say so honestly, and do not announce a page that would still show a 404.
+    const heldOnSite = typeof res.status === "string" && res.status !== "publish" && res.status !== "future";
+
+    // Delivered. Record it, then charge (only now).
     const nowIso = new Date().toISOString();
-    await admin.from("seo_articles").update({ status: "published", wordpress_post_id: res.postId, published_at: nowIso, updated_at: nowIso }).eq("id", art.id);
-    await admin.from("wordpress_publish_history").insert({ user_id: s.user_id, article_id: art.id, wordpress_site_id: s.wordpress_site_id, status: "published", wordpress_post_id: res.postId, post_url: res.url, published_at: nowIso });
+    await admin.from("seo_articles").update({ status: heldOnSite ? "draft" : "published", wordpress_post_id: res.postId, published_at: heldOnSite ? null : nowIso, updated_at: nowIso }).eq("id", art.id);
+    await admin.from("wordpress_publish_history").insert({ user_id: s.user_id, article_id: art.id, wordpress_site_id: s.wordpress_site_id, status: heldOnSite ? "pending_on_site" : "published", wordpress_post_id: res.postId, post_url: heldOnSite ? null : res.url, published_at: heldOnSite ? null : nowIso });
     await admin.rpc("wallet_adjust", { p_user: s.user_id, p_amount: -CREDITS_PER_POST, p_type: "publishing", p_reason: "seo_autopost" });
     // Tell Bing, Yandex, Naver, Seznam and Yep immediately (free; skipped honestly if not connected).
-    const indexNow = await notifyIndexNow(admin, res.url);
+    const indexNow = heldOnSite
+      ? { message: "Sent to your website, which is holding it for your approval. It is not public yet, so search engines have not been told." }
+      : await notifyIndexNow(admin, res.url);
     await admin.from("seo_autopost_sites").update({
       topic_queue: rest, last_run_at: nowIso, last_success_at: nowIso, posts_published: (s.posts_published ?? 0) + 1,
       consecutive_failures: 0, paused_reason: null, updated_at: nowIso,
     }).eq("id", s.id);
-    await writeLog(admin, { user_id: s.user_id, site_id: s.id, article_id: art.id, status: "published", message: indexNow.message, title: pkg.seoTitle, post_url: res.url, words, credits_charged: CREDITS_PER_POST, duration_ms: Date.now() - started });
+    await writeLog(admin, { user_id: s.user_id, site_id: s.id, article_id: art.id, status: heldOnSite ? "drafted" : "published", message: indexNow.message, title: pkg.seoTitle, post_url: heldOnSite ? null : res.url, words, credits_charged: CREDITS_PER_POST, duration_ms: Date.now() - started });
 
     // Automatic mode: tell the owner what just went live (they can undo it from the dashboard).
-    try {
+    if (!heldOnSite) try {
       const { data: u } = await admin.auth.admin.getUserById(s.user_id);
       const safeTitle = (pkg.seoTitle || "").replace(/</g, "&lt;");
       await notify(admin, {
@@ -405,6 +411,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       });
     } catch { /* notification is best-effort */ }
 
+    if (heldOnSite) return { status: "drafted", message: indexNow.message, title: pkg.seoTitle, words, articleId: art.id };
     return { status: "published", message: `Published. ${indexNow.message}`, title: pkg.seoTitle, postUrl: res.url, words, articleId: art.id };
   } catch (e) {
     const err = e instanceof StageError ? e : new StageError("article", errMsg(e));

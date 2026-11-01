@@ -165,7 +165,7 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
             onClick={() => run("run", async () => {
               const r = await api<{ status: string; message: string }>("/api/seo/autopost/run", { method: "POST", body: JSON.stringify({ id: it.id }) });
               if (r.status !== "published" && r.status !== "drafted") throw new Error(r.message);
-              onMessage({ kind: "success", text: r.status === "drafted" ? (it.destination === "creatorforge_blog" ? r.message : "Your article is ready. Read it under “Waiting for your review” below, then approve it.") : "Article published." });
+              onMessage({ kind: "success", text: r.status === "drafted" ? (it.destination === "creatorforge_blog" || /holding it for your approval/.test(r.message) ? r.message : "Your article is ready. Read it under “Waiting for your review” below, then approve it.") : "Article published." });
             })}>
             {busy === "run" ? <><Spinner size="sm" /> Writing (2–3 min)…</> : "Publish one now"}
           </Button>
