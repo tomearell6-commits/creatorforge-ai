@@ -47,6 +47,22 @@ export async function POST(request: Request) {
 
   try {
     const report = await runAudit(check.url.toString(), type.id);
+
+    // If the home page could not be read at all (no answer, a firewall block, a server error) every "finding" would be
+    // an artefact of the failed fetch ("Missing title", "No H1" ...). Say so honestly and charge nothing.
+    const homeStatus = report.scan.statusCode;
+    if (homeStatus === 0 || homeStatus >= 400) {
+      const why = homeStatus === 0
+        ? "did not answer our scanner (it timed out or refused the connection)"
+        : homeStatus === 403 || homeStatus === 406 || homeStatus === 429 || homeStatus === 503
+          ? `blocked our scanner (HTTP ${homeStatus}), usually a firewall or a security plugin`
+          : `returned an error (HTTP ${homeStatus})`;
+      await supabase.from("seo_audits").update({ status: "failed", error: `Website ${why}`, updated_at: new Date().toISOString() }).eq("id", audit.id);
+      return NextResponse.json({
+        error: `Your website ${why}, so there was nothing to audit and no credits were charged. If you ran several audits in a row, your host may have blocked us for a while: wait an hour, or allow “CreatorsForgeSEOAudit” in your firewall or security plugin, then try again.`,
+        code: "site_unreachable", auditId: audit.id,
+      }, { status: 502 });
+    }
     const { scores, issues } = report;
 
     // Persist scores into the audit row + scores table.
