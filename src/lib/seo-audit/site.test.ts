@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyseFooter, buildOffers, detectEssentials, findDuplicates, findTrust, isUtilityPage, looksLikeShop, matchesEssential, siteIssues, sitePenalty, type PageLink, type PageScan, type SiteScan } from "./site";
+import { analyseFooter, buildOffers, detectEssentials, findDuplicates, crawlLooksBlocked, findTrust, isUtilityPage, looksLikeShop, matchesEssential, siteIssues, sitePenalty, type PageLink, type PageScan, type SiteScan } from "./site";
 
 const page = (url: string, over: Partial<PageScan> = {}): PageScan => ({
   url, status: 200, title: "T " + url, metaDescription: "A description that is long enough to count as one for this test page.", h1Count: 1, words: 500,
@@ -136,5 +136,19 @@ describe("issues, penalty and offers", () => {
   it("keeps the score penalty modest and capped", () => {
     expect(sitePenalty(missing)).toBeGreaterThan(0);
     expect(sitePenalty(missing)).toBeLessThanOrEqual(30);
+  });
+});
+
+describe("crawlLooksBlocked", () => {
+  it("is true when half or more of the pages got no answer at all (the real petsupplydirect.shop case: 2 answered, 10 did not)", () => {
+    expect(crawlLooksBlocked([{ status: 200 }, { status: 200 }, ...Array.from({ length: 10 }, () => ({ status: 0 }))])).toBe(true);
+    expect(crawlLooksBlocked([{ status: 0 }, { status: 0 }])).toBe(true);
+    expect(crawlLooksBlocked([{ status: 200 }, { status: 0 }])).toBe(true);
+  });
+  it("is false for a healthy crawl, a few failures, or real error pages (those are findings, not blocking)", () => {
+    expect(crawlLooksBlocked(Array.from({ length: 25 }, () => ({ status: 200 })))).toBe(false);
+    expect(crawlLooksBlocked([...Array.from({ length: 22 }, () => ({ status: 200 })), { status: 0 }, { status: 404 }, { status: 404 }])).toBe(false);
+    expect(crawlLooksBlocked([{ status: 200 }])).toBe(false);
+    expect(crawlLooksBlocked([])).toBe(false);
   });
 });

@@ -45,6 +45,14 @@ const strip = (h: string) => h.replace(/^www\./, "").toLowerCase();
 const samePath = (u: string) => { try { const p = new URL(u); return `${strip(p.hostname)}${p.pathname.replace(/\/+$/, "")}`; } catch { return u; } };
 
 /**
+ * Did the site stop answering partway through the crawl (a firewall or rate limit)? When half or more of the pages we tried
+ * returned nothing at all (status 0), the findings describe the failed fetches, not the website, so the audit is not usable.
+ */
+export function crawlLooksBlocked(pages: { status: number }[]): boolean {
+  return pages.length >= 2 && pages.filter((p) => p.status === 0).length >= Math.ceil(pages.length / 2);
+}
+
+/**
  * Shop and account pages (cart, checkout, my account, login ...) are not meant to rank, and every shop is told to keep them
  * out of search. They must not count as SEO problems (missing description, no H1, short title).
  */

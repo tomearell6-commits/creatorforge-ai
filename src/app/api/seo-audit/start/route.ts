@@ -5,6 +5,7 @@ import { limitRequestAsync } from "@/lib/security/ratelimit";
 import { seoAuditType, SEO_AUDIT_TYPES } from "@/lib/constants";
 import { validateAuditUrl } from "@/lib/seo-audit/ssrf";
 import { runAudit } from "@/lib/seo-audit/engine";
+import { crawlLooksBlocked } from "@/lib/seo-audit/site";
 import { captureError } from "@/lib/logger";
 import { screenSite } from "@/lib/seo/policy-server";
 import { POLICY_MESSAGE } from "@/lib/seo/policy";
@@ -51,8 +52,11 @@ export async function POST(request: Request) {
     // If the home page could not be read at all (no answer, a firewall block, a server error) every "finding" would be
     // an artefact of the failed fetch ("Missing title", "No H1" ...). Say so honestly and charge nothing.
     const homeStatus = report.scan.statusCode;
-    if (homeStatus === 0 || homeStatus >= 400) {
-      const why = homeStatus === 0
+    const blockedMidway = !!report.site && crawlLooksBlocked(report.site.pages);
+    if (homeStatus === 0 || homeStatus >= 400 || blockedMidway) {
+      const why = blockedMidway && homeStatus === 200
+        ? "stopped answering our scanner partway through (it was probably rate limited or blocked by a firewall)"
+        : homeStatus === 0
         ? "did not answer our scanner (it timed out or refused the connection)"
         : homeStatus === 403 || homeStatus === 406 || homeStatus === 429 || homeStatus === 503
           ? `blocked our scanner (HTTP ${homeStatus}), usually a firewall or a security plugin`
