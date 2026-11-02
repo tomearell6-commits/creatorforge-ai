@@ -348,6 +348,11 @@ export async function generateSeoPackage(
       let raw: SeoPackage;
       if (toolBlock && toolBlock.input && typeof toolBlock.input === "object" && !Array.isArray(toolBlock.input) && Object.keys(toolBlock.input).length > 0) {
         raw = toolBlock.input as SeoPackage;
+        // The model sometimes wraps the object (for example {article: {...}} or {result: {...}}): use the inner one.
+        if (typeof raw.articleContent !== "string") {
+          const inner = Object.values(toolBlock.input as Record<string, unknown>).find((v) => v && typeof v === "object" && !Array.isArray(v) && typeof (v as SeoPackage).articleContent === "string");
+          if (inner) raw = inner as SeoPackage;
+        }
       } else {
         const text = msg.content
           .filter((b): b is Anthropic.TextBlock => b.type === "text")
