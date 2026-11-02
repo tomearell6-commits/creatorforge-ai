@@ -44,6 +44,21 @@ export const ESSENTIALS: { id: EssentialId; label: string; re: RegExp; requiredA
 const strip = (h: string) => h.replace(/^www\./, "").toLowerCase();
 const samePath = (u: string) => { try { const p = new URL(u); return `${strip(p.hostname)}${p.pathname.replace(/\/+$/, "")}`; } catch { return u; } };
 
+/**
+ * Shop and account pages (cart, checkout, my account, login ...) are not meant to rank, and every shop is told to keep them
+ * out of search. They must not count as SEO problems (missing description, no H1, short title).
+ */
+const UTILITY_FIRST_SEGMENT = /^(?:cart|basket|bag|checkout|my-account|account|login|log-in|signin|sign-in|register|signup|sign-up|lost-password|reset-password|forgot-password|wp-login\.php|wp-admin|order-tracking|track-order|wishlist|thank-you|order-received|search)$/i;
+export function isUtilityPage(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (u.searchParams.has("s") || u.searchParams.has("add-to-cart")) return true;
+    const parts = u.pathname.split("/").filter(Boolean);
+    // allow one leading folder such as a language ("/en/cart") or a store sub-folder
+    return parts.slice(0, 2).some((seg) => UTILITY_FIRST_SEGMENT.test(seg));
+  } catch { return false; }
+}
+
 /** Does this address or link text look like the given essential page? */
 export function matchesEssential(id: EssentialId, url: string, text = "", title = ""): boolean {
   const def = ESSENTIALS.find((e) => e.id === id);

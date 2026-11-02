@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyseFooter, buildOffers, detectEssentials, findDuplicates, findTrust, looksLikeShop, matchesEssential, siteIssues, sitePenalty, type PageLink, type PageScan, type SiteScan } from "./site";
+import { analyseFooter, buildOffers, detectEssentials, findDuplicates, findTrust, isUtilityPage, looksLikeShop, matchesEssential, siteIssues, sitePenalty, type PageLink, type PageScan, type SiteScan } from "./site";
 
 const page = (url: string, over: Partial<PageScan> = {}): PageScan => ({
   url, status: 200, title: "T " + url, metaDescription: "A description that is long enough to count as one for this test page.", h1Count: 1, words: 500,
@@ -57,6 +57,14 @@ describe("shop, trust and footer detection", () => {
     expect(looksLikeShop("Add to cart $19.00", [])).toBe(true);
     expect(looksLikeShop("Our story", ["https://x.com/products/a"])).toBe(true);
     expect(looksLikeShop("Our story and values", ["https://x.com/about"])).toBe(false);
+  });
+  it("treats cart, checkout and account pages as utility pages that never count as SEO problems", () => {
+    for (const u of ["https://shop.example/cart/", "https://shop.example/checkout", "https://shop.example/my-account/", "https://shop.example/my-account/orders/", "https://shop.example/login", "https://shop.example/en/cart/", "https://shop.example/order-tracking/", "https://shop.example/?s=dog", "https://shop.example/wishlist/", "https://shop.example/thank-you"]) {
+      expect(isUtilityPage(u), u).toBe(true);
+    }
+    for (const u of ["https://shop.example/", "https://shop.example/about-us/", "https://shop.example/product/cart-liner/", "https://shop.example/blog/how-to-use-a-cart/", "https://shop.example/account-management-guide/", "https://shop.example/help-faq/", "not a url"]) {
+      expect(isUtilityPage(u), u).toBe(false);
+    }
   });
   it("finds email, phone and a street address", () => {
     const t = findTrust("Call +61 2 9999 1234 or email Hello@Shop.example. Visit 12 Market Street, Sydney.");

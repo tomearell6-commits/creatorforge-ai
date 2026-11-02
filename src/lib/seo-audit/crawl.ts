@@ -2,7 +2,7 @@ import "server-only";
 import { fetchText, metadataScanner, headingScanner, imageSeoScanner, linkScanner, schemaScanner, contentAnalyzer } from "./scanners";
 import { validateAuditUrl } from "./ssrf";
 import {
-  ESSENTIALS, analyseFooter, detectEssentials, findDuplicates, findTrust, looksLikeShop, matchesEssential,
+  ESSENTIALS, analyseFooter, detectEssentials, findDuplicates, findTrust, isUtilityPage, looksLikeShop, matchesEssential,
   type PageLink, type PageScan, type SiteScan,
 } from "./site";
 
@@ -166,19 +166,21 @@ export async function crawlSite(startUrl: string): Promise<SiteScan> {
     }));
   }
 
+  // Pages that are not meant to rank (cart, checkout, account, login, or told 'noindex') never count as SEO problems.
+  const seoPages = okPages.filter((p) => !p.noindex && !isUtilityPage(p.url));
   const titleBad = (p: PageScan) => !!p.title && (p.title.length < 30 || p.title.length > 65);
   const homePage = pages[0];
   return {
     origin, host, pagesCrawled: pages.length, pagesDiscovered: Math.max(urls.length, sitemap.length),
     pages, isShop, lang: metadataScanner(homeHtml).lang,
     essentials, footer, trust,
-    duplicateTitles: findDuplicates(okPages, (p) => p.title),
-    duplicateDescriptions: findDuplicates(okPages, (p) => p.metaDescription),
-    missingDescriptions: okPages.filter((p) => !p.metaDescription).map((p) => p.url),
-    missingH1: okPages.filter((p) => p.h1Count === 0).map((p) => p.url),
-    thinPages: okPages.filter((p) => p.words < 300).map((p) => p.url),
-    badTitleLength: okPages.filter(titleBad).map((p) => p.url),
-    imagesMissingAlt: okPages.reduce((n, p) => n + p.imagesMissingAlt, 0),
+    duplicateTitles: findDuplicates(seoPages, (p) => p.title),
+    duplicateDescriptions: findDuplicates(seoPages, (p) => p.metaDescription),
+    missingDescriptions: seoPages.filter((p) => !p.metaDescription).map((p) => p.url),
+    missingH1: seoPages.filter((p) => p.h1Count === 0).map((p) => p.url),
+    thinPages: seoPages.filter((p) => p.words < 300).map((p) => p.url),
+    badTitleLength: seoPages.filter(titleBad).map((p) => p.url),
+    imagesMissingAlt: seoPages.reduce((n, p) => n + p.imagesMissingAlt, 0),
     schemaOnHome: homePage.schemaTypes, brokenLinks,
     homeTitle: homePage.title, homeDescription: homePage.metaDescription, homeText: homeText.slice(0, 3000),
   };
