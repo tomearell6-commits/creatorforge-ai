@@ -77,8 +77,30 @@ export function headingScanner(html: string) {
   return { h1, h2Count, h3Count };
 }
 
+/**
+ * A picture that is purely decoration (a section background, a commenter's avatar, a spacer or tracking pixel,
+ * a theme placeholder) correctly carries an EMPTY alt and must not count as an accessibility or SEO fault.
+ * Deliberately narrow: an image with NO alt attribute at all is only decorative when the page says so
+ * (role="presentation" / aria-hidden), and an empty alt only when the picture looks like decoration.
+ */
+export function isDecorativeImage(tag: string): boolean {
+  const role = (attr(tag, "role") ?? "").toLowerCase();
+  if (role === "presentation" || role === "none" || (attr(tag, "aria-hidden") ?? "").toLowerCase() === "true") return true;
+  const alt = attr(tag, "alt");
+  if (alt === null || alt.trim() !== "") return false; // no alt attribute (a real gap) or a real description
+  const cls = (attr(tag, "class") ?? "").toLowerCase();
+  const src = (attr(tag, "src") ?? attr(tag, "data-src") ?? "").toLowerCase();
+  const tiny = (n: string | null) => n !== null && /^[0-9]+$/.test(n.trim()) && Number(n) <= 2;
+  return (
+    /(^|[\s_-])(bg|background|avatar|decorative|decoration|spacer|placeholder)([\s_-]|$)/.test(cls) ||
+    /gravatar\.com|\/(missing|placeholder|spacer|blank|pixel)[^/]*\.(jpe?g|png|gif|webp|svg)(\?|$)/.test(src) ||
+    tiny(attr(tag, "width")) || tiny(attr(tag, "height"))
+  );
+}
+
 export function imageSeoScanner(html: string) {
-  const imgs = html.match(/<img\b[^>]*>/gi) ?? [];
+  const all = html.match(/<img\b[^>]*>/gi) ?? [];
+  const imgs = all.filter((i) => !isDecorativeImage(i));
   const imagesMissingAlt = imgs.filter((i) => { const a = attr(i, "alt"); return a === null || a.trim() === ""; }).length;
   return { imageCount: imgs.length, imagesMissingAlt };
 }
