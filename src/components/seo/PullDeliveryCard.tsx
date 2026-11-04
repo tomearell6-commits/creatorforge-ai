@@ -81,7 +81,7 @@ export function PullDeliveryCard({ wordpressSiteId, blocked }: { wordpressSiteId
 
           {!on && (
             <>
-              <p className="text-xs text-muted-foreground">This creates a secret that only your website's plugin knows. You'll install the plugin, paste three values, and Autopilot carries on as normal. Credits are taken once the article exists on your website.</p>
+              <p className="text-xs text-muted-foreground">This creates a secret that only the plugin on your website knows. You will install the plugin, paste three values, and Autopilot carries on as normal. Credits are taken once the article exists on your website.</p>
               <Button size="sm" disabled={busy} onClick={enable}>{busy ? <><Spinner size="sm" /> Working…</> : "Switch on pull delivery"}</Button>
             </>
           )}
