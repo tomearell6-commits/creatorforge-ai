@@ -19,6 +19,7 @@ import { fetchWithTimeout } from "@/lib/http";
 import { generateSeoPackage, countWords, type SeoPackage } from "@/lib/seo/generate";
 import { generateArticleImage } from "@/lib/seo/images";
 import { publishArticleToWordPress, CAPTCHA_MESSAGE } from "@/lib/seo/publish";
+import { enqueuePull } from "@/lib/wp-pull/queue";
 import { composeArticleHtml } from "@/lib/seo/compose";
 import { notify } from "@/lib/notifications/service";
 import { notifyIndexNow, blogPostUrl } from "@/lib/seo/indexnow";
@@ -265,14 +266,18 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     // 1) Connection
     const { data: wp } = await admin.from("wordpress_sites").select("*").eq("id", s.wordpress_site_id ?? "").maybeSingle();
     if (!wp) throw new StageError("connection", "The WordPress site was disconnected.", { hard: true });
-    const appPassword = decryptSecret(wp.encrypted_application_password as string);
-    if (!appPassword) throw new StageError("connection", "Could not read the saved WordPress login — please reconnect the site.", { hard: true });
+    // "Pull" sites (the host blocks our publisher) are not logged into at all: the plugin on the site collects the article itself.
+    const pull = (wp.delivery as string | undefined) === "pull";
+    const appPassword: string = pull ? "" : (decryptSecret(wp.encrypted_application_password as string) ?? "");
+    if (!pull && !appPassword) throw new StageError("connection", "Could not read the saved WordPress login — please reconnect the site.", { hard: true });
     const base = normalizeSite(wp.site_url as string);
-    const auth = `Basic ${Buffer.from(`${wp.username}:${appPassword.replace(/\s+/g, "")}`).toString("base64")}`;
-    const check = await checkWordPressAuth(base, auth);
-    if (!check.ok) {
-      // A wrong login or a firewall block needs the owner's attention (pause); a down site just retries.
-      throw new StageError("connection", check.message, { hard: check.kind === "bad_login" || check.kind === "blocked" });
+    if (!pull) {
+      const auth = `Basic ${Buffer.from(`${wp.username}:${appPassword.replace(/\s+/g, "")}`).toString("base64")}`;
+      const check = await checkWordPressAuth(base, auth);
+      if (!check.ok) {
+        // A wrong login or a firewall block needs the owner's attention (pause); a down site just retries.
+        throw new StageError("connection", check.message, { hard: check.kind === "bad_login" || check.kind === "blocked" });
+      }
     }
 
     // 1b) Category check on every run: pause (and tell the owner) if the site sells products we cannot promote.
@@ -367,6 +372,11 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     }).select("id").single();
     if (insErr || !art) throw new StageError("publish", `Could not save the article: ${insErr?.message ?? "unknown error"}`);
 
+    // Pull delivery: hand the finished article to the queue. Credits are taken when the plugin confirms the post exists.
+    if (pull) {
+      return await queueForPull({ admin, s, wordpressSiteId: wp.id as string, articleId: art.id as string, pkg, content, category, img, rest, words, started });
+    }
+
     const res = await publishArticleToWordPress({
       siteUrl: wp.site_url as string, username: wp.username as string, appPassword,
       title: pkg.seoTitle || pkg.h1 || topic.keyword, contentHtml: content, excerpt: pkg.excerpt, slug: pkg.slug,
@@ -421,6 +431,32 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
   } finally {
     await admin.from("seo_autopost_sites").update({ claimed_at: null }).eq("id", siteId);
   }
+}
+
+/** Pull delivery: save the picture, queue the article for the site's plugin, and count the slot as used. */
+async function queueForPull(a: {
+  admin: SupabaseClient; s: SiteRow; wordpressSiteId: string; articleId: string; pkg: SeoPackage; content: string; category: string | null;
+  img: { data: Uint8Array; contentType: string }; rest: Topic[]; words: number; started: number;
+}): Promise<RunOutcome> {
+  const { admin, s, pkg, content, category, img, rest, words, started } = a;
+  let imageUrl: string;
+  try {
+    imageUrl = (await uploadMedia(admin, { userId: s.user_id, type: "image", bytes: img.data, contentType: img.contentType, ext: "jpg" })).url;
+  } catch (e) {
+    throw new StageError("publish", `Could not save the article image: ${errMsg(e)}`);
+  }
+  await enqueuePull(admin, {
+    userId: s.user_id, wordpressSiteId: a.wordpressSiteId, autopostSiteId: s.id, articleId: a.articleId, charge: CREDITS_PER_POST,
+    payload: {
+      title: pkg.seoTitle || pkg.h1 || "Article", contentHtml: content, excerpt: pkg.excerpt, slug: pkg.slug, category, tags: pkg.tags ?? [],
+      metaTitle: pkg.metaTitle, metaDescription: pkg.metaDescription, focusKeyword: pkg.focusKeyword, imageUrl, imageAlt: pkg.focusKeyword || pkg.seoTitle, status: "publish",
+    },
+  });
+  const nowIso = new Date().toISOString();
+  const message = "Queued for your website. The Pull plugin collects it within a few minutes, and credits are taken once it is created there.";
+  await admin.from("seo_autopost_sites").update({ topic_queue: rest, last_run_at: nowIso, consecutive_failures: 0, paused_reason: null, updated_at: nowIso }).eq("id", s.id);
+  await writeLog(admin, { user_id: s.user_id, site_id: s.id, article_id: a.articleId, status: "drafted", message, title: pkg.seoTitle, words, credits_charged: 0, duration_ms: Date.now() - started });
+  return { status: "drafted", message, title: pkg.seoTitle, words, articleId: a.articleId };
 }
 
 /**

@@ -8,6 +8,7 @@ import { fetchWithTimeout } from "@/lib/http";
 import { publishArticleToWordPress, setWordPressPostStatus } from "@/lib/seo/publish";
 import { notifyIndexNow } from "@/lib/seo/indexnow";
 import { PUBLISH_CREDITS, ARTICLE_IMAGE_CREDITS } from "./limits";
+import { enqueuePull } from "@/lib/wp-pull/queue";
 
 export type ReviewResult =
   | { ok: true; message: string; url?: string }
@@ -36,6 +37,27 @@ export async function approveDraft(admin: SupabaseClient, articleId: string, use
 
   const { data: wp } = await admin.from("wordpress_sites").select("*").eq("id", d.wordpress_site_id).maybeSingle();
   if (!wp) return { ok: false, error: "The WordPress site is no longer connected.", status: 409 };
+  // Pull delivery: queue it for the plugin on the site; the publishing fee is taken when the post exists there.
+  if ((wp.delivery as string | undefined) === "pull") {
+    const { data: claimedPull } = await admin.from("seo_articles").update({ status: "publishing", updated_at: new Date().toISOString() })
+      .eq("id", articleId).eq("status", "pending_review").select("id").maybeSingle();
+    if (!claimedPull) return { ok: false, error: "This article is already being published.", status: 409 };
+    try {
+      await enqueuePull(admin, {
+        userId, wordpressSiteId: d.wordpress_site_id, autopostSiteId: d.autopost_site_id, articleId, charge: PUBLISH_CREDITS,
+        payload: {
+          title: d.seo_title || d.h1 || d.main_keyword || "Article", contentHtml: d.article_content || "", excerpt: d.excerpt ?? undefined, slug: d.slug ?? undefined,
+          category: d.category, tags: d.tags ?? [], metaTitle: d.meta_title ?? undefined, metaDescription: d.meta_description ?? undefined,
+          focusKeyword: d.metadata?.focusKeyword || d.main_keyword || undefined, imageUrl: d.metadata?.featuredImageUrl, status: "publish",
+        },
+      });
+    } catch (e) {
+      await admin.from("seo_articles").update({ status: "pending_review", updated_at: new Date().toISOString() }).eq("id", articleId);
+      return { ok: false, error: e instanceof Error ? e.message : "Could not queue the article.", status: 500 };
+    }
+    return { ok: true, message: "Queued for your website. The Pull plugin collects it within a few minutes." };
+  }
+
   const appPassword = decryptSecret(wp.encrypted_application_password as string);
   if (!appPassword) return { ok: false, error: "Could not read the saved WordPress login — please reconnect the site.", status: 409 };
 

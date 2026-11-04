@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
+import { PullDeliveryCard } from "./PullDeliveryCard";
 
 export type LogRow = { id: string; article_id: string | null; status: string; stage: string | null; message: string | null; title: string | null; post_url: string | null; words: number | null; created_at: string };
 export type PendingArticle = { id: string; title: string | null; words: number | null; created_at: string; cover: string | null };
@@ -247,6 +248,10 @@ export function AutopilotSiteCard({ it, ixSite, onChanged, onMessage }: {
             <Button size="sm" variant="outline" disabled={pluginKey.trim().length < 8 || busy === "ixk"} onClick={() => run("ixk", () => api("/api/seo/indexnow", { method: "POST", body: JSON.stringify({ siteId: ixSite.id, key: pluginKey.trim() }) }).then(() => setPluginKey("")))}>Verify</Button>
           </div>
         </div>
+      )}
+
+      {it.destination === "wordpress" && it.wordpress_site_id && (
+        <PullDeliveryCard wordpressSiteId={it.wordpress_site_id} blocked={/human.verification|captcha|firewall|web page instead/i.test(it.paused_reason ?? "") || it.recent.slice(0, 3).some((r) => r.status === "failed" && /human.verification|captcha|web page instead/i.test(r.message ?? ""))} />
       )}
 
       <RulesEditor key={it.writer_rules ?? ""} it={it} onChanged={onChanged} onMessage={onMessage} />
