@@ -18,7 +18,7 @@ import { normalizeSite, checkWordPressAuth } from "@/lib/publishing/providers/wo
 import { fetchWithTimeout } from "@/lib/http";
 import { generateSeoPackage, countWords, type SeoPackage } from "@/lib/seo/generate";
 import { generateArticleImage } from "@/lib/seo/images";
-import { publishArticleToWordPress } from "@/lib/seo/publish";
+import { publishArticleToWordPress, CAPTCHA_MESSAGE } from "@/lib/seo/publish";
 import { composeArticleHtml } from "@/lib/seo/compose";
 import { notify } from "@/lib/notifications/service";
 import { notifyIndexNow, blogPostUrl } from "@/lib/seo/indexnow";
@@ -376,7 +376,8 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     if (!res.ok) {
       await admin.from("seo_articles").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", art.id);
       await admin.from("wordpress_publish_history").insert({ user_id: s.user_id, article_id: art.id, wordpress_site_id: s.wordpress_site_id, status: "failed", error: res.error });
-      throw new StageError("publish", res.error);
+      // A captcha cannot be solved by us: pause at once instead of hitting the site two more times (which only deepens the block).
+      throw new StageError("publish", res.error, { hard: res.error === CAPTCHA_MESSAGE });
     }
 
     // Some sites keep a new post as pending or draft until their owner approves it (the site answers with that status).

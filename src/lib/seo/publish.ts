@@ -43,6 +43,12 @@ export async function setWordPressPostStatus(input: { siteUrl: string; username:
   }
 }
 
+/** The host's security is asking our server to prove it is human (Imunify360, Cloudflare, reCAPTCHA ...). A program cannot and must not solve that. */
+export const isCaptchaPage = (text: string) => /human verification|recaptcha|captcha|are you a robot|checking your browser|verify you are human/i.test(text);
+export const CAPTCHA_MESSAGE =
+  "Your website's host security is showing a human-verification (captcha) page to our publishing server, so the article could not be sent. " +
+  "Ask your host to allow requests to /wp-json/ from CreatorsForge (they may call it whitelisting or allow-listing), then resume Autopilot.";
+
 /**
  * Read the answer to "create a post". Normally plain JSON. Some WordPress sites print PHP notices or warnings in front of
  * the JSON ("<br /><b>Warning</b>: ... {"id":123,...}"), so look for the JSON object inside; if there is none, return the
@@ -140,6 +146,7 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
     const parsed = parseCreatedPost(await res.text());
     if (!parsed.ok) {
       // Say exactly what came back instead of a bare "Unexpected token '<'": a firewall page, a maintenance page, or a redirect.
+      if (isCaptchaPage(`${res.url} ${parsed.snippet}`)) return { ok: false, error: CAPTCHA_MESSAGE };
       const ct = res.headers.get("content-type") ?? "unknown type";
       const moved = res.redirected ? `, after a redirect to ${res.url}` : "";
       return { ok: false, error: `WordPress sent back a web page instead of the new post (HTTP ${res.status}, ${ct}${moved}). It starts: "${parsed.snippet}". This usually means a firewall, security plugin or maintenance page is intercepting the request, and the post may or may not have been created.` };

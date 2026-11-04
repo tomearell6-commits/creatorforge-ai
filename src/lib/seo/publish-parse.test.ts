@@ -24,3 +24,19 @@ describe("parseCreatedPost", () => {
     expect(parseCreatedPost("").ok).toBe(false);
   });
 });
+
+import { CAPTCHA_MESSAGE, isCaptchaPage } from "./publish";
+describe("host captcha pages", () => {
+  it("recognises the real Imunify360 / reCAPTCHA answer Natures Fertilizer received", () => {
+    expect(isCaptchaPage('https://recaptcha.cloud/?template=cpg&server=198.251.89.30 "Human verification JavaScript is required. Please enable JavaScript in your browser settings to complete human verification."')).toBe(true);
+    expect(isCaptchaPage("Checking your browser before accessing the site")).toBe(true);
+  });
+  it("does not mistake an ordinary page or a maintenance notice for a captcha", () => {
+    expect(isCaptchaPage("406 Not Acceptable This request is not acceptable")).toBe(false);
+    expect(isCaptchaPage("We are performing scheduled maintenance. Back soon.")).toBe(false);
+  });
+  it("tells the owner what to ask their host", () => {
+    expect(CAPTCHA_MESSAGE).toMatch(/host/i);
+    expect(CAPTCHA_MESSAGE).toMatch(/\/wp-json\//);
+  });
+});
