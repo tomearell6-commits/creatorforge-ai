@@ -43,6 +43,21 @@ export async function setWordPressPostStatus(input: { siteUrl: string; username:
   }
 }
 
+/**
+ * Read the answer to "create a post". Normally plain JSON. Some WordPress sites print PHP notices or warnings in front of
+ * the JSON ("<br /><b>Warning</b>: ... {"id":123,...}"), so look for the JSON object inside; if there is none, return the
+ * first part of what was sent back so the owner (and we) can see what is intercepting the request.
+ */
+export function parseCreatedPost(raw: string): { ok: true; post: { id: number; link?: string; status?: string } } | { ok: false; snippet: string } {
+  const tryParse = (s: string) => { try { const j = JSON.parse(s) as { id?: unknown }; return j && typeof j.id === "number" ? (j as { id: number; link?: string; status?: string }) : null; } catch { return null; } };
+  const direct = tryParse(raw.trim());
+  if (direct) return { ok: true, post: direct };
+  const i = raw.indexOf('{"id":');
+  if (i >= 0) { const inner = tryParse(raw.slice(i).trim()); if (inner) return { ok: true, post: inner }; }
+  const text = raw.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return { ok: false, snippet: (text || raw).slice(0, 160) };
+}
+
 export type WpPublishInput = {
   siteUrl: string;
   username: string;
@@ -122,8 +137,14 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
       body: JSON.stringify(post),
     });
     if (!res.ok) return { ok: false, error: `WordPress error ${res.status}: ${(await res.text()).slice(0, 200)}` };
-    const created = await res.json();
-    return { ok: true, postId: String(created.id), url: created.link, status: created.status };
+    const parsed = parseCreatedPost(await res.text());
+    if (!parsed.ok) {
+      // Say exactly what came back instead of a bare "Unexpected token '<'": a firewall page, a maintenance page, or a redirect.
+      const ct = res.headers.get("content-type") ?? "unknown type";
+      const moved = res.redirected ? `, after a redirect to ${res.url}` : "";
+      return { ok: false, error: `WordPress sent back a web page instead of the new post (HTTP ${res.status}, ${ct}${moved}). It starts: "${parsed.snippet}". This usually means a firewall, security plugin or maintenance page is intercepting the request, and the post may or may not have been created.` };
+    }
+    return { ok: true, postId: String(parsed.post.id), url: parsed.post.link ?? `${site}/?p=${parsed.post.id}`, status: parsed.post.status ?? input.status };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "WordPress publish failed" };
   }
