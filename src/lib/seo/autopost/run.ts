@@ -276,7 +276,8 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       const check = await checkWordPressAuth(base, auth);
       if (!check.ok) {
         // A wrong login or a firewall block needs the owner's attention (pause); a down site just retries.
-        throw new StageError("connection", check.message, { hard: check.kind === "bad_login" || check.kind === "blocked" });
+        // A website that is only slow or briefly down (kind "unreachable") is retried every hour without pausing: nothing is charged for a failed connection check.
+        throw new StageError("connection", check.message, { hard: check.kind === "bad_login" || check.kind === "blocked", soft: check.kind === "unreachable" });
       }
     }
 

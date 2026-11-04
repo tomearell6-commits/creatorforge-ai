@@ -61,7 +61,7 @@ export async function checkWordPressAuth(site: string, auth: string): Promise<Wp
   for (const p of paths) {
     let res: Response;
     try {
-      res = await fetchWithTimeout(`${site}${p}`, { headers: { Authorization: auth, "User-Agent": UA, Accept: "application/json" } }, 20_000);
+      res = await fetchWithTimeout(`${site}${p}`, { headers: { Authorization: auth, "User-Agent": UA, Accept: "application/json" } }, 35_000); // slow shared hosting can take 20+ seconds
     } catch {
       return { ok: false, kind: "unreachable", message: "Could not reach the site. Check the address and that the website is online and public." };
     }

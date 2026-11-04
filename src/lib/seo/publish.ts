@@ -141,7 +141,7 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
       method: "POST",
       headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
       body: JSON.stringify(post),
-    });
+    }, 45_000); // a slow host can need well over the default 15 seconds
     if (!res.ok) return { ok: false, error: `WordPress error ${res.status}: ${(await res.text()).slice(0, 200)}` };
     const parsed = parseCreatedPost(await res.text());
     if (!parsed.ok) {
