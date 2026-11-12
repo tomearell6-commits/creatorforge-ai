@@ -25,6 +25,7 @@ import { notify } from "@/lib/notifications/service";
 import { notifyIndexNow, blogPostUrl } from "@/lib/seo/indexnow";
 import { slugifyBlog, estimateReadingMinutes, sanitizeBlogHtml } from "@/lib/blog/blog";
 import { captureError } from "@/lib/logger";
+import { isProviderBillingError, PROVIDER_WAIT_MESSAGE, writingServiceAvailable } from "@/lib/ai/billing";
 import { planTopics, type Topic } from "./topics";
 import { isSiteDue, startOfUtcDay } from "./schedule";
 import { CREDITS_PER_POST, ARTICLE_IMAGE_CREDITS, MAX_PENDING_REVIEW, needsReview } from "./limits";
@@ -38,7 +39,7 @@ const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://www.creatorsforge.io";
 const MAX_FAILURES = 3;
 
-type Stage = "connection" | "policy" | "credits" | "review" | "topic" | "image" | "article" | "publish";
+type Stage = "connection" | "policy" | "credits" | "review" | "topic" | "image" | "article" | "publish" | "provider";
 
 class StageError extends Error {
   constructor(
@@ -69,6 +70,23 @@ type SiteRow = {
 
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : "Unknown error";
+}
+
+/**
+ * A failure while calling the AI. If our own provider account is out of credit, that is not the customer's problem and
+ * not a failure of their site: wait quietly and retry every hour (soft), never pause. Anything else is a normal failure.
+ */
+function aiStageError(stage: Stage, prefix: string, e: unknown): StageError {
+  if (isProviderBillingError(e)) {
+    captureError(e, { category: "system", feature: "seo-autopost-provider-credit" });
+    return new StageError("provider", PROVIDER_WAIT_MESSAGE, { soft: true });
+  }
+  return new StageError(stage, `${prefix}${errMsg(e)}`);
+}
+
+/** Before spending on an image, make sure the writing service can actually write. Costs a fraction of a cent. */
+async function requireWritingService(): Promise<void> {
+  if (!(await writingServiceAvailable())) throw new StageError("provider", PROVIDER_WAIT_MESSAGE, { soft: true });
 }
 
 /** Titles to avoid repeating: our own previous articles plus the site's recent posts. */
@@ -149,7 +167,7 @@ async function runBlogDestination(admin: SupabaseClient, s: SiteRow, started: nu
       try {
         queue = await planTopics({ niche: s.niche, existingTitles: have, research: s.research });
       } catch (e) {
-        throw new StageError("topic", `Could not plan new topics: ${errMsg(e)}`);
+        throw aiStageError("topic", "Could not plan new topics: ", e);
       }
       if (queue.length === 0) throw new StageError("topic", "The topic planner found no new topics to write.");
     }
@@ -157,6 +175,7 @@ async function runBlogDestination(admin: SupabaseClient, s: SiteRow, started: nu
     const rest = queue.slice(1);
     title = topic.title || topic.keyword;
 
+    await requireWritingService(); // no point paying for an image if the writer is out of credit
     // Image first, so an image-service problem stops us before paying for the article.
     let img;
     try {
@@ -191,7 +210,7 @@ async function runBlogDestination(admin: SupabaseClient, s: SiteRow, started: nu
         { strict: true }
       ));
     } catch (e) {
-      throw new StageError("article", errMsg(e));
+      throw aiStageError("article", "", e);
     }
     const words = countWords(pkg.articleContent);
     // The blog page renders the FAQ from faq_json, so it is NOT composed into the body here.
@@ -306,7 +325,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       try {
         queue = await planTopics({ niche: s.niche, existingTitles: await existingTitles(admin, s.id, base), research: s.research });
       } catch (e) {
-        throw new StageError("topic", `Could not plan new topics: ${errMsg(e)}`);
+        throw aiStageError("topic", "Could not plan new topics: ", e);
       }
       if (queue.length === 0) throw new StageError("topic", "The topic planner found no new topics to write.");
     }
@@ -314,6 +333,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
     const rest = queue.slice(1);
     title = topic.title || topic.keyword;
 
+    await requireWritingService(); // no point paying for an image if the writer is out of credit
     // 4) Image first — if the image service is unavailable we stop before paying for the article.
     let img;
     try {
@@ -348,7 +368,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
         { strict: true }
       ));
     } catch (e) {
-      throw new StageError("article", errMsg(e));
+      throw aiStageError("article", "", e);
     }
     const words = countWords(pkg.articleContent);
     // The writer sometimes skips internal links; guarantee at least a few real ones.
@@ -545,7 +565,24 @@ async function handleFailure(admin: SupabaseClient, s: SiteRow, err: StageError,
   }
 
   // Tell the user once per day per reason when something needs their attention.
-  if (deactivate || err.stage === "credits") {
+  if (err.stage === "provider") {
+    // Our own account problem: tell the platform operator (once a day), not the customer.
+    try {
+      const { data: u } = await admin.auth.admin.getUserById(s.user_id);
+      const mail = (u.user?.email ?? "").toLowerCase();
+      const operators = (process.env.ADMIN_EMAILS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+      if (mail && operators.includes(mail)) {
+        await notify(admin, {
+          userId: s.user_id, email: mail, type: "seo_autopost_provider_credit", category: "subscription",
+          title: "Autopilot is waiting: the AI provider account is out of credit",
+          message: "Add credit to the Anthropic (API) account behind CreatorsForge. Autopilot resumes by itself, no need to press Resume.",
+          ctaLabel: "Open SEO Auto-Poster", ctaUrl: "/dashboard/seo/autopost",
+          mail: { subject: "Autopilot is waiting: AI provider account out of credit", html: `<p>The Anthropic API account behind CreatorsForge has no credit left, so Autopilot cannot write articles. Add credit (console.anthropic.com, Plans &amp; Billing). Autopilot resumes by itself within the hour; there is nothing to resume by hand.</p><p><a href="${APP_URL}/dashboard/seo/autopost">Open SEO Auto-Poster</a></p>` },
+          dedup: { threshold: `provider:${s.id}`, billingPeriod: nowIso.slice(0, 10) },
+        });
+      }
+    } catch { /* best-effort */ }
+  } else if (deactivate || err.stage === "credits") {
     try {
       const { data: u } = await admin.auth.admin.getUserById(s.user_id);
       const day = nowIso.slice(0, 10);
