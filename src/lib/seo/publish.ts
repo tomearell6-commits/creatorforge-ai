@@ -82,7 +82,22 @@ export type WpPublishInput = {
   scheduledAt?: string | null;
   /** Optional featured image bytes to upload + attach. */
   featuredImage?: { data: Uint8Array; contentType: string } | null;
+  /** Alt text for the featured image (search engines and screen readers). Falls back to the focus keyword, then the title. */
+  imageAlt?: string;
 };
+
+/** A readable, search-friendly file name for the featured image, built from the post slug or title. */
+export function featuredImageFileName(input: { slug?: string; title: string; contentType: string }): string {
+  const ext = input.contentType.includes("png") ? "png" : input.contentType.includes("webp") ? "webp" : "jpg";
+  const base = (input.slug || input.title || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80)
+    .replace(/-+$/g, "");
+  return `${base || `featured-${Date.now()}`}.${ext}`;
+}
 
 export type WpPublishResult = { ok: true; postId: string; url: string; status: string } | { ok: false; error: string };
 
@@ -101,19 +116,30 @@ export async function publishArticleToWordPress(input: WpPublishInput): Promise<
   let featuredMediaId: number | null = null;
   if (input.featuredImage) {
     try {
-      const ext = input.featuredImage.contentType.includes("png") ? "png" : "jpg";
+      const fileName = featuredImageFileName({ slug: input.slug, title: input.title, contentType: input.featuredImage.contentType });
       const res = await fetchWithTimeout(`${site}/wp-json/wp/v2/media`, {
         method: "POST",
         headers: {
           Authorization: auth,
           "Content-Type": input.featuredImage.contentType,
-          "Content-Disposition": `attachment; filename="featured-${Date.now()}.${ext}"`,
+          "Content-Disposition": `attachment; filename="${fileName}"`,
           "User-Agent": UA,
         },
         body: Buffer.from(input.featuredImage.data),
       }, 30_000);
       if (res.ok) featuredMediaId = (await res.json()).id;
     } catch { /* best-effort */ }
+    // Give the image alt text and a real title: WordPress leaves both empty on upload, which search engines and screen readers need.
+    if (featuredMediaId) {
+      const alt = (input.imageAlt || input.focusKeyword || input.title).slice(0, 180);
+      try {
+        await fetchWithTimeout(`${site}/wp-json/wp/v2/media/${featuredMediaId}`, {
+          method: "POST",
+          headers: { Authorization: auth, "Content-Type": "application/json", "User-Agent": UA },
+          body: JSON.stringify({ alt_text: alt, title: input.title }),
+        });
+      } catch { /* best-effort: the image is attached either way */ }
+    }
   }
 
   const post: Record<string, unknown> = {

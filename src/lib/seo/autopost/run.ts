@@ -402,7 +402,7 @@ export async function runAutopostForSite(admin: SupabaseClient, siteId: string, 
       siteUrl: wp.site_url as string, username: wp.username as string, appPassword,
       title: pkg.seoTitle || pkg.h1 || topic.keyword, contentHtml: content, excerpt: pkg.excerpt, slug: pkg.slug,
       category, tags: pkg.tags, metaTitle: pkg.metaTitle, metaDescription: pkg.metaDescription, focusKeyword: pkg.focusKeyword,
-      status: "publish", featuredImage: { data: img.data, contentType: img.contentType },
+      status: "publish", featuredImage: { data: img.data, contentType: img.contentType }, imageAlt: pkg.focusKeyword || pkg.seoTitle,
     });
     if (!res.ok) {
       await admin.from("seo_articles").update({ status: "failed", updated_at: new Date().toISOString() }).eq("id", art.id);

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { parseCreatedPost } from "./publish";
+import { featuredImageFileName, parseCreatedPost } from "./publish";
 
 describe("parseCreatedPost", () => {
   it("reads normal JSON", () => {
@@ -38,5 +38,22 @@ describe("host captcha pages", () => {
   it("tells the owner what to ask their host", () => {
     expect(CAPTCHA_MESSAGE).toMatch(/host/i);
     expect(CAPTCHA_MESSAGE).toMatch(/\/wp-json\//);
+  });
+});
+
+describe("featuredImageFileName", () => {
+  it("uses the post slug so the image file is readable and search-friendly", () => {
+    expect(featuredImageFileName({ slug: "how-to-buy-r134a-wholesale", title: "ignored", contentType: "image/jpeg" })).toBe("how-to-buy-r134a-wholesale.jpg");
+  });
+  it("builds a clean name from the title when there is no slug", () => {
+    expect(featuredImageFileName({ title: "R410A vs R32: Which One? (2026)", contentType: "image/png" })).toBe("r410a-vs-r32-which-one-2026.png");
+  });
+  it("keeps the name short and never ends on a dash", () => {
+    const name = featuredImageFileName({ slug: `${"a".repeat(79)}-tail`, title: "x", contentType: "image/webp" });
+    expect(name.length).toBeLessThanOrEqual(85);
+    expect(name).toBe(`${"a".repeat(79)}.webp`);
+  });
+  it("falls back to a generic name when nothing usable is given", () => {
+    expect(featuredImageFileName({ slug: "", title: "!!!", contentType: "image/jpeg" })).toMatch(/^featured-\d+\.jpg$/);
   });
 });
