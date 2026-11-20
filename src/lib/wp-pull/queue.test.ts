@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/seo/indexnow", () => ({ notifyIndexNow: vi.fn(async () => ({ status: "submitted", message: "Submitted to Bing and others via IndexNow." })) }));
 
-import { LEASE_MS, MAX_ATTEMPTS, claimNext, completeDelivery, enqueuePull } from "./queue";
+import { LEASE_MS, MAX_ATTEMPTS, claimNext, completeDelivery, enqueuePull, recentCoverImages } from "./queue";
 import { bearerToken, generatePullToken, hashPullToken, tokenMatches } from "./token";
 
 /* ───────── a tiny in-memory stand-in for the Supabase client (only what queue.ts uses) ───────── */
@@ -163,5 +163,33 @@ describe("confirming delivery", () => {
     expect(f.tables.seo_autopost_sites[0]).toMatchObject({ consecutive_failures: 3, active: false });
     expect(String(f.tables.seo_autopost_sites[0].paused_reason)).toContain("disk full");
     expect(f.rpcCalls).toHaveLength(0); // nothing is charged for a failure
+  });
+});
+
+describe("cover pictures", () => {
+  it("tells the owner in the activity row when the website could not attach the picture, without failing the delivery", async () => {
+    const f = fakeAdmin();
+    const id = await enqueuePull(f.client, { userId: "u1", wordpressSiteId: "w1", autopostSiteId: "s1", articleId: "a1", payload: { ...payload, imageUrl: "https://x.supabase.co/a.jpg", imageAlt: "alt" }, charge: 25 });
+    await claimNext(f.client, "w1");
+    const r = await completeDelivery(f.client, "w1", id, { ok: true, postId: 7, url: "https://site.example/p/", status: "publish", imageError: "download failed: timeout" });
+    expect(r.ok).toBe(true);
+    const log = f.tables.seo_autopost_log[0] as { status: string; message: string };
+    expect(log.status).toBe("published");
+    expect(log.message).toMatch(/cover image could not be attached yet \(download failed: timeout\)/);
+    expect(f.rpcCalls).toHaveLength(1); // still charged exactly once
+  });
+  it("lists recent delivered articles with their picture for the plugin's repair pass, only for that website", async () => {
+    const f = fakeAdmin();
+    const mk = async (site: string, slug: string, img?: string) => {
+      const id = await enqueuePull(f.client, { userId: "u1", wordpressSiteId: site, autopostSiteId: null, articleId: "a-" + slug, payload: { ...payload, slug, imageUrl: img, imageAlt: "alt " + slug }, charge: 0 });
+      await claimNext(f.client, site);
+      await completeDelivery(f.client, site, id, { ok: true, postId: slug.length, url: "https://s/" + slug, status: "publish" });
+    };
+    await mk("w1", "with-picture", "https://x.supabase.co/p.jpg");
+    await mk("w1", "no-picture");
+    await mk("w2", "other-site", "https://x.supabase.co/o.jpg");
+    const items = await recentCoverImages(f.client, "w1");
+    expect(items.map((i) => i.slug)).toEqual(["with-picture"]);
+    expect(items[0]).toMatchObject({ imageUrl: "https://x.supabase.co/p.jpg", imageAlt: "alt with-picture" });
   });
 });

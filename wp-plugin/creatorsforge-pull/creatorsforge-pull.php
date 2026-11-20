@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CreatorsForge Pull Publisher
  * Description: Collects the articles CreatorsForge SEO Autopilot writes for this site and publishes them here. For hosts whose firewall or captcha blocks CreatorsForge from sending posts in: this plugin asks CreatorsForge for the next article itself, so nothing has to get through the firewall.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires at least: 5.6
  * Requires PHP: 7.4
  * Author: CreatorsForge
@@ -13,7 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'CFPULL_VERSION', '1.0.0' );
+define( 'CFPULL_VERSION', '1.1.0' );
+define( 'CFPULL_IMG_TRIES_OPTION', 'cfpull_img_tries' );
 define( 'CFPULL_CRON_HOOK', 'cfpull_collect' );
 define( 'CFPULL_OPTION', 'cfpull_settings' );
 define( 'CFPULL_LOG_OPTION', 'cfpull_log' );
@@ -120,34 +121,126 @@ function cfpull_image_host_allowed( $url ) {
 	return cfpull_ends_with( $host, '.supabase.co' ) || $host === $server || cfpull_ends_with( $host, '.creatorsforge.io' );
 }
 
+/**
+ * Download the cover picture and make it the post's featured image. Tries up to three times (a slow host often needs a
+ * second go) and says WHY when it cannot. Returns array( ok, reason ).
+ */
 function cfpull_attach_image( $post_id, $url, $alt, $slug ) {
 	if ( ! cfpull_image_host_allowed( $url ) ) {
-		return false;
+		return array( false, 'the picture address is not one this plugin may download from' );
 	}
 	require_once ABSPATH . 'wp-admin/includes/file.php';
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 	require_once ABSPATH . 'wp-admin/includes/image.php';
+	if ( function_exists( 'wp_raise_memory_limit' ) ) {
+		wp_raise_memory_limit( 'image' );
+	}
 
-	$tmp = download_url( $url, 30 );
-	if ( is_wp_error( $tmp ) ) {
-		return false;
-	}
-	$file = array(
-		'name'     => sanitize_file_name( ( $slug ? $slug : 'article' ) . '.jpg' ),
-		'tmp_name' => $tmp,
-	);
-	$att_id = media_handle_sideload( $file, $post_id, $alt );
-	if ( is_wp_error( $att_id ) ) {
-		if ( file_exists( $tmp ) ) {
-			@unlink( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+	$last = 'unknown problem';
+	for ( $try = 1; $try <= 3; $try++ ) {
+		$tmp = download_url( $url, 60 );
+		if ( is_wp_error( $tmp ) ) {
+			$last = 'download failed: ' . $tmp->get_error_message();
+			usleep( 700000 * $try );
+			continue;
 		}
-		return false;
+		if ( ! @getimagesize( $tmp ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors
+			@unlink( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+			$last = 'the downloaded file was not a picture';
+			usleep( 700000 * $try );
+			continue;
+		}
+		$file   = array(
+			'name'     => sanitize_file_name( ( $slug ? $slug : 'article' ) . '.jpg' ),
+			'tmp_name' => $tmp,
+		);
+		$att_id = media_handle_sideload( $file, $post_id, $alt );
+		if ( is_wp_error( $att_id ) ) {
+			if ( file_exists( $tmp ) ) {
+				@unlink( $tmp ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
+			}
+			$last = 'WordPress could not save it: ' . $att_id->get_error_message();
+			usleep( 700000 * $try );
+			continue;
+		}
+		if ( $alt ) {
+			update_post_meta( $att_id, '_wp_attachment_image_alt', sanitize_text_field( $alt ) );
+		}
+		set_post_thumbnail( $post_id, $att_id );
+		return array( true, '' );
 	}
-	if ( $alt ) {
-		update_post_meta( $att_id, '_wp_attachment_image_alt', sanitize_text_field( $alt ) );
+	return array( false, $last );
+}
+
+/** Find the post a delivered article became: by its post id when it still matches, else by its address. */
+function cfpull_find_post( $post_id, $slug ) {
+	if ( $post_id ) {
+		$p = get_post( (int) $post_id );
+		if ( $p && 'post' === $p->post_type && ( '' === $slug || $p->post_name === $slug ) ) {
+			return $p;
+		}
 	}
-	set_post_thumbnail( $post_id, $att_id );
-	return true;
+	if ( '' !== $slug ) {
+		$p = get_page_by_path( $slug, OBJECT, 'post' );
+		if ( $p ) {
+			return $p;
+		}
+	}
+	return null;
+}
+
+/**
+ * Safety net: ask CreatorsForge for the cover pictures of recently delivered articles and attach any that is missing
+ * (a download that failed, a time-out on a slow host). Each article is tried at most six times. Returns how many it fixed.
+ */
+function cfpull_repair_images( $max = 3 ) {
+	if ( ! cfpull_configured() ) {
+		return 0;
+	}
+	$res = wp_remote_get( cfpull_url( 'images' ), array( 'timeout' => 25, 'headers' => cfpull_headers() ) );
+	if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {
+		return 0;
+	}
+	$data = json_decode( wp_remote_retrieve_body( $res ), true );
+	if ( ! is_array( $data ) || empty( $data['items'] ) || ! is_array( $data['items'] ) ) {
+		return 0;
+	}
+	$tries = get_option( CFPULL_IMG_TRIES_OPTION, array() );
+	if ( ! is_array( $tries ) ) {
+		$tries = array();
+	}
+	$fixed = 0;
+	$done  = 0;
+	foreach ( $data['items'] as $it ) {
+		if ( $done >= $max ) {
+			break;
+		}
+		$slug = isset( $it['slug'] ) ? sanitize_title( (string) $it['slug'] ) : '';
+		$url  = isset( $it['imageUrl'] ) ? (string) $it['imageUrl'] : '';
+		if ( '' === $slug || '' === $url ) {
+			continue;
+		}
+		$post = cfpull_find_post( isset( $it['postId'] ) ? $it['postId'] : 0, $slug );
+		if ( ! $post || has_post_thumbnail( $post->ID ) ) {
+			continue;
+		}
+		$n = isset( $tries[ $slug ] ) ? (int) $tries[ $slug ] : 0;
+		if ( $n >= 6 ) {
+			continue;
+		}
+		$tries[ $slug ] = $n + 1;
+		$done++;
+		$alt            = isset( $it['imageAlt'] ) ? (string) $it['imageAlt'] : $post->post_title;
+		list( $ok, $why ) = cfpull_attach_image( $post->ID, $url, $alt, $slug );
+		if ( $ok ) {
+			$fixed++;
+			cfpull_log( 'Added the missing cover picture to: ' . get_permalink( $post->ID ) );
+		} elseif ( 0 === $n || 5 === $n ) {
+			cfpull_log( 'Cover picture still missing on ' . get_permalink( $post->ID ) . ' (' . $why . ')' . ( 5 === $n ? ' - giving up on this one.' : ' - will retry.' ) );
+		}
+	}
+	update_option( CFPULL_IMG_TRIES_OPTION, $tries, false );
+	return $fixed;
 }
 
 function cfpull_category_ids( $name ) {
@@ -176,12 +269,20 @@ function cfpull_create_post( $p ) {
 
 	$existing = get_page_by_path( $slug, OBJECT, 'post' );
 	if ( $existing ) {
+		// A first attempt may have created the post but been cut short before the picture: finish that job now.
+		$image_error = '';
+		if ( ! empty( $p['imageUrl'] ) && ! has_post_thumbnail( $existing->ID ) ) {
+			$alt = isset( $p['imageAlt'] ) ? (string) $p['imageAlt'] : $title;
+			list( $img_ok, $img_why ) = cfpull_attach_image( $existing->ID, (string) $p['imageUrl'], $alt, $slug );
+			$image_error = $img_ok ? '' : $img_why;
+		}
 		return array(
 			true,
 			array(
-				'postId' => $existing->ID,
-				'url'    => get_permalink( $existing->ID ),
-				'status' => 'publish' === $existing->post_status ? 'publish' : $existing->post_status,
+				'postId'     => $existing->ID,
+				'url'        => get_permalink( $existing->ID ),
+				'status'     => 'publish' === $existing->post_status ? 'publish' : $existing->post_status,
+				'imageError' => $image_error,
 			),
 		);
 	}
@@ -225,17 +326,20 @@ function cfpull_create_post( $p ) {
 		update_post_meta( $post_id, '_yoast_wpseo_focuskw', $focus );
 	}
 
+	$image_error = '';
 	if ( ! empty( $p['imageUrl'] ) ) {
 		$alt = isset( $p['imageAlt'] ) ? (string) $p['imageAlt'] : $title;
-		cfpull_attach_image( $post_id, (string) $p['imageUrl'], $alt, $slug );
+		list( $img_ok, $img_why ) = cfpull_attach_image( $post_id, (string) $p['imageUrl'], $alt, $slug );
+		$image_error              = $img_ok ? '' : $img_why;
 	}
 
 	return array(
 		true,
 		array(
-			'postId' => $post_id,
-			'url'    => get_permalink( $post_id ),
-			'status' => get_post_status( $post_id ),
+			'postId'     => $post_id,
+			'url'        => get_permalink( $post_id ),
+			'status'     => get_post_status( $post_id ),
+			'imageError' => $image_error,
 		),
 	);
 }
@@ -247,6 +351,21 @@ function cfpull_collect( $max = 3 ) {
 	if ( ! cfpull_configured() ) {
 		return 0;
 	}
+	// Two runs at once (the five-minute timer and the button) must not both work on the same article.
+	if ( get_transient( 'cfpull_lock' ) ) {
+		return 0;
+	}
+	set_transient( 'cfpull_lock', 1, 600 );
+	try {
+		$done = cfpull_collect_locked( $max );
+		cfpull_repair_images( 3 );
+	} finally {
+		delete_transient( 'cfpull_lock' );
+	}
+	return $done;
+}
+
+function cfpull_collect_locked( $max ) {
 	if ( function_exists( 'set_time_limit' ) ) {
 		@set_time_limit( 180 ); // phpcs:ignore WordPress.PHP.NoSilencedErrors
 	}
@@ -278,8 +397,12 @@ function cfpull_collect( $max = 3 ) {
 			$info = 'Error while creating the post: ' . $e->getMessage();
 		}
 		if ( $ok ) {
-			cfpull_report( $queue_id, true, array( 'postId' => $info['postId'], 'url' => $info['url'], 'status' => $info['status'] ) );
-			cfpull_log( 'Published: ' . $info['url'] );
+			$extra = array( 'postId' => $info['postId'], 'url' => $info['url'], 'status' => $info['status'] );
+			if ( ! empty( $info['imageError'] ) ) {
+				$extra['imageError'] = (string) $info['imageError'];
+			}
+			cfpull_report( $queue_id, true, $extra );
+			cfpull_log( 'Published: ' . $info['url'] . ( ! empty( $info['imageError'] ) ? ' (cover picture not attached yet: ' . $info['imageError'] . ' - will retry)' : '' ) );
 			$done++;
 		} else {
 			cfpull_report( $queue_id, false, array( 'error' => (string) $info ) );

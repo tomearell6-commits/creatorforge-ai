@@ -18,6 +18,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sit
   const r = await completeDelivery(createAdminClient(), a.site.id, body.id, {
     ok: body.ok, postId: typeof body.postId === "string" || typeof body.postId === "number" ? body.postId : undefined, url,
     status: typeof body.status === "string" ? body.status.slice(0, 20) : undefined, error: typeof body.error === "string" ? body.error : undefined,
+    imageError: typeof body.imageError === "string" && body.imageError ? body.imageError : undefined,
   });
   if (!r.ok) return Response.json({ error: r.error }, { status: r.status, headers: { "Cache-Control": "no-store" } });
   return Response.json({ ok: true, message: r.message }, { headers: { "Cache-Control": "no-store" } });

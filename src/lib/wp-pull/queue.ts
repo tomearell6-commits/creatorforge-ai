@@ -57,7 +57,21 @@ export async function claimNext(admin: SupabaseClient, wordpressSiteId: string):
   return { id: row.id as string, payload };
 }
 
-export type DeliveryReport = { ok: boolean; postId?: string | number; url?: string; status?: string; error?: string };
+export type DeliveryReport = { ok: boolean; postId?: string | number; url?: string; status?: string; error?: string; imageError?: string };
+
+/** Recently delivered articles and their cover pictures, so the plugin can check each one has its picture and attach any that is missing. */
+export async function recentCoverImages(admin: SupabaseClient, wordpressSiteId: string, days = 45): Promise<{ postId: string | null; slug: string; imageUrl: string; imageAlt: string }[]> {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const { data } = await admin.from("wp_pull_queue").select("post_id, payload, delivered_at")
+    .eq("wordpress_site_id", wordpressSiteId).eq("status", "delivered").gte("delivered_at", since).order("delivered_at", { ascending: false }).limit(60);
+  const out: { postId: string | null; slug: string; imageUrl: string; imageAlt: string }[] = [];
+  for (const r of data ?? []) {
+    const p = r.payload as Stored;
+    if (!p?.imageUrl || !p.slug) continue;
+    out.push({ postId: r.post_id != null ? String(r.post_id) : null, slug: p.slug, imageUrl: p.imageUrl, imageAlt: p.imageAlt ?? p.title ?? "" });
+  }
+  return out;
+}
 
 /** The plugin says it created the post (or could not). Idempotent: a second report for the same article changes nothing. */
 export async function completeDelivery(admin: SupabaseClient, wordpressSiteId: string, queueId: string, report: DeliveryReport): Promise<{ ok: true; message: string } | { ok: false; error: string; status: number }> {
@@ -110,7 +124,10 @@ export async function completeDelivery(admin: SupabaseClient, wordpressSiteId: s
   });
   if (stored.charge > 0) await admin.rpc("wallet_adjust", { p_user: item.user_id, p_amount: -stored.charge, p_type: "publishing", p_reason: "seo_autopost_pull" });
 
-  const indexNow = live && url ? await notifyIndexNow(admin, url) : { message: "Created on your website, which is holding it for your approval there. It is not public yet." };
+  const indexNowRaw = live && url ? await notifyIndexNow(admin, url) : { message: "Created on your website, which is holding it for your approval there. It is not public yet." };
+  // If the website could not attach the cover picture, say so plainly in the activity row: the plugin keeps retrying by itself.
+  const imageNote = report.imageError ? ` The cover image could not be attached yet (${String(report.imageError).slice(0, 160)}); your website will keep retrying.` : "";
+  const indexNow = { ...indexNowRaw, message: `${indexNowRaw.message}${imageNote}` };
 
   if (siteId) {
     const { data: s } = await admin.from("seo_autopost_sites").select("posts_published").eq("id", siteId).maybeSingle();
