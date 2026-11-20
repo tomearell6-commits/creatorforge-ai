@@ -2,7 +2,7 @@
 /**
  * Plugin Name: CreatorsForge Pull Publisher
  * Description: Collects the articles CreatorsForge SEO Autopilot writes for this site and publishes them here. For hosts whose firewall or captcha blocks CreatorsForge from sending posts in: this plugin asks CreatorsForge for the next article itself, so nothing has to get through the firewall.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires at least: 5.6
  * Requires PHP: 7.4
  * Author: CreatorsForge
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'CFPULL_VERSION', '1.1.0' );
+define( 'CFPULL_VERSION', '1.1.1' );
 define( 'CFPULL_IMG_TRIES_OPTION', 'cfpull_img_tries' );
 define( 'CFPULL_CRON_HOOK', 'cfpull_collect' );
 define( 'CFPULL_OPTION', 'cfpull_settings' );
@@ -167,9 +167,25 @@ function cfpull_attach_image( $post_id, $url, $alt, $slug ) {
 			update_post_meta( $att_id, '_wp_attachment_image_alt', sanitize_text_field( $alt ) );
 		}
 		set_post_thumbnail( $post_id, $att_id );
+		cfpull_purge_cache( $post_id );
 		return array( true, '' );
 	}
 	return array( false, $last );
+}
+
+/** A picture added after the page was first cached must show up: clear this post's cached page in the common cache plugins. */
+function cfpull_purge_cache( $post_id ) {
+	clean_post_cache( $post_id );
+	do_action( 'litespeed_purge_post', $post_id ); // LiteSpeed Cache
+	if ( function_exists( 'rocket_clean_post' ) ) {
+		rocket_clean_post( $post_id ); // WP Rocket
+	}
+	if ( function_exists( 'w3tc_flush_post' ) ) {
+		w3tc_flush_post( $post_id ); // W3 Total Cache
+	}
+	if ( function_exists( 'wp_cache_post_change' ) ) {
+		wp_cache_post_change( $post_id ); // WP Super Cache
+	}
 }
 
 /** Find the post a delivered article became: by its post id when it still matches, else by its address. */
